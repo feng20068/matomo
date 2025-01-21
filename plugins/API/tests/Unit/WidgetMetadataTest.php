@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\API\tests\Unit;
@@ -34,7 +35,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         $this->metadata = new WidgetMetadata();
     }
 
-    public function test_buildWidgetMetadata_ShouldGenerateMetadata()
+    public function testBuildWidgetMetadataShouldGenerateMetadata()
     {
         $config = $this->createWidgetConfig('Test', 'CategoryId', 'SubcategoryId');
         $list = $this->createCategoryList(array('CategoryId' => array('SubcategoryId')));
@@ -48,6 +49,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
                 'order' => 99,
                 'icon' => '',
                 'help' => '',
+                'widget' => null,
             ),
             'subcategory' => array(
                 'id' => 'SubcategoryId',
@@ -67,7 +69,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         ), $metadata);
     }
 
-    public function test_buildWidgetMetadata_ShouldSetCategoryAndSubcategoryToNull_IfBothGivenButNotExistInList()
+    public function testBuildWidgetMetadataShouldSetCategoryAndSubcategoryToNullIfBothGivenButNotExistInList()
     {
         $config = $this->createWidgetConfig('Test', 'CategoryId', 'SubcategoryId');
         $list = $this->createCategoryList();
@@ -77,7 +79,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($metadata['subcategory']);
     }
 
-    public function test_buildWidgetMetadata_ShouldSetSubcategoryToNull_IfCategoryGivenInListButSubcategoryNot()
+    public function testBuildWidgetMetadataShouldSetSubcategoryToNullIfCategoryGivenInListButSubcategoryNot()
     {
         $config = $this->createWidgetConfig('Test', 'CategoryId', 'SubcategoryId');
         $list = $this->createCategoryList(array('CategoryId' => array()));
@@ -89,11 +91,12 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
             'order' => 99,
             'icon' => '',
             'help' => '',
+            'widget' => null,
         ), $metadata['category']);
         $this->assertNull($metadata['subcategory']);
     }
 
-    public function test_buildWidgetMetadata_ShouldNotAddCategoryAndSubcategoryToNull_IfNoCategoryListGiven()
+    public function testBuildWidgetMetadataShouldNotAddCategoryAndSubcategoryToNullIfNoCategoryListGiven()
     {
         $config = $this->createWidgetConfig('Test', 'CategoryId', 'SubcategoryId');
         $metadata = $this->metadata->buildWidgetMetadata($config);
@@ -102,7 +105,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         $this->assertArrayNotHasKey('subcategory', $metadata);
     }
 
-    public function test_buildWidgetMetadata_ShouldAddOptionalMiddlewareParameters()
+    public function testBuildWidgetMetadataShouldAddOptionalMiddlewareParameters()
     {
         $config = $this->createWidgetConfig('Test', 'CategoryId', 'SubcategoryId');
         $config->setMiddlewareParameters(array('module' => 'Goals', 'action' => 'hasAnyConversions'));
@@ -111,7 +114,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(array('module' => 'Goals', 'action' => 'hasAnyConversions'), $metadata['middlewareParameters']);
     }
 
-    public function test_buildWidgetMetadata_ShouldAddReportInformtion_IfReportWidgetConfigGiven()
+    public function testBuildWidgetMetadataShouldAddReportInformtionIfReportWidgetConfigGiven()
     {
         $config = new ReportWidgetConfig();
         $config->setDefaultViewDataTable('graph');
@@ -121,7 +124,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($metadata['isReport']);
     }
 
-    public function test_buildWidgetMetadata_ShouldAddContainerInformtion_IfWidgetContainerConfigGiven()
+    public function testBuildWidgetMetadataShouldAddContainerInformtionIfWidgetContainerConfigGiven()
     {
         $config = new WidgetContainerConfig();
         $config->setLayout('ByDimension');
@@ -143,6 +146,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
                 'order' => 99,
                 'icon' => '',
                 'help' => '',
+                'widget' => null,
             ),
             'subcategory' => array (
                 'id' => 'NestedSubcategory1',
@@ -168,6 +172,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
                 'order' => 99,
                 'icon' => '',
                 'help' => '',
+                'widget' => null,
             ),
             'subcategory' => array (
                 'id' => 'NestedSubcategory2',
@@ -187,7 +192,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         ), $widget2);
     }
 
-    public function test_buildWidgetMetadata_ShouldUseOverrideValues_IfSupplied()
+    public function testBuildWidgetMetadataShouldUseOverrideValuesIfSupplied()
     {
         $categoryList = $this->createCategoryList([
             'Category' => ['Subcategory'],
@@ -209,6 +214,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
                 'order' => 99,
                 'icon' => '',
                 'help' => '',
+                'widget' => null,
             ],
             'subcategory' => [
                 'id' => 'Subcategory2',
@@ -228,7 +234,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         ], $metadata);
     }
 
-    public function test_buildPageMetadata_ShouldAddContainerInformtion_IfWidgetContainerConfigGiven()
+    public function testBuildPageMetadataShouldAddContainerInformtionIfWidgetContainerConfigGiven()
     {
         $config = new WidgetContainerConfig();
         $config->setLayout('ByDimension');
@@ -239,7 +245,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         );
 
         $category = $this->createCategory('NestedCategory1');
-        $subcategory = $this->createSubcategory('NestedCategory1' ,'NestedSubcategory1');
+        $subcategory = $this->createSubcategory('NestedCategory1', 'NestedSubcategory1');
 
         $metadata = $this->metadata->buildPageMetadata($category, $subcategory, $widgets);
 
@@ -251,6 +257,7 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
                 'order' => 99,
                 'icon' => '',
                 'help' => '',
+                'widget' => null,
             ),
             'subcategory' => array (
                 'id' => 'NestedSubcategory1',
@@ -331,5 +338,4 @@ class WidgetMetadataTest extends \PHPUnit\Framework\TestCase
         $category->setId($categoryId);
         return $category;
     }
-
 }

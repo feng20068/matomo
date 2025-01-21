@@ -1,14 +1,17 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Events;
 
 use Piwik\Archive;
+use Piwik\DataTable;
+use Piwik\Metrics;
 use Piwik\Piwik;
 
 /**
@@ -82,7 +85,7 @@ class API extends \Piwik\Plugin\API
     public function getActionToLoadSubtables($apiMethod, $secondaryDimension = false)
     {
         $recordName = $this->getRecordNameForAction($apiMethod, $secondaryDimension);
-        $apiMethod = array_search( $recordName, $this->mappingApiToRecord );
+        $apiMethod = array_search($recordName, $this->mappingApiToRecord);
         return $apiMethod;
     }
 
@@ -139,7 +142,7 @@ class API extends \Piwik\Plugin\API
 
         if (!$isSecondaryDimensionValid) {
             throw new \Exception(
-                "Secondary dimension '$secondaryDimension' is not valid for the API $apiMethod. ".
+                "Secondary dimension '$secondaryDimension' is not valid for the API $apiMethod. " .
                 "Use one of: " . implode(", ", $this->getSecondaryDimensions($apiMethod))
             );
         }
@@ -152,6 +155,13 @@ class API extends \Piwik\Plugin\API
         $recordName = $this->getRecordNameForAction($name, $secondaryDimension);
 
         $dataTable = Archive::createDataTableFromArchive($recordName, $idSite, $period, $date, $segment, $expanded, $flat, $idSubtable);
+
+        $dataTable->filter(function ($dataTable) {
+            $dataTable->setMetadata(DataTable::COLUMN_AGGREGATION_OPS_METADATA_NAME, [
+                Metrics::INDEX_EVENT_MIN_EVENT_VALUE => 'min',
+                Metrics::INDEX_EVENT_MAX_EVENT_VALUE => 'max',
+            ]);
+        });
 
         if ($flat) {
             $dataTable->filterSubtables('Piwik\Plugins\Events\DataTable\Filter\ReplaceEventNameNotSet');

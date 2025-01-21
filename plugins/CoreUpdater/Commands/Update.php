@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreUpdater\Commands;
 
 use Piwik\Filechecks;
@@ -74,17 +75,15 @@ class Update extends ConsoleCommand
 
                     $this->makeUpdate(false);
 
-                    $this->writeSuccessMessage(array(Piwik::translate('CoreUpdater_PiwikHasBeenSuccessfullyUpgraded')));
+                    $this->writeSuccessMessage(Piwik::translate('CoreUpdater_PiwikHasBeenSuccessfullyUpgraded'));
                 } else {
-                    $this->writeSuccessMessage(array(Piwik::translate('CoreUpdater_DbUpgradeNotExecuted')));
+                    $this->writeSuccessMessage(Piwik::translate('CoreUpdater_DbUpgradeNotExecuted'));
                 }
 
                 $this->writeAlertMessageWhenCommandExecutedWithUnexpectedUser();
-
-
             } catch (NoUpdatesFoundException $e) {
                 // Do not fail if no updates were found
-                $this->writeSuccessMessage(array($e->getMessage()));
+                $this->writeSuccessMessage($e->getMessage());
             }
         } finally {
             Filesystem::$skipCacheClearOnUpdate = false;
@@ -168,8 +167,8 @@ class Update extends ConsoleCommand
         $output = $this->getOutput();
         $migrationQueries = $this->getMigrationQueriesToExecute($updater);
 
-        if(empty($migrationQueries)) {
-            $output->writeln(array("    *** ".Piwik::translate('CoreUpdater_ConsoleUpdateNoSqlQueries')." ***", ""));
+        if (empty($migrationQueries)) {
+            $output->writeln(array("    *** " . Piwik::translate('CoreUpdater_ConsoleUpdateNoSqlQueries') . " ***", ""));
             return;
         }
 
@@ -181,7 +180,7 @@ class Update extends ConsoleCommand
             ));
         }
 
-        $output->writeln(array("    *** ".Piwik::translate('CoreUpdater_DryRun')." ***", ""));
+        $output->writeln(array("    *** " . Piwik::translate('CoreUpdater_DryRun') . " ***", ""));
 
         foreach ($migrationQueries as $query) {
             $result = $query->__toString();
@@ -213,7 +212,8 @@ class Update extends ConsoleCommand
             $this->outputUpdaterErrors($updaterResult['errors'], $updaterResult['deactivatedPlugins']);
         }
 
-        if (!empty($updaterResult['warnings'])
+        if (
+            !empty($updaterResult['warnings'])
             || !empty($updaterResult['errors'])
         ) {
             $output->writeln(array(
@@ -330,7 +330,8 @@ class Update extends ConsoleCommand
     {
         $plugins = array();
         foreach ($componentsWithUpdateFile as $componentName => $updates) {
-            if ($componentName !== 'core'
+            if (
+                $componentName !== 'core'
                 && 0 !== strpos($componentName, 'log_')
             ) {
                 $plugins[] = $componentName;

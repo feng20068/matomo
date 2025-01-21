@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tests\System;
 
 use Piwik\Archive\ArchivePurger;
@@ -105,7 +107,7 @@ class OneVisitorOneWebsiteSeveralDaysDateRangeArchivingTest extends SystemTestCa
      *
      * @depends      testApi
      */
-    public function test_checkArchiveRecords_whenPeriodIsRange()
+    public function testCheckArchiveRecordsWhenPeriodIsRange()
     {
         $archivePurger = StaticContainer::get(ArchivePurger::class);
         foreach (self::$fixture->dateTimes as $date) {
@@ -120,9 +122,9 @@ class OneVisitorOneWebsiteSeveralDaysDateRangeArchivingTest extends SystemTestCa
         $expectedActionsBlobsWhenFlattened = $expectedActionsBlobs + 1;
 
         $tests = array(
-            'archive_blob_2010_12'    => ( ($expectedActionsBlobs+1) /*Actions*/
+            'archive_blob_2010_12'    => ( ($expectedActionsBlobs + 1) /*Actions*/
                     + 1 /* Resolution */
-                    + 2 /* VisitTime */) * 3,
+                    + 1 /* VisitTime */) * 3,
 
             /**
              * segments: 9 (including all visits)
@@ -165,7 +167,7 @@ class OneVisitorOneWebsiteSeveralDaysDateRangeArchivingTest extends SystemTestCa
             $sql = "SELECT count(*) FROM " . Common::prefixTable($table) . " WHERE period = " . Piwik::$idPeriods['range'];
             $countBlobs = Db::get()->fetchOne($sql);
 
-            if($expectedRows != $countBlobs) {
+            if ($expectedRows != $countBlobs) {
                 $this->printDebugWhenTestFails($table);
             }
             $this->assertEquals($expectedRows, $countBlobs, "$table expected $expectedRows, got $countBlobs");
@@ -178,7 +180,7 @@ class OneVisitorOneWebsiteSeveralDaysDateRangeArchivingTest extends SystemTestCa
      *
      * @depends      testApi
      */
-    public function test_checkArchiveRecords_shouldMergeSubtablesIntoOneRow()
+    public function testCheckArchiveRecordsShouldMergeSubtablesIntoOneRow()
     {
         $tests = array(
             'archive_blob_2010_12' => 3,
@@ -233,7 +235,6 @@ class OneVisitorOneWebsiteSeveralDaysDateRangeArchivingTest extends SystemTestCa
     {
         return (bool) Db::fetchOne("SHOW TABLES LIKE '$table'");
     }
-
 }
 
 OneVisitorOneWebsiteSeveralDaysDateRangeArchivingTest::$fixture = new VisitsOverSeveralDays();

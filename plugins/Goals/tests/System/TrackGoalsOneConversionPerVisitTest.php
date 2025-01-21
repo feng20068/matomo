@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Goals\tests\System;
 
 use Piwik\Tests\Framework\TestCase\SystemTestCase;
@@ -40,7 +42,7 @@ class TrackGoalsOneConversionPerVisitTest extends SystemTestCase
                 'periods'      => array('day'))),
             array($apiToCall, array(
                 'otherRequestParameters' => array(
-                    'showAllGoalSpecificMetrics' =>1
+                    'showAllGoalSpecificMetrics' => 1
                 ),
                 'testSuffix' => 'showAllGoalSpecificMetrics',
                 'idSite'       => self::$fixture->idSite,
@@ -48,7 +50,7 @@ class TrackGoalsOneConversionPerVisitTest extends SystemTestCase
                 'periods'      => array('day'))),
             array($apiToCall, array(
                 'otherRequestParameters' => array(
-                    'showAllGoalSpecificMetrics' =>1,
+                    'showAllGoalSpecificMetrics' => 1,
                     'columns' => 'goal_1_conversion_rate'
                 ),
                 'testSuffix' => 'showAllGoalSpecificMetrics_requestedColumns',

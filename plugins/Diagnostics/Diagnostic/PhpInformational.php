@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Diagnostics\Diagnostic;
 
 use Piwik\CliMulti\CliPhp;
@@ -42,7 +44,7 @@ class PhpInformational implements Diagnostic
         $isGlobalConfigIniAccessible = true; // Assume true if not installed yet
         // Only attempt to check file accessibility if the config setting allows it
         $disableFileAccessCheck = (GeneralConfig::getConfigValue('enable_required_directories_diagnostic') == 0);
-        if(!$disableFileAccessCheck) {
+        if (!$disableFileAccessCheck) {
             if (SettingsPiwik::isMatomoInstalled()) {
                 $rpd = new RequiredPrivateDirectories($this->translator);
                 $isGlobalConfigIniAccessible = $rpd->isGlobalConfigIniAccessible();
@@ -50,15 +52,14 @@ class PhpInformational implements Diagnostic
         }
 
         if (strpos(strtolower(php_sapi_name()), 'fpm-fcgi') !== false && $isGlobalConfigIniAccessible && !$disableFileAccessCheck) {
-
             // Using PHP-FPM and private files are accessible
-            $comment = php_sapi_name()."<br><br>";
+            $comment = php_sapi_name() . "<br><br>";
 
             if (!empty($_SERVER['SERVER_SOFTWARE'])) {
                 if (strpos(strtolower($_SERVER['SERVER_SOFTWARE']), 'apache') !== false) {
                     $comment .= $this->translator->translate('Diagnostics_PHPFPMWarningApache', [
                         '<code>ProxyPass /config !</code>', '<code>mod_proxy_fcgi.c</code>', '<code>ProxyPassMatch</code>']);
-                } else if (strpos(strtolower($_SERVER['SERVER_SOFTWARE']), 'nginx') !== false) {
+                } elseif (strpos(strtolower($_SERVER['SERVER_SOFTWARE']), 'nginx') !== false) {
                     $comment .= $this->translator->translate('Diagnostics_PHPFPMWarningNginx', [
                         '<a href="https://github.com/matomo-org/matomo-nginx#readme" target="_blank">', '</a>']);
                 } else {
@@ -103,11 +104,10 @@ class PhpInformational implements Diagnostic
             $curl_version = $curl_version['version'] . ', ' . $curl_version['ssl_version'];
             $results[] = DiagnosticResult::informationalResult('Curl Version', $curl_version);
         }
-        $suhosin_installed = ( extension_loaded( 'suhosin' ) || ( defined( 'SUHOSIN_PATCH' ) && constant( 'SUHOSIN_PATCH' ) ) );
+        $suhosin_installed = ( extension_loaded('suhosin') || ( defined('SUHOSIN_PATCH') && constant('SUHOSIN_PATCH') ) );
 
         $results[] = DiagnosticResult::informationalResult('Suhosin Installed', $suhosin_installed);
 
         return $results;
     }
-
 }

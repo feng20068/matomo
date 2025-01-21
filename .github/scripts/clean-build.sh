@@ -141,14 +141,6 @@ rm -rf node_modules/jquery-ui-dist/jquery-ui.js
 rm -rf node_modules/jquery-ui-dist/jquery-ui.structure.css
 rm -rf node_modules/jquery-ui-dist/jquery-ui.theme.css
 
-rm -rf node_modules/jquery.browser/test
-rm -rf node_modules/jquery.browser/dist/jquery.browser.js
-
-rm -rf node_modules/jquery.dotdotdot/gulpfile.js
-rm -rf node_modules/jquery.dotdotdot/index.html
-rm -rf node_modules/jquery.dotdotdot/dotdotdot.jquery.json
-rm -rf node_modules/jquery.dotdotdot/src
-
 rm -rf node_modules/jquery.scrollto/jquery.scrollTo.js
 rm -rf node_modules/jquery.scrollto/scrollTo.jquery.json
 rm -rf node_modules/jquery.scrollto/changes.txt
@@ -225,6 +217,6 @@ for x in .gitignore .gitmodules .gitattributes .git-blame-ignore-revs .bowerrc .
     .phpstorm.meta.php .lfsconfig .travis.sh tsconfig.json tsconfig.spec.json \
     .eslintrc.js .eslintignore .eslintrc .browserslistrc babel.config.js jest.config.js \
     karma.conf.js karma-conf.js vue.config.js .npmignore .ncurc.json .prettierrc .jscsrc \
-    phpstan.neon phpstan.neon.dist package.xml; do
+    phpstan.neon phpstan.neon.dist package.xml .stylelintrc.json; do
     find . -name "$x" -exec rm -f {} \;
 done

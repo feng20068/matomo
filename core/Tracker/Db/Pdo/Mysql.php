@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tracker\Db\Pdo;
 
 use Exception;
@@ -25,14 +26,34 @@ class Mysql extends Db
      * @var PDO
      */
     protected $connection = null;
+
+    /**
+     * @var string
+     */
     protected $dsn;
+
+    /**
+     * @var string
+     */
     private $username;
+
+    /**
+     * @var string
+     */
     private $password;
+
+    /**
+     * @var string|null
+     */
     protected $charset;
 
-    protected $mysqlOptions = array();
+    /**
+     * @var string|null
+     */
+    private $collation;
 
-    
+    protected $mysqlOptions = [];
+
     protected $activeTransaction = false;
 
     /**
@@ -57,11 +78,13 @@ class Mysql extends Db
         if (isset($dbInfo['charset'])) {
             $this->charset = $dbInfo['charset'];
             $this->dsn .= ';charset=' . $this->charset;
+
+            if (!empty($dbInfo['collation'])) {
+                $this->collation = $dbInfo['collation'];
+            }
         }
 
-
         if (isset($dbInfo['enable_ssl']) && $dbInfo['enable_ssl']) {
-
             if (!empty($dbInfo['ssl_key'])) {
                 $this->mysqlOptions[PDO::MYSQL_ATTR_SSL_KEY] = $dbInfo['ssl_key'];
             }
@@ -81,7 +104,6 @@ class Mysql extends Db
                 $this->mysqlOptions[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
             }
         }
-
     }
 
     public function __destruct()
@@ -224,9 +246,11 @@ class Mysql extends Db
         } catch (Exception $e) {
             $isSelectQuery = stripos(trim($query), 'select ') === 0;
 
-            if ($isSelectQuery
+            if (
+                $isSelectQuery
                 && !$this->activeTransaction
-                && $this->isMysqlServerHasGoneAwayError($e)) {
+                && $this->isMysqlServerHasGoneAwayError($e)
+            ) {
                 // mysql may return a MySQL server has gone away error when trying to execute the query
                 // in that case we want to retry establishing the connection once after a short sleep
                 // we're only retrying SELECT queries to prevent updating or inserting records twice for some reason
@@ -237,7 +261,6 @@ class Mysql extends Db
                 $message = $e->getMessage() . " In query: $query Parameters: " . var_export($parameters, true);
                 throw new DbException("Error query: " . $message, (int) $e->getCode());
             }
-
         }
     }
 
@@ -408,10 +431,13 @@ class Mysql extends Db
          * see ZF-7428 and http://bugs.php.net/bug.php?id=47224
          */
         if (!empty($this->charset)) {
-            $sql = "SET NAMES '".$this->charset."'";
+            $sql = "SET NAMES '" . $this->charset . "'";
+
+            if (!empty($this->collation)) {
+                $sql .= " COLLATE '" . $this->collation . "'";
+            }
+
             $this->connection->exec($sql);
         }
     }
-
-
 }

@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link     https://matomo.org
- * @license  http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Dashboard;
 
 use Piwik\API\Request;
@@ -92,7 +94,7 @@ class API extends \Piwik\Plugin\API
      * @param int $idDashboard id of the dashboard to be removed
      * @param string $login  Login of the dashboard user [defaults to current user]
      */
-    public function removeDashboard($idDashboard, $login='')
+    public function removeDashboard($idDashboard, $login = '')
     {
         $login = $login ? $login : Piwik::getCurrentUserLogin();
 
@@ -150,7 +152,7 @@ class API extends \Piwik\Plugin\API
      * @param string $login user the dashboard belongs
      *
      */
-    public function resetDashboardLayout($idDashboard, $login='')
+    public function resetDashboardLayout($idDashboard, $login = '')
     {
         $login = $login ?: Piwik::getCurrentUserLogin();
 
@@ -206,7 +208,6 @@ class API extends \Piwik\Plugin\API
 
         foreach ($columns as $column) {
             foreach ($column as $widget) {
-
                 if ($this->widgetIsNotHidden($widget) && !empty($widget->parameters->module)) {
                     $module = $widget->parameters->module;
                     $action = $widget->parameters->action;

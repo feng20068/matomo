@@ -3,9 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Login;
@@ -42,7 +41,8 @@ use Piwik\View;
  */
 class Controller extends \Piwik\Plugin\ControllerAdmin
 {
-    const NONCE_CONFIRMRESETPASSWORD = 'loginConfirmResetPassword';
+    public const NONCE_CONFIRMRESETPASSWORD = 'loginConfirmResetPassword';
+    public const NONCE_CONFIRMCANCELRESETPASSWORD = 'loginConfirmCancelResetPassword';
 
     /**
      * @var PasswordResetter
@@ -336,7 +336,10 @@ class Controller extends \Piwik\Plugin\ControllerAdmin
 
         $parsedUrl = parse_url($urlToRedirect);
 
-        if (!empty($urlToRedirect) && false === $parsedUrl) {
+        if (
+            (!empty($urlToRedirect) && false === $parsedUrl)
+            || (!empty($parsedUrl['scheme']) && empty($parsedUrl['host']))
+        ) {
             $e = new \Piwik\Exception\Exception('The redirect URL is not valid.');
             $e->setIsHtmlMessage();
             throw $e;
@@ -348,6 +351,11 @@ class Controller extends \Piwik\Plugin\ControllerAdmin
             $e->setIsHtmlMessage();
             throw $e;
         }
+
+        // We put together the url based on the parsed parameters manually to ensure it might not redirect to unexpected locations
+        // unescaped slashes in username or password part for example have unexpected results in browsers
+        // for protocol less urls starting with //, we need to prepend the double slash to have a url that passes the valid url check in redirect logic
+        $urlToRedirect = (strpos($urlToRedirect, '//') === 0 ? '//' : '') . UrlHelper::getParseUrlReverse($parsedUrl);
 
         if (empty($urlToRedirect)) {
             $redirect = Request::fromRequest()->getStringParameter('form_redirect', '');
@@ -418,7 +426,7 @@ class Controller extends \Piwik\Plugin\ControllerAdmin
     {
         $loginMail = $form->getSubmitValue('form_login');
         $password = $form->getSubmitValue('form_password');
-        
+
         if (!empty($loginMail)) {
             $loginMail = trim($loginMail);
         }
@@ -432,6 +440,78 @@ class Controller extends \Piwik\Plugin\ControllerAdmin
         }
 
         return null;
+    }
+
+    public function initiateCancelResetPassword(): string
+    {
+        if (!Url::isValidHost()) {
+            throw new Exception("Cannot invalidate reset password token with untrusted hostname!");
+        }
+
+        $request = Request::fromRequest();
+        $login = $request->getStringParameter('login');
+        $resetToken = $request->getStringParameter('resetToken');
+        $errorMessage = '';
+
+        try {
+            $this->passwordResetter->checkValidConfirmPasswordToken($login, $resetToken);
+        } catch (Exception $ex) {
+            $errorMessage = $ex->getMessage();
+        }
+
+        $nonce = Nonce::getNonce(self::NONCE_CONFIRMCANCELRESETPASSWORD);
+
+        return $this->renderTemplateAs('@Login/initiateCancelResetPassword', [
+            'nonce'        => $nonce,
+            'errorMessage' => $errorMessage,
+            'loginPlugin' => Piwik::getLoginPluginName(),
+            'login' => $login,
+            'resetToken' => $resetToken
+        ], 'basic');
+    }
+
+    /**
+     * Password reset cancel action. Invalidates a password reset token.
+     * Users visit this action from a link supplied in an email.
+     */
+    public function cancelResetPassword(): string
+    {
+        if (!Url::isValidHost()) {
+            throw new Exception("Cannot invalidate reset password token with untrusted hostname!");
+        }
+
+        $request = Request::fromRequest();
+        $login = $request->getStringParameter('login');
+        $resetToken = $request->getStringParameter('resetToken');
+
+        try {
+            Nonce::checkNonce(self::NONCE_CONFIRMCANCELRESETPASSWORD);
+            $this->passwordResetter->cancelPasswordResetProcess($login, $resetToken);
+        } catch (Exception $ex) {
+            Log::debug($ex);
+            $errorMessage = $ex->getMessage();
+        }
+
+        if (!empty($errorMessage)) {
+            return $this->login($errorMessage);
+        }
+
+        $cancelResetPasswordContent = '';
+
+        /**
+         * Overwrite the content displayed on the "reset password process cancelled page".
+         *
+         * Will display default content if no event content returned.
+         *
+         * @param string $cancelResetPasswordContent The content to render.
+         */
+        Piwik::postEvent('Template.loginCancelResetPasswordContent', [&$cancelResetPasswordContent]);
+
+        return $this->renderTemplateAs(
+            '@Login/cancelResetPassword',
+            ['cancelResetPasswordContent' => $cancelResetPasswordContent],
+            'basic'
+        );
     }
 
     /**
@@ -487,9 +567,10 @@ class Controller extends \Piwik\Plugin\ControllerAdmin
 
         $nonce = Nonce::getNonce(self::NONCE_CONFIRMRESETPASSWORD);
 
-        return $this->renderTemplateAs('confirmResetPassword', [
+        return $this->renderTemplateAs('@Login/confirmResetPassword', [
           'nonce'        => $nonce,
-          'errorMessage' => $errorMessage
+          'errorMessage' => $errorMessage,
+          'loginPlugin' => Piwik::getLoginPluginName(),
         ], 'basic');
     }
 

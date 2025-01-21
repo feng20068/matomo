@@ -1,8 +1,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 /**
@@ -59,6 +59,14 @@ var broadcast = {
      */
     isLoginPage: function() {
         return !!$('body#loginPage').length;
+    },
+
+    /**
+     * Returns if the current page is the no data page
+     * @return {boolean}
+     */
+    isNoDataPage: function() {
+        return !!$('body#site-without-data').length;
     },
 
     /**

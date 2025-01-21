@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Insights\tests\Unit;
@@ -91,5 +92,4 @@ class FilterLimitTest extends BaseUnitTest
         $filter = new Limit($this->table, 'growth', $limitIncrease, $limitDecrease);
         $filter->filter($this->table);
     }
-
 }

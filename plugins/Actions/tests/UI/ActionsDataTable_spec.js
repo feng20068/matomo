@@ -3,8 +3,8 @@
  *
  * ActionsDataTable screenshot tests.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 describe("ActionsDataTable", function () {
@@ -56,6 +56,7 @@ describe("ActionsDataTable", function () {
     it("should exclude low population rows when exclude low population link clicked", async function() {
         await page.click('.dropdownConfigureIcon');
         await page.click('.dataTableExcludeLowPopulation');
+        await page.mouse.move(-10, -10);
         await page.waitForNetworkIdle();
 
         expect(await page.screenshot({ fullPage: true })).to.matchImage('exclude_low_population');

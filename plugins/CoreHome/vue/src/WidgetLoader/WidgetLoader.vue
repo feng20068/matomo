@@ -1,13 +1,14 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
   <div class="widgetLoader">
     <ActivityIndicator
-      :loading-message="loadingMessage"
+      :loading-message="finalLoadingMessage"
       :loading="loading"
     />
     <div v-show="loadingFailed">
@@ -17,7 +18,7 @@
         <a
           rel="noreferrer noopener"
           target="_blank"
-          href="https://matomo.org/faq/troubleshooting/faq_19489/"
+          :href="externalRawLink('https://matomo.org/faq/troubleshooting/faq_19489/')"
           v-if="hasErrorFaqLink"
         >
           {{ translate('General_ErrorRequestFaqLink') }}
@@ -65,6 +66,7 @@ export default defineComponent({
   props: {
     widgetParams: Object,
     widgetName: String,
+    loadingMessage: String,
   },
   components: {
     ActivityIndicator,
@@ -86,7 +88,11 @@ export default defineComponent({
     },
   },
   computed: {
-    loadingMessage() {
+    finalLoadingMessage() {
+      if (this.loadingMessage) {
+        return this.loadingMessage;
+      }
+
       if (!this.widgetName) {
         return translate('General_LoadingData');
       }

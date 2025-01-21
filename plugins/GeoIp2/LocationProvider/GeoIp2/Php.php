@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\GeoIp2\LocationProvider\GeoIp2;
 
 use GeoIp2\Database\Reader;
@@ -20,6 +21,7 @@ use Piwik\Plugins\GeoIp2\GeoIP2AutoUpdater;
 use Piwik\Plugins\GeoIp2\LocationProvider\GeoIp2;
 use Piwik\Plugins\UserCountry\LocationProvider;
 use Piwik\SettingsPiwik;
+use Piwik\Url;
 use Piwik\View;
 
 /**
@@ -28,8 +30,8 @@ use Piwik\View;
  */
 class Php extends GeoIp2
 {
-    const ID = 'geoip2php';
-    const TITLE = 'DBIP / GeoIP 2 (Php)';
+    public const ID = 'geoip2php';
+    public const TITLE = 'DBIP / GeoIP 2 (Php)';
 
     /**
      * The GeoIP2 reader instances used. This array will contain at most two
@@ -312,8 +314,11 @@ class Php extends GeoIp2
             return true;
         }
 
-        // try converting umlauts to closted ascii char if iconv is available
-        if (function_exists('iconv')) {
+        // try converting umlauts to the closest ascii char if intl or iconv is available
+        if (function_exists('transliterator_transliterate')) {
+            $str1 = transliterator_transliterate('Any-Latin; Latin-ASCII', $str1);
+            $str2 = transliterator_transliterate('Any-Latin; Latin-ASCII', $str2);
+        } elseif (function_exists('iconv')) {
             $str1 = iconv('UTF-8', 'ASCII//TRANSLIT', $str1);
             $str2 = iconv('UTF-8', 'ASCII//TRANSLIT', $str2);
         }
@@ -431,11 +436,13 @@ class Php extends GeoIp2
         $desc = Piwik::translate('GeoIp2_LocationProviderDesc_Php') . '<br/><br/>';
 
         if (extension_loaded('maxminddb')) {
-            $desc .= Piwik::translate('GeoIp2_LocationProviderDesc_Php_WithExtension',
-                array('<strong>', '</strong>'));
+            $desc .= Piwik::translate(
+                'GeoIp2_LocationProviderDesc_Php_WithExtension',
+                array('<strong>', '</strong>')
+            );
         }
 
-        $installDocs = '<a rel="noreferrer"  target="_blank" href="https://matomo.org/faq/how-to/faq_163">'
+        $installDocs = '<a rel="noreferrer"  target="_blank" href="' . Url::addCampaignParametersToMatomoLink('https://matomo.org/faq/how-to/faq_163') . '">'
             . Piwik::translate('UserCountry_HowToInstallGeoIPDatabases')
             . '</a>';
 
@@ -498,7 +505,8 @@ class Php extends GeoIp2
         // in misc, then the databases are located outside of Matomo, so we cannot update them
         $view->showGeoIPUpdateSection = true;
         $currentProviderId = LocationProvider::getCurrentProviderId();
-        if (!$geoIPDatabasesInstalled
+        if (
+            !$geoIPDatabasesInstalled
             && in_array($currentProviderId, [GeoIp2\ServerModule::ID])
             && LocationProvider::getCurrentProvider()->isWorking()
             && LocationProvider::getCurrentProvider()->isAvailable()

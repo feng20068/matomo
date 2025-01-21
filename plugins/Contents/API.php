@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Contents;
 
 use Piwik\Archive;
@@ -34,7 +35,7 @@ class API extends \Piwik\Plugin\API
     {
         Piwik::checkUserHasViewAccess($idSite);
         $recordName = Dimensions::getRecordNameForAction($name);
-        $dataTable  = Archive::createDataTableFromArchive($recordName, $idSite, $period, $date, $segment, $expanded, $flat=false, $idSubtable);
+        $dataTable  = Archive::createDataTableFromArchive($recordName, $idSite, $period, $date, $segment, $expanded, $flat = false, $idSubtable);
 
         if (empty($idSubtable)) {
             $dataTable->filter('AddSegmentValue', array(function ($label) {

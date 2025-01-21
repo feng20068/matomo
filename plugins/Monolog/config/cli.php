@@ -29,9 +29,11 @@ return array(
             OutputInterface::VERBOSITY_VERBOSE => Logger::DEBUG,
             OutputInterface::VERBOSITY_VERY_VERBOSE => Logger::DEBUG,
             OutputInterface::VERBOSITY_DEBUG => Logger::DEBUG,
+            OutputInterface::VERBOSITY_QUIET => Logger::ERROR,
         );
         $handler = new ConsoleHandler(null, true, $verbosityMap);
         $handler->setFormatter(new \Piwik\Plugins\Monolog\Formatter\ConsoleFormatter([
+            'date_format' => 'Y-m-d H:i:s',
             'format' => $c->get('log.console.format'),
             'multiline' => true
         ]));

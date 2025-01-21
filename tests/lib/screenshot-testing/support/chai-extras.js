@@ -3,8 +3,8 @@
  *
  * chai assertion extensions
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 var fs = require('fs'),
@@ -131,7 +131,7 @@ module.exports = function makeChaiImageAssert(comparisonCommand = 'compare') {
                 `the '${comparisonCommand}' command was not found, ('compare' is provided by imagemagick)`);
 
             const allOutput = result.stdout.toString() + result.stderr.toString();
-            const pixelError = parseInt(allOutput);
+            const pixelError = (new Number(allOutput)).valueOf();
 
             chai.assert(!isNaN(pixelError),
                 `the '${comparisonCommand}' command output could not be parsed, should be` +
@@ -193,6 +193,16 @@ expect.file = function (filename) {
     filename = prefix + '_' + filename;
 
     return chai.expect(chaiFiles.file(getExpectedFilePath(filename)));
+};
+
+expect.fileMatchesContent = function (filename, content) {
+    prefix = app.runner.suite.title; // note: runner is made global by run-tests.js
+    filename = prefix + '_' + filename;
+
+    fs.writeFileSync(getProcessedFilePath(filename), content);
+
+    const fileContent = chaiFiles.file(getExpectedFilePath(filename));
+    return chai.expect(fileContent).to.equal(content);
 };
 
 function isCommandNotFound(result) {

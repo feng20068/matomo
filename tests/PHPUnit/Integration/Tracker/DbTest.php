@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration\Tracker;
@@ -30,7 +31,7 @@ class DbTest extends IntegrationTestCase
         $this->tableName = Common::prefixTable('option');
     }
 
-    public function test_innodb_lock_wait_timeout()
+    public function testInnodbLockWaitTimeout()
     {
         $idSite1 = Fixture::createWebsite('2020-01-01 02:02:02');
         $idSite2 = Fixture::createWebsite('2020-01-01 02:02:02');
@@ -70,9 +71,8 @@ class DbTest extends IntegrationTestCase
 
         $this->assertGreaterThan(3000, $ms);
         $this->assertLessThan(5000, $ms);
-
     }
-    public function test_rowCount_whenUpdating_returnsAllMatchedRowsNotOnlyUpdatedRows()
+    public function testRowCountWhenUpdatingReturnsAllMatchedRowsNotOnlyUpdatedRows()
     {
         $db = Tracker::getDatabase();
         // insert one record
@@ -95,7 +95,7 @@ class DbTest extends IntegrationTestCase
         $this->assertSame(1, $db->rowCount($result));
     }
 
-    public function test_rowCount_whenInserting()
+    public function testRowCountWhenInserting()
     {
         $db = Tracker::getDatabase();
         // insert one record
@@ -104,7 +104,7 @@ class DbTest extends IntegrationTestCase
         $this->assertSame(1, $db->rowCount($result));
     }
 
-    public function test_fetchOne_notExistingTable()
+    public function testFetchOneNotExistingTable()
     {
         $this->expectException(\Piwik\Tracker\Db\DbException::class);
         $this->expectExceptionMessage('doesn\'t exist');
@@ -115,7 +115,7 @@ class DbTest extends IntegrationTestCase
         $this->assertEquals('3', $val);
     }
 
-    public function test_query_error_whenInsertingDuplicateRow()
+    public function testQueryErrorWhenInsertingDuplicateRow()
     {
         $this->expectException(\Piwik\Tracker\Db\DbException::class);
         $this->expectExceptionMessage('Duplicate entry');
@@ -124,7 +124,7 @@ class DbTest extends IntegrationTestCase
         $this->insertRowId();
     }
 
-    public function test_fetchOne()
+    public function testFetchOne()
     {
         $db = Tracker::getDatabase();
         $this->insertRowId(3);
@@ -132,14 +132,14 @@ class DbTest extends IntegrationTestCase
         $this->assertEquals('3', $val);
     }
 
-    public function test_fetchOne_noMatch()
+    public function testFetchOneNoMatch()
     {
         $db = Tracker::getDatabase();
         $val = $db->fetchOne('SELECT option_value from `' . $this->tableName . '` where option_name = "foobar"');
         $this->assertFalse($val);
     }
 
-    public function test_fetchRow()
+    public function testFetchRow()
     {
         $db = Tracker::getDatabase();
         $this->insertRowId(3);
@@ -149,14 +149,14 @@ class DbTest extends IntegrationTestCase
         ), $val);
     }
 
-    public function test_fetchRow_noMatch()
+    public function testFetchRowNoMatch()
     {
         $db = Tracker::getDatabase();
         $val = $db->fetchRow('SELECT option_value from `' . $this->tableName . '` where option_name = "foobar"');
         $this->assertFalse($val);
     }
 
-    public function test_fetch()
+    public function testFetch()
     {
         $db = Tracker::getDatabase();
         $this->insertRowId(3);
@@ -166,14 +166,14 @@ class DbTest extends IntegrationTestCase
         ), $val);
     }
 
-    public function test_fetch_noMatch()
+    public function testFetchNoMatch()
     {
         $db = Tracker::getDatabase();
         $val = $db->fetch('SELECT option_value from `' . $this->tableName . '` where option_name = "foobar"');
         $this->assertFalse($val);
     }
 
-    public function test_fetchAll()
+    public function testFetchAll()
     {
         $db = Tracker::getDatabase();
         $this->insertRowId(3);
@@ -185,11 +185,32 @@ class DbTest extends IntegrationTestCase
         ), $val);
     }
 
-    public function test_fetchAll_noMatch()
+    public function testFetchAllNoMatch()
     {
         $db = Tracker::getDatabase();
         $val = $db->fetchAll('SELECT option_value from `' . $this->tableName . '` where option_name = "foobar"');
         $this->assertEquals(array(), $val);
+    }
+
+    public function testConnectionCollationDefault(): void
+    {
+        $config = Config::getInstance();
+        $config->database['collation'] = null;
+        $db = Tracker\Db::connectPiwikTrackerDb();
+
+        // exact value depends on database used
+        $currentCollation = $db->fetchOne('SELECT @@collation_connection');
+        self::assertStringStartsWith('utf8', $currentCollation);
+    }
+
+    public function testConnectionCollationSetInConfig(): void
+    {
+        $config = Config::getInstance();
+        $config->database['collation'] = $config->database['charset'] . '_swedish_ci';
+        $db = Tracker\Db::connectPiwikTrackerDb();
+
+        $currentCollation = $db->fetchOne('SELECT @@collation_connection');
+        self::assertSame($config->database['collation'], $currentCollation);
     }
 
     private function insertRowId($value = '1')

@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik;
 
 use Exception;
@@ -99,7 +100,7 @@ class Access
     /**
      * Constructor
      */
-    public function __construct(RolesProvider $roleProvider = null, CapabilitiesProvider $capabilityProvider = null)
+    public function __construct(?RolesProvider $roleProvider = null, ?CapabilitiesProvider $capabilityProvider = null)
     {
         if (!isset($roleProvider)) {
             $roleProvider = StaticContainer::get('Piwik\Access\RolesProvider');
@@ -134,7 +135,7 @@ class Access
      * @param null|Auth $auth Auth adapter
      * @return bool  true on success, false if reloading access failed (when auth object wasn't specified and user is not enforced to be Super User)
      */
-    public function reloadAccess(Auth $auth = null)
+    public function reloadAccess(?Auth $auth = null)
     {
         $this->resetSites();
 
@@ -247,7 +248,8 @@ class Access
                 $this->idsitesByAccess['superuser'] = $allSitesId;
             }
         } elseif (isset($this->login)) {
-            if (empty($this->idsitesByAccess['view'])
+            if (
+                empty($this->idsitesByAccess['view'])
                 && empty($this->idsitesByAccess['write'])
                 && empty($this->idsitesByAccess['admin'])
             ) {
@@ -363,11 +365,11 @@ class Access
         $this->loadSitesIfNeeded();
 
         return array_unique(array_merge(
-                $this->idsitesByAccess['view'],
-                $this->idsitesByAccess['write'],
-                $this->idsitesByAccess['admin'],
-                $this->idsitesByAccess['superuser'])
-        );
+            $this->idsitesByAccess['view'],
+            $this->idsitesByAccess['write'],
+            $this->idsitesByAccess['admin'],
+            $this->idsitesByAccess['superuser']
+        ));
     }
 
     /**
@@ -382,10 +384,10 @@ class Access
         $this->loadSitesIfNeeded();
 
         return array_unique(array_merge(
-                $this->idsitesByAccess['write'],
-                $this->idsitesByAccess['admin'],
-                $this->idsitesByAccess['superuser'])
-        );
+            $this->idsitesByAccess['write'],
+            $this->idsitesByAccess['admin'],
+            $this->idsitesByAccess['superuser']
+        ));
     }
 
     /**
@@ -399,9 +401,9 @@ class Access
         $this->loadSitesIfNeeded();
 
         return array_unique(array_merge(
-                $this->idsitesByAccess['admin'],
-                $this->idsitesByAccess['superuser'])
-        );
+            $this->idsitesByAccess['admin'],
+            $this->idsitesByAccess['superuser']
+        ));
     }
 
     /**
@@ -616,7 +618,7 @@ class Access
 
         foreach ($idSites as $idsite) {
             if (!in_array($idsite, $idSitesAccessible)) {
-                $this->throwNoAccessException(Piwik::translate('General_ExceptionCapabilityAccessWebsite', array("'" . $capability ."'", $idsite)));
+                $this->throwNoAccessException(Piwik::translate('General_ExceptionCapabilityAccessWebsite', array("'" . $capability . "'", $idsite)));
             }
         }
 
@@ -693,7 +695,8 @@ class Access
      */
     public function getRoleForSite($idSite)
     {
-        if ($this->hasSuperUserAccess
+        if (
+            $this->hasSuperUserAccess
             || in_array($idSite, $this->getSitesIdWithAdminAccess())
         ) {
             return 'admin';
@@ -746,7 +749,8 @@ class Access
             // Try to detect whether user was previously logged in so that we can display a different message
             $referrer = Url::getReferrer();
             $matomoUrl = SettingsPiwik::getPiwikUrl();
-            if ($referrer && $matomoUrl && Url::isValidHost(Url::getHostFromUrl($referrer)) &&
+            if (
+                $referrer && $matomoUrl && Url::isValidHost(Url::getHostFromUrl($referrer)) &&
                 strpos($referrer, $matomoUrl) === 0
             ) {
                 $message = Piwik::translate('General_YourSessionHasExpired');

@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Framework\TestRequest;
@@ -14,7 +15,7 @@ use Piwik\API\Request;
 use Piwik\Tests\Framework\TestCase\SystemTestCase;
 use Piwik\Url;
 use Piwik\UrlHelper;
-use \Exception;
+use Exception;
 
 /**
  * Utility class used to generate a set of API requests given API methods to call, API
@@ -92,7 +93,7 @@ class Collection
         $this->testConfig = $testConfig;
         $this->setExplicitApiToCallAndNotCall($apiToCall);
 
-        $this->requestUrls = $this->_generateApiUrls();
+        $this->requestUrls = $this->generateApiUrls();
     }
 
     public function getRequestUrls()
@@ -105,7 +106,7 @@ class Collection
      *
      * @return array
      */
-    protected function _generateApiUrls()
+    protected function generateApiUrls()
     {
         $parametersToSet = array(
             'idSite'         => $this->testConfig->idSite,
@@ -155,7 +156,8 @@ class Collection
     {
         $countUrls = count($requestUrls);
         $approximateCountApiToCall = count($this->apiToCall);
-        if (empty($requestUrls)
+        if (
+            empty($requestUrls)
             || $approximateCountApiToCall > $countUrls
         ) {
             $requestUrls = array_map(function ($params) {
@@ -165,8 +167,7 @@ class Collection
                     "Want to test APIs: " . implode(", ", $this->apiToCall) . ")\n" .
                     "But only generated these URLs: \n" . implode("\n", $requestUrls) . ")\n" .
                     "Note: SystemTestCase is meant to test API methods where the method name starts with get* \n" .
-                    "If you want to test other API methods such as add* or update* or any other, please create an IntegrationTestCase instead (via `./console generate:test`)\n"
-            );
+                    "If you want to test other API methods such as add* or update* or any other, please create an IntegrationTestCase instead (via `./console generate:test`)\n");
         }
     }
 
@@ -193,7 +194,7 @@ class Collection
         $originalDate = $parametersToSet['date'];
 
         $requestUrls = array();
-        $apiMetadata = new DocumentationGenerator;
+        $apiMetadata = new DocumentationGenerator();
 
         // Get the URLs to query against the API for all functions starting with get*
         foreach ($this->getAllApiMethods() as $apiMethodInfo) {
@@ -246,7 +247,8 @@ class Collection
                     // if no subtable found, throw
                     if (!isset($parametersToSet['idSubtable'])) {
                         throw new Exception(
-                            "Cannot find subtable to load for $apiId in {$this->testConfig->supertableApi}.");
+                            "Cannot find subtable to load for $apiId in {$this->testConfig->supertableApi}."
+                        );
                     }
                 }
 
@@ -301,11 +303,13 @@ class Collection
         return $result;
     }
 
-    protected function shouldSkipApiMethod($moduleName, $methodName) {
+    protected function shouldSkipApiMethod($moduleName, $methodName)
+    {
         $apiId = $moduleName . '.' . $methodName;
 
         // If Api to test were set, we only test these
-        if (!empty($this->apiToCall)
+        if (
+            !empty($this->apiToCall)
             && in_array($moduleName, $this->apiToCall) === false
             && in_array($apiId, $this->apiToCall) === false
         ) {
@@ -334,8 +338,10 @@ class Collection
 
             $this->apiToCall = $apiToCall;
 
-            if (!in_array('UserCountry.getLocationFromIP', $apiToCall) &&
-                !in_array('UserCountry.getCountryCodeMapping', $apiToCall)) {
+            if (
+                !in_array('UserCountry.getLocationFromIP', $apiToCall) &&
+                !in_array('UserCountry.getCountryCodeMapping', $apiToCall)
+            ) {
                 $this->apiNotToCall = array(
                                             'API.getMatomoVersion',
                                             'API.getPiwikVersion',

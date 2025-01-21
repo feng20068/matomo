@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\System;
@@ -120,7 +121,7 @@ class ConsoleTest extends ConsoleCommandTestCase
         StaticContainer::get(FailureLogMessageDetector::class)->reset();
     }
 
-    public function test_Console_ReturnsCorrectExitCode_IfCommandEmitsWarning()
+    public function testConsoleReturnsCorrectExitCodeIfCommandEmitsWarning()
     {
         $exitCode = $this->applicationTester->run([
             'command' => 'test-command-with-warning',
@@ -128,7 +129,7 @@ class ConsoleTest extends ConsoleCommandTestCase
         $this->assertEquals(1, $exitCode);
     }
 
-    public function test_Console_ReturnsCorrectExitCode_IfCommandEmitsError()
+    public function testConsoleReturnsCorrectExitCodeIfCommandEmitsError()
     {
         $exitCode = $this->applicationTester->run([
             'command' => 'test-command-with-error',
@@ -136,7 +137,7 @@ class ConsoleTest extends ConsoleCommandTestCase
         $this->assertEquals(1, $exitCode);
     }
 
-    public function test_Console_ReturnsCorrectExitCode_IfCommandDoesNotEmitAnything()
+    public function testConsoleReturnsCorrectExitCodeIfCommandDoesNotEmitAnything()
     {
         $exitCode = $this->applicationTester->run([
             'command' => 'test-command-with-error',
@@ -145,7 +146,7 @@ class ConsoleTest extends ConsoleCommandTestCase
         $this->assertEquals(0, $exitCode);
     }
 
-    public function test_Console_handlesFatalErrorsCorrectly()
+    public function testConsoleHandlesFatalErrorsCorrectly()
     {
         $cliPhp = new CliPhp();
         $php = $cliPhp->findPhpBinary();
@@ -166,16 +167,16 @@ class ConsoleTest extends ConsoleCommandTestCase
 
         $expected = <<<END
 
-Fatal error: Allowed memory size of X bytes exhausted (tried to allocate X bytes) in /tests/PHPUnit/System/ConsoleTest.php on line 84
+Fatal error: Allowed memory size of X bytes exhausted (tried to allocate X bytes) in /tests/PHPUnit/System/ConsoleTest.php on line 85
 *** IN SAFEMODE ***
 Matomo encountered an error: Allowed memory size of X bytes exhausted (tried to allocate X bytes) (which lead to: Error: array (
   'type' => 1,
   'message' => 'Allowed memory size of X bytes exhausted (tried to allocate X bytes)',
   'file' => '/tests/PHPUnit/System/ConsoleTest.php',
-  'line' => 84,
-  'backtrace' => ' on /tests/PHPUnit/System/ConsoleTest.php(84)
-#0 /tests/PHPUnit/System/ConsoleTest.php(69): Piwik\\\\Tests\\\\System\\\\TestCommandWithFatalError->executeImpl()
-#1 /core/Plugin/ConsoleCommand.php(110): Piwik\\\\Tests\\\\System\\\\TestCommandWithFatalError->doExecute()
+  'line' => %d,
+  'backtrace' => ' on /tests/PHPUnit/System/ConsoleTest.php(%d)
+#0 /tests/PHPUnit/System/ConsoleTest.php(%d): Piwik\\\\Tests\\\\System\\\\TestCommandWithFatalError->executeImpl()
+#1 /core/Plugin/ConsoleCommand.php(%d): Piwik\\\\Tests\\\\System\\\\TestCommandWithFatalError->doExecute()
 ',
 ))
 END;
@@ -184,10 +185,10 @@ END;
             $expected = "#!/usr/bin/env php\n" . $expected;
         }
 
-        $this->assertEquals($expected, $output);
+        $this->assertStringMatchesFormat($expected, $output);
     }
 
-    public function test_Console_handlesExceptionsCorrectly()
+    public function testConsoleHandlesExceptionsCorrectly()
     {
         $command = Fixture::getCliCommandBase();
         $command .= ' test-command-with-exception';
@@ -199,7 +200,7 @@ END;
         $expected = <<<END
 *** IN SAFEMODE ***
 
-In ConsoleTest.php line 103:
+In ConsoleTest.php line %d:
               \n  test error  \n              \n
 test-command-with-exception
 
@@ -210,7 +211,7 @@ END;
             $expected = "#!/usr/bin/env php\n" . $expected;
         }
 
-        $this->assertEquals($expected, $output);
+        $this->assertStringMatchesFormat($expected, $output);
     }
 
     public static function provideContainerConfigBeforeClass()

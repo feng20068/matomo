@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Fixtures;
@@ -170,9 +171,16 @@ class ManyVisitsWithMockLocationProvider extends Fixture
         $this->trackActions($t, $visitorCounter, $random, 'content', $userAgents, $resolutions);
     }
 
-    private function trackActions(\MatomoTracker $t, &$visitorCounter, $random, $actionType, $userAgents, $resolutions,
-                                  $referrers = null, $customVars = null)
-    {
+    private function trackActions(
+        \MatomoTracker $t,
+        &$visitorCounter,
+        $random,
+        $actionType,
+        $userAgents,
+        $resolutions,
+        $referrers = null,
+        $customVars = null
+    ) {
         for ($i = $random; $i != $random + 5; ++$i, ++$visitorCounter) {
             $visitDate = Date::factory($this->dateTime);
 
@@ -234,7 +242,7 @@ class ManyVisitsWithMockLocationProvider extends Fixture
             $t->setNewVisitorId();
             $t->setUserId('user' . ($i + 10000));
             $t->setIp("155.5.4.$i");
-            $t->setEcommerceView("id_book$i",  "Book$i", "Books Cat #$cat", 7.50);
+            $t->setEcommerceView("id_book$i", "Book$i", "Books Cat #$cat", 7.50);
             self::checkResponse($t->doTrackPageView('bought book'));
         }
     }
@@ -243,18 +251,19 @@ class ManyVisitsWithMockLocationProvider extends Fixture
     {
         if ($actionType == 'pageview') {
             self::checkResponse($t->doTrackPageView(
-                is_null($actionNum) ? "title_$visitorCounter" : "title_$visitorCounter / title_$actionNum"));
-        } else if ($actionType == 'download') {
+                is_null($actionNum) ? "title_$visitorCounter" : "title_$visitorCounter / title_$actionNum"
+            ));
+        } elseif ($actionType == 'download') {
             $root = is_null($actionNum) ? "http://cloudsite$visitorCounter.com"
                 : "http://cloudsite$visitorCounter.com/$actionNum";
 
             self::checkResponse($t->doTrackAction("$root/download", 'download'));
-        } else if ($actionType == 'outlink') {
+        } elseif ($actionType == 'outlink') {
             self::checkResponse($t->doTrackAction(is_null($actionNum) ? "http://othersite$visitorCounter.com/"
                 : "http://othersite$visitorCounter.com/$actionNum/", 'link'));
-        } else if ($actionType == 'event') {
+        } elseif ($actionType == 'event') {
             self::checkResponse($t->doTrackEvent('event category ' . ($visitorCounter % 6), 'event action ' . ($visitorCounter % 7), 'event name' . ($visitorCounter % 5)));
-        } else if ($actionType == 'content') {
+        } elseif ($actionType == 'content') {
             self::checkResponse($t->doTrackContentImpression('content name ' . $visitorCounter, 'content piece ' . $visitorCounter));
 
             if ($visitorCounter % 2 == 0) {

@@ -1,14 +1,13 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration\ArchiveProcessor;
-
 
 use Piwik\ArchiveProcessor\Parameters;
 use Piwik\Segment;
@@ -17,6 +16,10 @@ use Piwik\Tests\Framework\Fixture;
 use Piwik\Tests\Framework\TestCase\IntegrationTestCase;
 use Piwik\Period;
 
+/**
+ * @group ArchiveProcessor
+ * @group ArchiveProcessorParameters
+ */
 class ParametersTest extends IntegrationTestCase
 {
     public function setUp(): void
@@ -29,7 +32,7 @@ class ParametersTest extends IntegrationTestCase
     /**
      * @dataProvider getTestDataForIsDayArchive
      */
-    public function test_isDayArchive_CorrectlyDetectsDayArchives($expected, $dateStr, $periodStr)
+    public function testIsDayArchiveCorrectlyDetectsDayArchives($expected, $dateStr, $periodStr)
     {
         $period = Period\Factory::build($periodStr, $dateStr);
         $params = new Parameters(new Site(1), $period, new Segment('', [1]));

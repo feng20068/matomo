@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tests\Fixtures;
 
 use Piwik\Tests\Framework\Fixture;
@@ -77,7 +79,6 @@ class VisitsTwoWebsitesWithAdditionalVisits extends Fixture
         self::checkResponse($t->doTrackPageView('Hello'));
         $t->setUrl('http://example.org/Contact/ThankYou');
         self::checkResponse($t->doTrackPageView('Hello'));
-
     }
 
 

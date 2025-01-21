@@ -4,21 +4,22 @@
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Goals;
 
 use Piwik\Common;
+use Piwik\Config;
+use Piwik\Date;
+use Piwik\DbHelper;
+use Piwik\Plugins\Live\Model;
 use Piwik\Plugins\Live\VisitorDetailsAbstract;
 
 use function Piwik\Plugins\Referrers\getReferrerTypeFromShortName;
 
 class VisitorDetails extends VisitorDetailsAbstract
 {
-    const EVENT_VALUE_PRECISION = 3;
-
     protected $lastGoalResults = [];
     protected $lastVisitIds    = [];
 
@@ -90,7 +91,16 @@ class VisitorDetails extends VisitorDetailsAbstract
 					AND log_conversion.idgoal > 0
                 ORDER BY log_conversion.idvisit, log_conversion.server_time ASC
 			";
-        $conversions = $this->getDb()->fetchAll($sql);
+
+        $sql = DbHelper::addMaxExecutionTimeHintToQuery($sql, $this->getLiveQueryMaxExecutionTime());
+
+        try {
+            $conversions = $this->getDb()->fetchAll($sql);
+        } catch (\Exception $e) {
+            $now = Date::now();
+            Model::handleMaxExecutionTimeError($this->getDb(), $e, '', $now, $now, null, 0, ['sql' => $sql]);
+            throw $e;
+        }
 
         foreach ($conversions as &$conversion) {
             $conversion['goalName'] = Common::unsanitizeInputValue($conversion['goalName']);
@@ -147,5 +157,10 @@ class VisitorDetails extends VisitorDetailsAbstract
         }
 
         return $referrerType;
+    }
+
+    private function getLiveQueryMaxExecutionTime()
+    {
+        return Config::getInstance()->General['live_query_max_execution_time'];
     }
 }

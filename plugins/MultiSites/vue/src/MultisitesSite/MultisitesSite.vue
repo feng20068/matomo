@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -41,6 +42,9 @@
     </td>
     <td class="multisites-column">
       <span class="value">{{ website.nb_pageviews }}</span>
+    </td>
+    <td class="multisites-column">
+      <span class="value">{{ website.hits }}</span>
     </td>
     <td
       class="multisites-column"
@@ -146,6 +150,9 @@ export default defineComponent({
           break;
         case 'pageviews_evolution':
           metric = 'nb_pageviews';
+          break;
+        case 'hits_evolution':
+          metric = 'hits';
           break;
         case 'revenue_evolution':
           metric = 'revenue';

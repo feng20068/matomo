@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\UserCountry\tests\System;
@@ -40,7 +41,7 @@ class ApiTest extends SystemTestCase
             'UserCountry.getCity',
         ];
         $startDate = substr(self::$fixture->dateTime, 0, 10);
-        $endDate = date('Y-m-d', strtotime($startDate) + 3600*24*2);
+        $endDate = date('Y-m-d', strtotime($startDate) + 3600 * 24 * 2);
 
         $apiToTest   = array();
         // single period
@@ -96,7 +97,6 @@ class ApiTest extends SystemTestCase
     {
         return dirname(__FILE__);
     }
-
 }
 
 ApiTest::$fixture = new ManySitesManyVisitsWithGeoIp();

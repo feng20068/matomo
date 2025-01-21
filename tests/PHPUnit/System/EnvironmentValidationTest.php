@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\System;
@@ -42,17 +43,16 @@ class EnvironmentValidationTest extends SystemTestCase
     /**
      * @dataProvider getEntryPointsToTest
      */
-    public function test_NoGlobalConfigFile_TriggersError($entryPoint)
+    public function testNoGlobalConfigFileTriggersError($entryPoint)
     {
         $this->simulateAbsentConfigFile('global.ini.php');
 
         $output = $this->triggerPiwikFrom($entryPoint);
 
         $this->assertOutputContainsConfigFileMissingError('global.ini.php', $output);
-
     }
 
-    public function test_NoLocalConfigFile_TriggersError_inTracker()
+    public function testNoLocalConfigFileTriggersErrorInTracker()
     {
         $this->simulateAbsentConfigFile('config.ini.php');
 
@@ -60,7 +60,7 @@ class EnvironmentValidationTest extends SystemTestCase
         self::assertStringContainsString('As Matomo is not installed yet, the Tracking API cannot proceed and will exit without error.', $output);
     }
 
-    public function test_NoLocalConfigFile_TriggersError_inConsole()
+    public function testNoLocalConfigFileTriggersErrorInConsole()
     {
         $this->simulateAbsentConfigFile('config.ini.php');
 
@@ -68,7 +68,7 @@ class EnvironmentValidationTest extends SystemTestCase
         $this->assertOutputContainsConfigFileMissingError('config.ini.php', $output);
     }
 
-    public function test_NoLocalConfigFile_StartsInstallation_PiwikAccessedThroughWeb()
+    public function testNoLocalConfigFileStartsInstallationPiwikAccessedThroughWeb()
     {
         $this->simulateAbsentConfigFile('config.ini.php');
 
@@ -99,7 +99,7 @@ class EnvironmentValidationTest extends SystemTestCase
     /**
      * @dataProvider getEntryPointsAndConfigFilesToTest
      */
-    public function test_BadConfigFile_TriggersError($configFile, $entryPoint)
+    public function testBadConfigFileTriggersError($configFile, $entryPoint)
     {
         $this->simulateBadConfigFile($configFile);
 
@@ -111,7 +111,7 @@ class EnvironmentValidationTest extends SystemTestCase
     /**
      * @dataProvider getEntryPointsToTest
      */
-    public function test_BadDomainSpecificLocalConfigFile_TriggersError($entryPoint)
+    public function testBadDomainSpecificLocalConfigFileTriggersError($entryPoint)
     {
         $this->simulateHost('piwik.kobra.org');
 
@@ -124,7 +124,11 @@ class EnvironmentValidationTest extends SystemTestCase
 
     private function assertOutputContainsConfigFileMissingError($fileName, $output)
     {
-        $this->assertRegExp("/.*The configuration file \\{.*\\/" . preg_quote($fileName) . "\\} has not been found or could not be read\\..*/", $output, "Output did not contain the expected exception for $fileName --- Output was --- $output");
+        $this->assertRegExp(
+            "/.*The configuration file \\{.*\\/" . preg_quote($fileName) . "\\} has not been found or could not be read\\..*/",
+            (string) $output,
+            "Output did not contain the expected exception for $fileName --- Output was --- $output"
+        );
     }
 
     private function assertOutputContainsBadConfigFileError($output)
@@ -135,7 +139,7 @@ class EnvironmentValidationTest extends SystemTestCase
 
     private function assertInstallationProcessStarted($output)
     {
-        self::assertStringContainsString('<title>Matomo '. Version::VERSION .' &rsaquo; Installation</title>', $output);
+        self::assertStringContainsString('<title>Matomo ' . Version::VERSION . ' &rsaquo; Installation</title>', $output);
     }
 
     private function simulateAbsentConfigFile($fileName)
@@ -144,7 +148,7 @@ class EnvironmentValidationTest extends SystemTestCase
 
         if ($fileName == 'global.ini.php') {
             $testingEnvironment->configFileGlobal = PIWIK_INCLUDE_PATH . '/tmp/nonexistant/global.ini.php';
-        } else if ($fileName == 'common.config.ini.php') {
+        } elseif ($fileName == 'common.config.ini.php') {
             $testingEnvironment->configFileCommon = PIWIK_INCLUDE_PATH . '/tmp/nonexistant/common.config.ini.php';
         } else {
             $testingEnvironment->configFileLocal = PIWIK_INCLUDE_PATH . '/tmp/nonexistant/' . $fileName;
@@ -159,7 +163,7 @@ class EnvironmentValidationTest extends SystemTestCase
 
         if ($fileName == 'global.ini.php') {
             $testingEnvironment->configFileGlobal = PIWIK_INCLUDE_PATH . '/matomo.php';
-        } else if ($fileName == 'common.config.ini.php') {
+        } elseif ($fileName == 'common.config.ini.php') {
             $testingEnvironment->configFileCommon = PIWIK_INCLUDE_PATH . '/matomo.php';
         } else {
             $testingEnvironment->configFileLocal = PIWIK_INCLUDE_PATH . '/matomo.php';
@@ -179,11 +183,11 @@ class EnvironmentValidationTest extends SystemTestCase
     {
         if ($entryPoint == 'tracker') {
             return $this->sendRequestToTracker();
-        } else if ($entryPoint == 'web') {
+        } elseif ($entryPoint == 'web') {
             return $this->sendRequestToWeb();
-        } else if ($entryPoint == 'console') {
+        } elseif ($entryPoint == 'console') {
             return $this->startConsoleProcess();
-        } else if ($entryPoint == 'archive_web') {
+        } elseif ($entryPoint == 'archive_web') {
             return $this->sendArchiveWebRequest();
         } else {
             throw new \Exception("Don't know how to access '$entryPoint'.");

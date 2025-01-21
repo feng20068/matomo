@@ -156,8 +156,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 
@@ -251,8 +251,8 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 
@@ -299,8 +299,7 @@ function fetchDashboard(dashboardId) {
   }).then(function () {
     return Promise.resolve(window.widgetsHelper.firstGetAvailableWidgetsCall);
   }).then(function () {
-    window.globalAjaxQueue.abort(); // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     var dashboardElement = $('#dashboardWidgetsArea');
     dashboardElement.dashboard('destroyWidgets');
     dashboardElement.empty();
@@ -351,12 +350,12 @@ function onLoadDashboard(idDashboard) {
     external_CoreHome_["Matomo"].off('Dashboard.loadDashboard', onLoadDashboard);
   }
 });
-// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--0-1!./plugins/Dashboard/vue/src/DashboardSettings/DashboardSettings.vue?vue&type=template&id=88d42e44
+// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--0-1!./plugins/Dashboard/vue/src/DashboardSettings/DashboardSettings.vue?vue&type=template&id=7aeb38d7
 
 var _hoisted_1 = ["title"];
 
 var _hoisted_2 = /*#__PURE__*/Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("span", {
-  class: "icon icon-arrow-bottom"
+  class: "icon icon-chevron-down"
 }, null, -1);
 
 var _hoisted_3 = {
@@ -431,7 +430,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     show: false
   }]]);
 }
-// CONCATENATED MODULE: ./plugins/Dashboard/vue/src/DashboardSettings/DashboardSettings.vue?vue&type=template&id=88d42e44
+// CONCATENATED MODULE: ./plugins/Dashboard/vue/src/DashboardSettings/DashboardSettings.vue?vue&type=template&id=7aeb38d7
 
 // CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-typescript/node_modules/cache-loader/dist/cjs.js??ref--14-0!./node_modules/babel-loader/lib!./node_modules/@vue/cli-plugin-typescript/node_modules/ts-loader??ref--14-2!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--0-1!./plugins/Dashboard/vue/src/DashboardSettings/DashboardSettings.vue?vue&type=script&lang=ts
 
@@ -471,9 +470,8 @@ function widgetSelected(widget) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     var rootJQuery = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["ref"])(null);
     var root = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["ref"])(null);
-    Object(external_commonjs_vue_commonjs2_vue_root_Vue_["onMounted"])(function () {
-      external_CoreHome_["Matomo"].postEvent('Dashboard.DashboardSettings.mounted', root.value);
-      rootJQuery.value = DashboardSettingsvue_type_script_lang_ts_$(root.value);
+
+    var createWidgetPreview = function createWidgetPreview() {
       rootJQuery.value.widgetPreview({
         isWidgetAvailable: isWidgetAvailable,
         onSelect: function onSelect(widgetUniqueId) {
@@ -484,6 +482,16 @@ function widgetSelected(widget) {
           });
         },
         resetOnSelect: true
+      });
+    };
+
+    Object(external_commonjs_vue_commonjs2_vue_root_Vue_["onMounted"])(function () {
+      external_CoreHome_["Matomo"].postEvent('Dashboard.DashboardSettings.mounted', root.value);
+      rootJQuery.value = DashboardSettingsvue_type_script_lang_ts_$(root.value);
+      createWidgetPreview(); // When the available widgets list is reloaded, re-create the widget preview to include update
+
+      external_CoreHome_["Matomo"].on('WidgetsStore.reloaded', function () {
+        createWidgetPreview();
       });
       rootJQuery.value.hide(); // hide dashboard-manager initially (shown manually by Dashboard.ts)
     });
@@ -569,8 +577,8 @@ DashboardSettingsvue_type_script_lang_ts.render = render
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 

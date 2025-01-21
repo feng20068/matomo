@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tests\Fixtures;
 
 use Piwik\Date;
@@ -35,7 +37,7 @@ class SomeVisitsLastYearAndThisYear extends Fixture
     private function setUpWebsites()
     {
         if (!self::siteCreated($idSite = 1)) {
-            $dt = Date::factory($this->year.'-01-01')->subYear(1);
+            $dt = Date::factory($this->year . '-01-01')->subYear(1);
             self::createWebsite($dt);
         }
     }
@@ -44,8 +46,8 @@ class SomeVisitsLastYearAndThisYear extends Fixture
     {
 
         // This year, 5 visits
-        for ($i = 0;$i < 5;$i++) {
-            $dateTime = Date::factory($this->year.'-01-01')->toString();
+        for ($i = 0; $i < 5; $i++) {
+            $dateTime = Date::factory($this->year . '-01-01')->toString();
             $t = self::getTracker($this->idSite, $dateTime, $defaultInit = true);
 
             $t->setUrl('http://example.org/index.htm');
@@ -53,13 +55,12 @@ class SomeVisitsLastYearAndThisYear extends Fixture
         }
 
         // Last Year
-        for ($i = 0;$i < 5;$i++) {
-            $dateTime = Date::factory($this->year.'-01-01')->subYear(1)->toString();
+        for ($i = 0; $i < 5; $i++) {
+            $dateTime = Date::factory($this->year . '-01-01')->subYear(1)->toString();
             $t = self::getTracker($this->idSite, $dateTime, $defaultInit = true);
 
             $t->setUrl('http://example.org/index.htm');
             self::checkResponse($t->doTrackPageView('0'));
         }
-
     }
 }

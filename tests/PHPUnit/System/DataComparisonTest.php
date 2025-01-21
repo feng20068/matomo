@@ -1,17 +1,21 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\System;
 
 use Piwik\API\Request;
 use Piwik\DataTable;
+use Piwik\Plugins\CustomDimensions\CustomDimensions;
 use Piwik\Tests\Fixtures\ManySitesImportedLogs;
+use Piwik\Tests\Framework\Fixture;
 use Piwik\Tests\Framework\TestCase\SystemTestCase;
+
 /**
  * Testing Data comparison
  *
@@ -23,6 +27,23 @@ class DataComparisonTest extends SystemTestCase
      * @var ManySitesImportedLogs
      */
     public static $fixture;
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        // Configures a custom dimensions and adds a segment for it. This segment will only be available for
+        // the specific site and will be invalid in global context
+        // Added to avoid further regressions like: https://github.com/matomo-org/matomo/issues/21573
+        $idDimension = \Piwik\Plugins\CustomDimensions\API::getInstance()->configureNewCustomDimension(
+            self::$fixture->idSite,
+            'test',
+            CustomDimensions::SCOPE_VISIT,
+            true
+        );
+        Fixture::clearInMemoryCaches(false);
+        \Piwik\Plugins\SegmentEditor\API::getInstance()->add('custom dimension', "dimension$idDimension==test", self::$fixture->idSite);
+    }
 
     /**
      * @dataProvider getApiForTesting
@@ -48,7 +69,7 @@ class DataComparisonTest extends SystemTestCase
             ['Referrers.getWebsites', 'Referrers.getUrlsFromWebsiteId'],
         ];
 
-        foreach ($apiToTest as list($superApiMethod, $subtableApiMethod)) {
+        foreach ($apiToTest as [$superApiMethod, $subtableApiMethod]) {
             /** @var DataTable $topLevelComparisons */
             $topLevelComparisons = Request::processRequest($superApiMethod, [
                 'idSite' => self::$fixture->idSite,

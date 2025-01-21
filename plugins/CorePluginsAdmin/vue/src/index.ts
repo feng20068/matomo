@@ -1,8 +1,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 */
 
 export { default as expressions } from './expressions';
@@ -25,3 +25,4 @@ export { default as PluginName } from './Plugins/PluginName';
 export { default as PluginsTable } from './PluginsTable/PluginsTable.vue';
 export { default as PluginsTableWithUpdates } from './PluginsTable/PluginsTableWithUpdates.vue';
 export { default as UploadPluginDialog } from './UploadPluginDialog/UploadPluginDialog.vue';
+export { default as InstallAllPaidPluginsButton } from './InstallAllPaidPluginsButton/InstallAllPaidPluginsButton.vue';

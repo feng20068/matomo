@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tracker;
 
 use Piwik\Tracker\Visit\VisitProperties;
@@ -24,14 +25,14 @@ class Visitor
      */
     public $previousVisitProperties;
 
-    public function __construct(VisitProperties $visitProperties, $isVisitorKnown = false, VisitProperties $previousVisitProperties = null)
+    public function __construct(VisitProperties $visitProperties, $isVisitorKnown = false, ?VisitProperties $previousVisitProperties = null)
     {
         $this->visitProperties = $visitProperties;
         $this->previousVisitProperties = $previousVisitProperties;
         $this->setIsVisitorKnown($isVisitorKnown);
     }
 
-    public static function makeFromVisitProperties(VisitProperties $visitProperties, Request $request, VisitProperties $previousVisitProperties = null)
+    public static function makeFromVisitProperties(VisitProperties $visitProperties, Request $request, ?VisitProperties $previousVisitProperties = null)
     {
         $isKnown = $request->getMetadata('CoreHome', 'isVisitorKnown');
         return new Visitor($visitProperties, $isKnown, $previousVisitProperties);

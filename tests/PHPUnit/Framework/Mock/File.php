@@ -1,10 +1,12 @@
 <?php
+
 /**
-* Matomo - free/libre analytics platform
-*
-* @link https://matomo.org
-* @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
-*/
+ * Matomo - free/libre analytics platform
+ *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ */
+
 namespace Piwik;
 
 use Piwik\Tests\Framework\Mock\File;
@@ -31,8 +33,8 @@ namespace Piwik\Tests\Framework\Mock;
 
 class File
 {
-    static $filesize = null;
-    static $fileExists = null;
+    private static $filesize = null;
+    private static $fileExists = null;
 
     public static function getFileSize()
     {

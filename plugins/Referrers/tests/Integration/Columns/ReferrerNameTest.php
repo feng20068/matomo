@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Referrers\tests\Integration\Columns;
@@ -62,7 +63,7 @@ class ReferrerNameTest extends IntegrationTestCase
     /**
      * @dataProvider getReferrerUrls
      */
-    public function test_onNewVisit_shouldDetectCorrectReferrerType($expectedType, $idSite, $url, $referrerUrl)
+    public function testOnNewVisitShouldDetectCorrectReferrerType($expectedType, $idSite, $url, $referrerUrl)
     {
         $request = $this->getRequest(['idsite' => $idSite, 'url' => $url, 'urlref' => $referrerUrl]);
         $type = $this->referrerName->onNewVisit($request, $this->getNewVisitor(), $action = null);
@@ -107,7 +108,7 @@ class ReferrerNameTest extends IntegrationTestCase
             ['test',                   $this->idSite1, $url . '?pk_campaign=test', $referrer],
             ['testfoobar',             $this->idSite2, $url . '?pk_campaign=testfoobar', $referrer],
             ['test',                   $this->idSite3, $url . '?pk_campaign=test', $referrer],
-            [$longString,              $this->idSite3, $url . '?pk_campaign='.$longString, $referrer],
+            [$longString,              $this->idSite3, $url . '?pk_campaign=' . $longString, $referrer],
 
             ['Google',                 $this->idSite3, $url, 'http://google.com/search?q=piwik'],
 
@@ -127,7 +128,7 @@ class ReferrerNameTest extends IntegrationTestCase
     /**
      * @dataProvider getTestDataForOnExistingVisit
      */
-    public function test_onExistingVisit_shouldSometimesOverwriteReferrerInfo($expectedName, $idSite, $url, $referrerUrl, $existingType)
+    public function testOnExistingVisitShouldSometimesOverwriteReferrerInfo($expectedName, $idSite, $url, $referrerUrl, $existingType)
     {
         $request = $this->getRequest(['idsite' => $idSite, 'url' => $url, 'urlref' => $referrerUrl]);
         $visitor = $this->getNewVisitor();
@@ -175,5 +176,4 @@ class ReferrerNameTest extends IntegrationTestCase
     {
         return new Visitor(new VisitProperties());
     }
-
 }

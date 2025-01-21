@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration;
@@ -56,11 +57,9 @@ class CronArchiveInvalidSegmentTest extends IntegrationTestCase
         Fixture::checkResponse($tracker->doTrackPageView('abcdefg4'));
 
         $this->logger = new FakeLogger();
-
-
     }
 
-    public function test_output_invalidSegment()
+    public function testOutputInvalidSegment()
     {
         $archiver = new CronArchive($this->logger);
 
@@ -72,7 +71,7 @@ class CronArchiveInvalidSegmentTest extends IntegrationTestCase
         $this->assertStringContainsString('no error', $this->logger->output);
     }
 
-    public function test_output_invalidSegment_whenPluginIsNotActive()
+    public function testOutputInvalidSegmentWhenPluginIsNotActive()
     {
         Manager::getInstance()->deactivatePlugin('UserLanguage');
 

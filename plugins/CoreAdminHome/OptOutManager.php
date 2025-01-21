@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreAdminHome;
 
 use Piwik\Common;
@@ -17,6 +18,7 @@ use Piwik\Plugins\PrivacyManager\DoNotTrackHeaderChecker;
 use Piwik\Request;
 use Piwik\Tracker\IgnoreCookie;
 use Piwik\Url;
+use Piwik\UrlHelper;
 use Piwik\View;
 
 /*
@@ -63,7 +65,7 @@ class OptOutManager
     /**
      * @param DoNotTrackHeaderChecker|null $doNotTrackHeaderChecker
      */
-    public function __construct(DoNotTrackHeaderChecker $doNotTrackHeaderChecker = null)
+    public function __construct(?DoNotTrackHeaderChecker $doNotTrackHeaderChecker = null)
     {
         $this->doNotTrackHeaderChecker = $doNotTrackHeaderChecker ?: new DoNotTrackHeaderChecker();
 
@@ -194,11 +196,32 @@ class OptOutManager
      *
      * @return string
      */
-    public function getOptOutJSEmbedCode(string $matomoUrl, string $language, string $backgroundColor, string $fontColor,
-                                         string $fontSize, string $fontFamily, bool $applyStyling, bool $showIntro): string
-    {
+    public function getOptOutJSEmbedCode(
+        string $matomoUrl,
+        string $language,
+        string $backgroundColor,
+        string $fontColor,
+        string $fontSize,
+        string $fontFamily,
+        bool $applyStyling,
+        bool $showIntro
+    ): string {
+        $parsedUrl = parse_url($matomoUrl);
+
+        if (
+            (!empty($matomoUrl) && false === $parsedUrl)
+            || (!empty($parsedUrl['scheme']) && !in_array(strtolower($parsedUrl['scheme']), ['http', 'https']))
+            || (empty($parsedUrl['host']) || !Url::isValidHost($parsedUrl['host']))
+        ) {
+            throw new \Piwik\Exception\Exception('The provided URL is invalid.');
+        }
+
+        // We put together the url based on the parsed parameters manually to ensure it might not include unexpected values
+        // for protocol less urls starting with //, we need to prepend the double slash again
+        $matomoUrl = (strpos($matomoUrl, '//') === 0 ? '//' : '') . UrlHelper::getParseUrlReverse($parsedUrl);
+
         return '<div id="matomo-opt-out"></div>
-<script src="'.rtrim($matomoUrl, '/').'/index.php?module=CoreAdminHome&action=optOutJS&divId=matomo-opt-out&language='.$language.($applyStyling ? '&backgroundColor='.$backgroundColor.'&fontColor='.$fontColor.'&fontSize='.$fontSize.'&fontFamily='.$fontFamily : '').'&showIntro='.($showIntro ? '1' : '0').'"></script>';
+<script src="' . rtrim($matomoUrl, '/') . '/index.php?module=CoreAdminHome&action=optOutJS&divId=matomo-opt-out&language=' . $language . ($applyStyling ? '&backgroundColor=' . $backgroundColor . '&fontColor=' . $fontColor . '&fontSize=' . $fontSize . '&fontFamily=' . $fontFamily : '') . '&showIntro=' . ($showIntro ? '1' : '0') . '"></script>';
     }
 
     /**
@@ -213,9 +236,14 @@ class OptOutManager
      *
      * @return string
      */
-    public function getOptOutSelfContainedEmbedCode(string $backgroundColor, string $fontColor, string $fontSize,
-                                                    string $fontFamily, bool $applyStyling, bool $showIntro): string
-    {
+    public function getOptOutSelfContainedEmbedCode(
+        string $backgroundColor,
+        string $fontColor,
+        string $fontSize,
+        string $fontFamily,
+        bool $applyStyling,
+        bool $showIntro
+    ): string {
 
         $cookiePath = Common::getRequestVar('cookiePath', '', 'string');
         $cookieDomain = Common::getRequestVar('cookieDomain', '', 'string');
@@ -231,11 +259,11 @@ class OptOutManager
 
         // Self contained code translations are static and always use the language of the user who generated the embed code
         $settings = array_merge($settings, $this->getTranslations());
-        $settingsString = 'var settings = '.json_encode($settings).';';
+        $settingsString = 'var settings = ' . json_encode($settings) . ';';
 
         $styleSheet = $this->optOutStyling($fontSize, $fontColor, $fontFamily, $backgroundColor, true);
 
-$code = <<<HTML
+        $code = <<<HTML
 <div id="matomo-opt-out" style=""></div>
 <script>    
     var settings = {};         
@@ -247,9 +275,15 @@ $code = <<<HTML
     window.MatomoConsent = {  };
 </script>
 HTML;
-        return str_replace('window.MatomoConsent = {  };', $this->getOptOutCommonJS(),
-               str_replace('style=""', ($applyStyling ? 'style="'.$styleSheet.'"' : ''),
-               str_replace("var settings = {};", $settingsString, $code)));
+        return str_replace(
+            'window.MatomoConsent = {  };',
+            $this->getOptOutCommonJS(),
+            str_replace(
+                'style=""',
+                ($applyStyling ? 'style="' . $styleSheet . '"' : ''),
+                str_replace("var settings = {};", $settingsString, $code)
+            )
+        );
     }
 
     /**
@@ -271,7 +305,7 @@ HTML;
      *
      * @return string
      */
-    public function getOptOutJS() : string
+    public function getOptOutJS(): string
     {
 
         $language = Common::getRequestVar('language', 'auto', 'string');
@@ -285,8 +319,10 @@ HTML;
 
         // If the language parameter is 'auto' then use the browser language
         if ($language === 'auto') {
-            $language = Common::extractLanguageAndRegionCodeFromBrowserLanguage(Common::getBrowserLanguage(),
-                                       APILanguagesManager::getInstance()->getAvailableLanguages());
+            $language = Common::extractLanguageAndRegionCodeFromBrowserLanguage(
+                Common::getBrowserLanguage(),
+                APILanguagesManager::getInstance()->getAvailableLanguages()
+            );
         }
 
         $settings = [
@@ -303,7 +339,7 @@ HTML;
         $translations = $this->getTranslations($language);
         $translations['OptOutErrorNoTracker'] = Piwik::translate('CoreAdminHome_OptOutErrorNoTracker', [], $language);
         $settings = array_merge($settings, $translations);
-        $settingsString = 'var settings = '.json_encode($settings).';';
+        $settingsString = 'var settings = ' . json_encode($settings) . ';';
 
         $styleSheet = $this->optOutStyling(null, null, null, null, true);
 
@@ -373,10 +409,15 @@ HTML;
         window.MatomoConsent = {  };        
 JS;
 
-        return str_replace('window.MatomoConsent = {  };', $this->getOptOutCommonJS(),
-            str_replace('stylecss', $styleSheet,
-            str_replace("var settings = {};", $settingsString, $code)));
-
+        return str_replace(
+            'window.MatomoConsent = {  };',
+            $this->getOptOutCommonJS(),
+            str_replace(
+                'stylecss',
+                $styleSheet,
+                str_replace("var settings = {};", $settingsString, $code)
+            )
+        );
     }
 
     /**
@@ -384,7 +425,7 @@ JS;
      *
      * @return string
      */
-    private function getOptOutCommonJS() : string
+    private function getOptOutCommonJS(): string
     {
         /** @lang JavaScript */
         return <<<JS
@@ -395,7 +436,7 @@ JS;
     
             var div = document.getElementById(settings.divId);
             if (!div) {
-                const warningDiv = document.createElement("div");
+                var warningDiv = document.createElement("div");
                 var msg = 'Unable to find opt-out content div: "'+settings.divId+'"';
                 warningDiv.id = settings.divId+'-warning';
                 warningDiv.innerHTML = errorBlock+msg+'</p>';
@@ -408,15 +449,18 @@ JS;
                 div.innerHTML = errorBlock+settings.OptOutErrorNoCookies+'</p>';
                 return;
             }
-            if (location.protocol !== 'https:') {
-                div.innerHTML = errorBlock+settings.OptOutErrorNotHttps+'</p>';
-                return;
-            }        
+
             if (errorMessage !== null) {
                 div.innerHTML = errorBlock+errorMessage+'</p>';
                 return;
             }
+
             var content = '';        
+
+            if (location.protocol !== 'https:') {
+                content += errorBlock + settings.OptOutErrorNotHttps + '</p>';
+            }
+
             if (consent) {
                 if (settings.showIntro) {
                     content += '<p>'+settings.YouMayOptOut2+' '+settings.YouMayOptOut3+'</p>';                       
@@ -493,7 +537,6 @@ JS;
             }
         };           
 JS;
-
     }
 
     /**
@@ -503,7 +546,7 @@ JS;
      *
      * @return array
      */
-    private function getTranslations(string $language = null) : array
+    private function getTranslations(?string $language = null): array
     {
         return [
             'OptOutComplete'        => Piwik::translate('CoreAdminHome_OptOutComplete', [], $language),
@@ -609,9 +652,13 @@ JS;
      * @return string
      * @throws \Exception
      */
-    private function optOutStyling(?string $fontSize = null, ?string $fontColor = null, ?string $fontFamily = null,
-                                   ?string $backgroundColor = null, bool $noBody = false): string
-    {
+    private function optOutStyling(
+        ?string $fontSize = null,
+        ?string $fontColor = null,
+        ?string $fontFamily = null,
+        ?string $backgroundColor = null,
+        bool $noBody = false
+    ): string {
         $cssfontsize = ($fontSize ? : Request::fromRequest()->getStringParameter('fontSize', ''));
         $cssfontcolour = ($fontColor ? : Request::fromRequest()->getStringParameter('fontColor', ''));
         $cssfontfamily = ($fontFamily ? : Request::fromRequest()->getStringParameter('fontFamily', ''));
@@ -628,7 +675,7 @@ JS;
             'backgroundColor' => $cssbackgroundcolor
         );
         foreach ($hexstrings as $key => $testcase) {
-            if ($testcase && !(ctype_xdigit($testcase) && in_array(strlen($testcase),array(3,6), true))) {
+            if ($testcase && !(ctype_xdigit($testcase) && in_array(strlen($testcase), array(3,6), true))) {
                 throw new \Exception("The URL parameter $key value of '$testcase' is not valid. Expected value is for example 'ffffff' or 'fff'.\n");
             }
         }
@@ -636,14 +683,14 @@ JS;
         /** @noinspection RegExpRedundantEscape */
         if ($cssfontsize && (preg_match("/^[0-9]+[\.]?[0-9]*(px|pt|em|rem|%)$/", $cssfontsize))) {
             $cssbody .= 'font-size: ' . $cssfontsize . '; ';
-        } else if ($cssfontsize) {
+        } elseif ($cssfontsize) {
             throw new \Exception("The URL parameter fontSize value of '$cssfontsize' is not valid. Expected value is for example '15pt', '1.2em' or '13px'.\n");
         }
 
         /** @noinspection RegExpRedundantEscape */
         if ($cssfontfamily && (preg_match('/^[a-zA-Z0-9-\ ,\'"]+$/', $cssfontfamily))) {
             $cssbody .= 'font-family: ' . $cssfontfamily . '; ';
-        } else if ($cssfontfamily) {
+        } elseif ($cssfontfamily) {
             throw new \Exception("The URL parameter fontFamily value of '$cssfontfamily' is not valid. Expected value is for example 'sans-serif' or 'Monaco, monospace'.\n");
         }
 

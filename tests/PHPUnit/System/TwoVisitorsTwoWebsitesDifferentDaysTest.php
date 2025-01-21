@@ -4,7 +4,7 @@
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\System;
@@ -55,10 +55,11 @@ class TwoVisitorsTwoWebsitesDifferentDaysTest extends SystemTestCase
     public function getApiForTesting()
     {
         $idSite1  = self::$fixture->idSite1;
+        $idSite2  = self::$fixture->idSite2;
         $dateTime = self::$fixture->dateTime;
 
         $apiToCall       = $this->getApiToCall();
-        $singlePeriodApi = ['VisitsSummary.get', 'Goals.get'];
+        $singlePeriodApi = ['VisitFrequency.get', 'VisitsSummary.get', 'Goals.get'];
 
         $periods = ['day', 'week', 'month', 'year'];
 
@@ -115,6 +116,16 @@ class TwoVisitorsTwoWebsitesDifferentDaysTest extends SystemTestCase
                 'periods'      => ['day', 'month'],
                 'setDateLastN' => false,
                 'testSuffix'   => '_NotLastNPeriods',
+            ],
+        ];
+        $result[] = [
+            $singlePeriodApi,
+            [
+                'idSite'       => "$idSite1,$idSite2",
+                'date'         => $dateTime,
+                'periods'      => 'month',
+                'setDateLastN' => false,
+                'testSuffix'   => '_idsites',
             ],
         ];
 

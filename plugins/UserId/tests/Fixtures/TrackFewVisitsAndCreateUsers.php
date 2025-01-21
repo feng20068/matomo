@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\UserId\tests\Fixtures;
 
 use Piwik\Date;
@@ -34,9 +36,9 @@ class TrackFewVisitsAndCreateUsers extends Fixture
         $t->enableBulkTracking();
 
         foreach (array('user1', 'user2', 'user3') as $key => $userId) {
-            for ($numVisits = 0; $numVisits < ($key+1) * 10; $numVisits++) {
+            for ($numVisits = 0; $numVisits < ($key + 1) * 10; $numVisits++) {
                 $t->setUserId($userId);
-                $t->setVisitorId(str_pad($numVisits.$key, 16, 'a'));
+                $t->setVisitorId(str_pad($numVisits . $key, 16, 'a'));
                 $t->setForceNewVisit();
                 $t->setUrl('http://example.org/my/dir/page' . ($numVisits % 4));
 
@@ -55,7 +57,6 @@ class TrackFewVisitsAndCreateUsers extends Fixture
                     $t->setForceVisitDateTime($visitDateTime);
                     self::assertTrue($t->doTrackEvent('Event action', 'event cat'));
                 }
-
             }
         }
 

@@ -4,8 +4,7 @@
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugin;
@@ -47,17 +46,42 @@ class ConsoleCommand extends SymfonyCommand
     private $input = null;
 
     /**
-     * Sends the given messages as success message to the output interface (surrounded by empty lines)
+     * Sends the given message(s) as success message(s) to the output interface (surrounded by empty lines)
      *
-     * @param string[] $messages
+     * @param string|string[] $messages
      * @return void
      */
-    public function writeSuccessMessage(array $messages): void
+    public function writeSuccessMessage($messages): void
     {
+        if (is_string($messages)) {
+            $messages = [$messages];
+        }
+
         $this->getOutput()->writeln('');
 
         foreach ($messages as $message) {
-            $this->getOutput()->writeln(self::wrapInTag('info', $message ));
+            $this->getOutput()->writeln(self::wrapInTag('info', $message));
+        }
+
+        $this->getOutput()->writeln('');
+    }
+
+    /**
+     * Sends the given message(s) as error message(s) to the output interface (surrounded by empty lines)
+     *
+     * @param string|string[] $messages
+     * @return void
+     */
+    public function writeErrorMessage($messages): void
+    {
+        if (is_string($messages)) {
+            $messages = [$messages];
+        }
+
+        $this->getOutput()->writeln('');
+
+        foreach ($messages as $message) {
+            $this->getOutput()->writeln(self::wrapInTag('error', $message));
         }
 
         $this->getOutput()->writeln('');
@@ -66,15 +90,19 @@ class ConsoleCommand extends SymfonyCommand
     /**
      * Sends the given messages as comment message to the output interface (surrounded by empty lines)
      *
-     * @param string[] $messages
+     * @param string|string[] $messages
      * @return void
      */
-    public function writeComment(array $messages): void
+    public function writeComment($messages): void
     {
+        if (is_string($messages)) {
+            $messages = [$messages];
+        }
+
         $this->getOutput()->writeln('');
 
         foreach ($messages as $message) {
-            $this->getOutput()->writeln(self::wrapInTag('comment' , $message ));
+            $this->getOutput()->writeln(self::wrapInTag('comment', $message));
         }
 
         $this->getOutput()->writeln('');
@@ -203,7 +231,7 @@ class ConsoleCommand extends SymfonyCommand
     public function addOption(
         string $name,
         $shortcut = null,
-        int $mode = null,
+        ?int $mode = null,
         string $description = '',
         $default = null
     ) {
@@ -253,7 +281,7 @@ class ConsoleCommand extends SymfonyCommand
      *
      * @see addOptionalArgument, addRequiredArgument
      */
-    public function addArgument(string $name, int $mode = null, string $description = '', $default = null)
+    public function addArgument(string $name, ?int $mode = null, string $description = '', $default = null)
     {
         throw new \LogicException('addArgument can not be used.');
     }
@@ -323,6 +351,16 @@ class ConsoleCommand extends SymfonyCommand
     }
 
     /**
+     * @param OutputInterface $ouput
+     *
+     * @return void
+     */
+    protected function setOutput(OutputInterface $output): void
+    {
+        $this->output = $output;
+    }
+
+    /**
      * @return InputInterface
      */
     protected function getInput(): InputInterface
@@ -371,9 +409,9 @@ class ConsoleCommand extends SymfonyCommand
      */
     protected function askAndValidate(
         string $question,
-        callable $validator = null,
+        ?callable $validator = null,
         $default = null,
-        iterable $autocompleterValues = null
+        ?iterable $autocompleterValues = null
     ) {
         /** @var QuestionHelper $helper */
         $helper   = parent::getHelper('question');

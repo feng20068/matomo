@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Unit;
@@ -125,15 +126,14 @@ class DateTest extends \PHPUnit\Framework\TestCase
         Date::factory($valueToTest);
     }
 
-    public function getInvalidDates(): array
+    public function getInvalidDates(): iterable
     {
-        return [
-            ['0001-01-01'],
-            ['randomString'],
-            [null],
-            [''],
-            [['arrayValue']],
-        ];
+        yield 'valid format, earliest possible date' => ['0001-01-01'];
+        yield 'valid format, day before first website creation' => ['1991-08-05'];
+        yield 'ivalid string value' => ['randomString'];
+        yield 'empty string value' => [''];
+        yield 'null value' => [null];
+        yield 'array value' => [['arrayValue']];
     }
 
     public function getTimezoneOffsets()
@@ -187,7 +187,7 @@ class DateTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function test_getHourInUTC()
+    public function testGetHourInUTC()
     {
         $date = Date::factory('today', 'UTC');
         $hour = $date->getHourUTC();
@@ -446,7 +446,7 @@ class DateTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getTestDataForFactoryInTimezone
      */
-    public function test_factoryInTimezone($dateString, $timezone, $expectedDatetime, $now)
+    public function testFactoryInTimezone($dateString, $timezone, $expectedDatetime, $now)
     {
         Date::$now = strtotime($now);
 
@@ -519,7 +519,7 @@ class DateTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    public function test_factoryInTimezone_doesNotWorkWithNormalDates()
+    public function testFactoryInTimezoneDoesNotWorkWithNormalDates()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Date::factoryInTimezone() should not be used with');
@@ -527,7 +527,7 @@ class DateTest extends \PHPUnit\Framework\TestCase
         Date::factoryInTimezone('2012-02-03', 'America/Toronto');
     }
 
-    public function test_factoryInTimezone_doesNotWorkWithTimestamps()
+    public function testFactoryInTimezoneDoesNotWorkWithTimestamps()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Date::factoryInTimezone() should not be used with');

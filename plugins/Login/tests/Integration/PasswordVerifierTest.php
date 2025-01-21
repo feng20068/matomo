@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Login\tests\Integration;
@@ -12,7 +13,8 @@ use Piwik\Date;
 use Piwik\Tests\Framework\TestCase\IntegrationTestCase;
 use Piwik\Plugins\Login\PasswordVerifier;
 
-class CustomPasswordVerifier extends PasswordVerifier {
+class CustomPasswordVerifier extends PasswordVerifier
+{
     public function hasBeenVerifiedAndHalfTimeValid()
     {
         return parent::hasBeenVerifiedAndHalfTimeValid();
@@ -21,7 +23,6 @@ class CustomPasswordVerifier extends PasswordVerifier {
 
 class PasswordVerifierTest extends IntegrationTestCase
 {
-
     /**
      * @var CustomPasswordVerifier
      */
@@ -37,22 +38,22 @@ class PasswordVerifierTest extends IntegrationTestCase
         $this->verifier->setDisableRedirect();
     }
 
-    public function test_hasBeenVerified_byDefaultNotVerified()
+    public function testHasBeenVerifiedByDefaultNotVerified()
     {
         $this->assertFalse($this->verifier->hasBeenVerified());
     }
 
-    public function test_hasBeenVerifiedAndHalfTimeValid_byDefaultNotVerified()
+    public function testHasBeenVerifiedAndHalfTimeValidByDefaultNotVerified()
     {
         $this->assertFalse($this->verifier->hasBeenVerifiedAndHalfTimeValid());
     }
 
-    public function test_hasPasswordVerifyBeenRequested_byDefaultNotRequested()
+    public function testHasPasswordVerifyBeenRequestedByDefaultNotRequested()
     {
         $this->assertFalse($this->verifier->hasPasswordVerifyBeenRequested());
     }
 
-    public function test_requirePasswordVerifiedRecently()
+    public function testRequirePasswordVerifiedRecently()
     {
         $this->assertNull($this->requirePasswordVerify());
         $this->assertTrue($this->verifier->hasPasswordVerifyBeenRequested());
@@ -60,7 +61,7 @@ class PasswordVerifierTest extends IntegrationTestCase
         $this->assertFalse($this->verifier->hasBeenVerifiedAndHalfTimeValid());
     }
 
-    public function test_setPasswordVerifiedCorrectly()
+    public function testSetPasswordVerifiedCorrectly()
     {
         $this->assertNull($this->requirePasswordVerify());
         $this->assertFalse($this->verifier->hasBeenVerified());
@@ -73,7 +74,7 @@ class PasswordVerifierTest extends IntegrationTestCase
         $this->assertTrue($this->requirePasswordVerify()); // no need to redirect
     }
 
-    public function test_setPasswordVerifiedCorrectly_requiresAPasswordToBeRequestedToBeValid()
+    public function testSetPasswordVerifiedCorrectlyRequiresAPasswordToBeRequestedToBeValid()
     {
         $this->verifier->setPasswordVerifiedCorrectly();
 
@@ -82,7 +83,7 @@ class PasswordVerifierTest extends IntegrationTestCase
         $this->assertNull($this->requirePasswordVerify());
     }
 
-    public function test_setPasswordVerifiedCorrectly_expiresAfter15Min()
+    public function testSetPasswordVerifiedCorrectlyExpiresAfter15Min()
     {
         $this->assertNull($this->requirePasswordVerify());
         $this->assertFalse($this->verifier->hasBeenVerified());
@@ -113,7 +114,7 @@ class PasswordVerifierTest extends IntegrationTestCase
         $this->assertNull($this->requirePasswordVerify()); // no need to redirect
     }
 
-    public function test_forgetVerifiedPassword()
+    public function testForgetVerifiedPassword()
     {
         $this->requirePasswordVerify();
         $this->verifier->setPasswordVerifiedCorrectly();
@@ -130,5 +131,4 @@ class PasswordVerifierTest extends IntegrationTestCase
     {
         return $this->verifier->requirePasswordVerifiedRecently(array('module' => 'Login', 'action' => 'test'));
     }
-
 }

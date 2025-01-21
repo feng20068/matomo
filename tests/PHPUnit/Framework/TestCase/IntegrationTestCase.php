@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Framework\TestCase;
@@ -67,6 +68,8 @@ abstract class IntegrationTestCase extends SystemTestCase
     public static function tearDownAfterClass(): void
     {
         self::$tableData = array();
+
+        parent::tearDownAfterClass();
     }
 
     /**
@@ -112,8 +115,9 @@ abstract class IntegrationTestCase extends SystemTestCase
      */
     protected static function configureFixture($fixture)
     {
-        $fixture->createSuperUser     = false;
-        $fixture->configureComponents = false;
+        $fixture->createSuperUser        = false;
+        $fixture->configureComponents    = false;
+        $fixture->dropDatabaseInTearDown = false;
 
         $fixture->extraTestEnvVars['loadRealTranslations'] = false;
     }

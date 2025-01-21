@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreAdminHome\Commands;
@@ -42,7 +43,7 @@ class MigrateTokenAuths extends ConsoleCommand
         $migrations[] = $migration->db->createTable('user_token_auth', array(
             'idusertokenauth' => 'BIGINT UNSIGNED NOT NULL AUTO_INCREMENT',
             'login' => 'VARCHAR(100) NOT NULL',
-            'description' => 'VARCHAR('.Model::MAX_LENGTH_TOKEN_DESCRIPTION.') NOT NULL',
+            'description' => 'VARCHAR(' . Model::MAX_LENGTH_TOKEN_DESCRIPTION . ') NOT NULL',
             'password' => 'VARCHAR(191) NOT NULL',
             'system_token' => 'TINYINT(1) NOT NULL DEFAULT 0',
             'hash_algo' => 'VARCHAR(30) NOT NULL',

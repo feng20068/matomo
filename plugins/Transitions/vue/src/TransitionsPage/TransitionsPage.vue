@@ -1,14 +1,15 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
   <ContentBlock
     v-if="!isWidget"
     :help-text="translate('Transitions_FeatureDescription')"
-    help-url="https://matomo.org/docs/transitions/"
+    :help-url="externalRawLink('https://matomo.org/docs/transitions/')"
     :content-title="translate('Transitions_Transitions')"
   >
     <TransitionSwitcher

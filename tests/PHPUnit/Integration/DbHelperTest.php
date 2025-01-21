@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration;
@@ -31,19 +32,19 @@ class DbHelperTest extends IntegrationTestCase
         DbHelper::dropDatabase('testdb');
     }
 
-    public function test_tableExists()
+    public function testTableExists()
     {
         $this->assertFalse(DbHelper::tableExists('foobar'));
         $this->assertTrue(DbHelper::tableExists(Common::prefixTable('user_token_auth')));
         $this->assertFalse(DbHelper::tableExists(Common::prefixTable('user_t%oke%n_auth')));
     }
 
-    public function test_getInstallVersion_isCurrentVersion()
+    public function testGetInstallVersionIsCurrentVersion()
     {
         $this->assertSame(Version::VERSION, DbHelper::getInstallVersion());
     }
 
-    public function test_recordInstallVersion_setsCurrentVersion()
+    public function testRecordInstallVersionSetsCurrentVersion()
     {
         Option::delete(Db\Schema\Mysql::OPTION_NAME_MATOMO_INSTALL_VERSION);
         $this->assertEmpty(DbHelper::getInstallVersion());
@@ -53,7 +54,7 @@ class DbHelperTest extends IntegrationTestCase
         $this->assertSame(Version::VERSION, DbHelper::getInstallVersion());
     }
 
-    public function test_recordInstallVersion_doesNotOverwritePreviouslySetVersion()
+    public function testRecordInstallVersionDoesNotOverwritePreviouslySetVersion()
     {
         $this->setInstallVersion('2.1.0');
         DbHelper::recordInstallVersion();
@@ -62,19 +63,19 @@ class DbHelperTest extends IntegrationTestCase
         $this->assertSame('2.1.0', DbHelper::getInstallVersion());
     }
 
-    public function test_wasMatomoInstalledBeforeVersion_sameVersion()
+    public function testWasMatomoInstalledBeforeVersionSameVersion()
     {
         $this->setInstallVersion('2.1.0');
         $this->assertFalse(DbHelper::wasMatomoInstalledBeforeVersion('2.1.0'));
     }
 
-    public function test_wasMatomoInstalledBeforeVersion_whenUsedNewerVersion()
+    public function testWasMatomoInstalledBeforeVersionWhenUsedNewerVersion()
     {
         $this->setInstallVersion('2.1.0');
         $this->assertFalse(DbHelper::wasMatomoInstalledBeforeVersion('2.0.0'));
     }
 
-    public function test_wasMatomoInstalledBeforeVersion_whenWasInstalledBeforeThatVersion()
+    public function testWasMatomoInstalledBeforeVersionWhenWasInstalledBeforeThatVersion()
     {
         $this->setInstallVersion('2.1.0');
         $this->assertTrue(DbHelper::wasMatomoInstalledBeforeVersion('2.2.0'));
@@ -85,7 +86,7 @@ class DbHelperTest extends IntegrationTestCase
         Option::set(Db\Schema\Mysql::OPTION_NAME_MATOMO_INSTALL_VERSION, $version);
     }
 
-    public function test_createDatabase_escapesInputProperly()
+    public function testCreateDatabaseEscapesInputProperly()
     {
         $dbName = 'newdb`; create database anotherdb;`';
         DbHelper::createDatabase($dbName);
@@ -94,7 +95,7 @@ class DbHelperTest extends IntegrationTestCase
         $this->assertDbNotExists('anotherdb');
     }
 
-    public function test_dropDatabase_escapesInputProperly()
+    public function testDropDatabaseEscapesInputProperly()
     {
         DbHelper::createDatabase("testdb");
         $this->assertDbExists('testdb');
@@ -104,18 +105,34 @@ class DbHelperTest extends IntegrationTestCase
         $this->assertDbNotExists('anotherdb');
     }
 
-    public function test_addOriginHintToQuery()
+    public function testAddOriginHintToQuery()
     {
         $expected = 'SELECT /* segmenthash 37d1b27c81afefbcf0961472b9abdb0f */ /* sites 1 */ /* 2022-01-01,2022-01-02 */ /* origin test */ idvisit FROM log_visit WHERE idvisit > 1 LIMIT 1';
 
         $segment = new Segment('countryCode==fr', [1]);
-        $sql = "SELECT idvisit FROM ".Common::prefixTable('log_visit')." WHERE idvisit > 1 LIMIT 1";
+        $sql = "SELECT idvisit FROM " . Common::prefixTable('log_visit') . " WHERE idvisit > 1 LIMIT 1";
         $startDate = Date::factory('2022-01-01 00:00:00');
         $endDate = Date::factory('2022-01-02 23:59:59');
         $sites = [1];
 
         $result = DbHelper::addOriginHintToQuery($sql, 'origin test', $startDate, $endDate, $sites, $segment);
         self::assertEquals($expected, $result);
+    }
+
+    public function testGetDefaultCollationForCharset(): void
+    {
+        $charset = 'utf8mb4';
+        $collation = DbHelper::getDefaultCollationForCharset($charset);
+        $expectedPrefix = $charset . '_';
+
+        // exact collation depends on the database used
+        // but should always start with the charset
+        self::assertStringStartsWith($expectedPrefix, $collation);
+    }
+
+    public function testGetDefaultCollationForCharsetWithoutDefault(): void
+    {
+        self::assertSame('', DbHelper::getDefaultCollationForCharset('invalid'));
     }
 
     private function assertDbExists($dbName)

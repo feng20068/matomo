@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\DataTable\Filter;
 
 use Piwik\Archive\DataTableFactory;
@@ -65,41 +66,44 @@ use Piwik\Plugins\Goals\Columns\Metrics\RevenuePerVisit;
  */
 class AddColumnsProcessedMetricsGoal extends AddColumnsProcessedMetrics
 {
-
     /**
      * Process metrics for entry page views, with ECommerce
      */
-    const GOALS_ENTRY_PAGES_ECOMMERCE = -6;
+    public const GOALS_ENTRY_PAGES_ECOMMERCE = -6;
 
     /**
      * Process for page views, with ECommerce
      */
-    const GOALS_PAGES_ECOMMERCE = -5;
+    public const GOALS_PAGES_ECOMMERCE = -5;
 
     /**
      * Process metrics for entry page views
      */
-    const GOALS_ENTRY_PAGES = -4;
+    public const GOALS_ENTRY_PAGES = -4;
 
     /**
      * Process for page views
      */
-    const GOALS_PAGES = -3;
+    public const GOALS_PAGES = -3;
 
     /**
      * Process main goal metrics: conversion rate, revenue per visit
      */
-    const GOALS_MINIMAL_REPORT = -2;
+    public const GOALS_MINIMAL_REPORT = -2;
 
     /**
      * Process main goal metrics, and conversion rate per goal
      */
-    const GOALS_OVERVIEW = -1;
+    public const GOALS_OVERVIEW = -1;
 
     /**
      * Process all goal and per-goal metrics
      */
-    const GOALS_FULL_TABLE = 0;
+    public const GOALS_FULL_TABLE = 0;
+
+    public const ACTIONS_PAGE_REPORTS_WITH_GOAL_METRICS = ['Actions.getPageUrls', 'Actions.getPageTitles'];
+
+    public const ACTIONS_ENTRY_PAGE_REPORTS_WITH_GOAL_METRICS = ['Actions.getEntryPageUrls', 'Actions.getEntryPageTitles'];
 
     /**
      * @var string
@@ -160,7 +164,8 @@ class AddColumnsProcessedMetricsGoal extends AddColumnsProcessedMetrics
         $extraProcessedMetrics[] = new RevenuePerVisit();
         if ($this->processOnlyIdGoal != self::GOALS_MINIMAL_REPORT) {
             foreach ($goals as $idGoal) {
-                if (($this->processOnlyIdGoal > self::GOALS_FULL_TABLE
+                if (
+                    ($this->processOnlyIdGoal > self::GOALS_FULL_TABLE
                         || $this->isEcommerce)
                     && $this->processOnlyIdGoal != $idGoal
                 ) {
@@ -172,7 +177,7 @@ class AddColumnsProcessedMetricsGoal extends AddColumnsProcessedMetrics
                 // When the table is displayed by clicking on the flag icon, we only display the columns
                 // Visits, Conversions, Per goal conversion rate, Revenue
                 if ($this->processOnlyIdGoal == self::GOALS_OVERVIEW) {
-                   continue;
+                    continue;
                 }
 
                 $extraProcessedMetrics[] = new Conversions($idSite, $idGoal); // PerGoal\Conversions or GoalSpecific\
@@ -217,5 +222,33 @@ class AddColumnsProcessedMetricsGoal extends AddColumnsProcessedMetrics
             }
         }
         return array_unique($result);
+    }
+
+    /**
+     * Returns an idGoal override to use for the processOnlyIdGoal parameter of this filter if $requestMethod
+     * is for a Actions page report or an Actions entry page report.
+     *
+     * @param int|string|null $idGoal if set to ecommerceOrder or ecommerceAbandonedCart, returns a processOnlyIdGoal value
+     *                                that will result in extra ecommerce metrics being computed
+     * @return int|string|null
+     */
+    public static function getProcessOnlyIdGoalToUseForReport($idGoal, string $requestMethod)
+    {
+        // Check if one of the pages display types should be used
+        if (in_array($requestMethod, self::ACTIONS_PAGE_REPORTS_WITH_GOAL_METRICS)) {
+            if ($idGoal === Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_ORDER || $idGoal === Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_CART) {
+                return self::GOALS_PAGES_ECOMMERCE;
+            } else {
+                return self::GOALS_PAGES;
+            }
+        } elseif (in_array($requestMethod, self::ACTIONS_ENTRY_PAGE_REPORTS_WITH_GOAL_METRICS)) {
+            if ($idGoal === Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_ORDER || $idGoal === Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_CART) {
+                return self::GOALS_ENTRY_PAGES_ECOMMERCE;
+            } else {
+                return self::GOALS_ENTRY_PAGES;
+            }
+        }
+
+        return $idGoal;
     }
 }

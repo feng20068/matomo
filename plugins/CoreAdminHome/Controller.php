@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreAdminHome;
 
 use Exception;
@@ -55,7 +56,7 @@ class Controller extends ControllerAdmin
     public function home()
     {
         $isInternetEnabled = SettingsPiwik::isInternetEnabled();
-        
+
         $isMarketplaceEnabled = Marketplace::isMarketplaceEnabled();
         $isFeedbackEnabled = Plugin\Manager::getInstance()->isPluginLoaded('Feedback');
         $widgetsList = WidgetsList::get();
@@ -206,7 +207,7 @@ class Controller extends ControllerAdmin
     public function trackingCodeGenerator()
     {
         Piwik::checkUserHasSomeViewAccess();
-        
+
         $view = new View('@CoreAdminHome/trackingCodeGenerator');
         $this->setBasicVariablesView($view);
         $view->topMenu  = MenuTop::getInstance()->getMenu();
@@ -315,7 +316,8 @@ class Controller extends ControllerAdmin
         $enableBrowserTriggerArchiving = Rules::isBrowserTriggerEnabled();
         $todayArchiveTimeToLive = Rules::getTodayArchiveTimeToLive();
         $showWarningCron = false;
-        if (!$enableBrowserTriggerArchiving
+        if (
+            !$enableBrowserTriggerArchiving
             && $todayArchiveTimeToLive < 3600
         ) {
             $showWarningCron = true;
@@ -351,5 +353,4 @@ class Controller extends ControllerAdmin
             throw new \Exception('Unable to getUser() when attempting to show whatIsNew');
         }
     }
-
 }

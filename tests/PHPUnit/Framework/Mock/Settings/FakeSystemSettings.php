@@ -1,20 +1,20 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Framework\Mock\Settings;
 
-
-class FakeSystemSettings extends \Piwik\Plugins\ExampleSettingsPlugin\SystemSettings {
+class FakeSystemSettings extends \Piwik\Plugins\ExampleSettingsPlugin\SystemSettings
+{
     protected $pluginName = 'ExampleSettingsPlugin';
 
     public function init()
     {
-
     }
 
     public function setTitle($title)
@@ -26,5 +26,4 @@ class FakeSystemSettings extends \Piwik\Plugins\ExampleSettingsPlugin\SystemSett
     {
         return parent::makeSetting($name, $defaultValue, $type, $configureCallback);
     }
-
 }

@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\DevicesDetection;
@@ -14,7 +14,7 @@ use Piwik\Archive;
 use Piwik\DataTable;
 use Piwik\Metrics;
 use Piwik\Piwik;
-use DeviceDetector\Parser\Client\Browser AS BrowserParser;
+use DeviceDetector\Parser\Client\Browser as BrowserParser;
 
 /**
  * The DevicesDetection API lets you access reports on your visitors devices, brands, models, Operating system, Browsers.
@@ -115,7 +115,6 @@ class API extends \Piwik\Plugin\API
 
         $dataTable->filter(function (DataTable $table) {
             foreach ($table->getRowsWithoutSummaryRow() as $row) {
-
                 $label = $row->getColumn('label');
 
                 if (strpos($label, ';') !== false) {
@@ -180,7 +179,6 @@ class API extends \Piwik\Plugin\API
             $dataTables = $dataTable->getDataTables();
 
             foreach ($dataTables as $label => $table) {
-
                 $versionDataTables = $dataTable2->getDataTables();
 
                 if (!array_key_exists($label, $versionDataTables)) {
@@ -189,8 +187,7 @@ class API extends \Piwik\Plugin\API
                 $newDataTable = $this->mergeDataTables($table, $versionDataTables[$label]);
                 $dataTable->addTable($newDataTable, $label);
             }
-
-        } else if (!$dataTable->getRowsCount() && $dataTable2->getRowsCount()) {
+        } elseif (!$dataTable->getRowsCount() && $dataTable2->getRowsCount()) {
             $dataTable2->filter('GroupBy', ['label', function ($label) {
                 if (preg_match("/(.+) [0-9]+(?:\.[0-9]+)?$/", $label, $matches)) {
                     return $matches[1]; // should match for browsers
@@ -238,7 +235,7 @@ class API extends \Piwik\Plugin\API
     {
         $dataTable = $this->getDataTable('DevicesDetection_browsers', $idSite, $period, $date, $segment);
         $availableBrowsers = BrowserParser::getAvailableBrowsers();
-        $dataTable->filter('AddSegmentValue', [function($label) use ($availableBrowsers) {
+        $dataTable->filter('AddSegmentValue', [function ($label) use ($availableBrowsers) {
             if (!array_key_exists($label, $availableBrowsers) && $label !== 'UNK') {
                 return false;
             }

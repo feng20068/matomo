@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -30,7 +31,7 @@
     <div v-if="!showNextStep">
       <p v-if="!showNextStep">
         <span class="icon-export"></span>
-        <a target="_blank" rel="noreferrer noopener" href="https://matomo.org/docs/requirements/">
+        <a target="_blank" rel="noreferrer noopener" :href="externalRawLink('https://matomo.org/docs/requirements/')">
           {{ translate('Installation_Requirements') }}
         </a>
       </p>

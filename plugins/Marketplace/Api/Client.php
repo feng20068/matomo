@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Marketplace\Api;
@@ -26,8 +26,8 @@ use Piwik\Log\LoggerInterface;
  */
 class Client
 {
-    const CACHE_TIMEOUT_IN_SECONDS = 3600;
-    const HTTP_REQUEST_TIMEOUT = 60;
+    public const CACHE_TIMEOUT_IN_SECONDS = 3600;
+    public const HTTP_REQUEST_TIMEOUT = 60;
 
     /**
      * @var Service
@@ -321,6 +321,10 @@ class Client
     {
         $plugin = $this->getPluginInfo($pluginOrThemeName);
 
+        if (empty($plugin['isDownloadable'])) {
+            throw new Exception('Plugin is not downloadable. License may be missing or expired.');
+        }
+
         if (empty($plugin['versions'])) {
             throw new Exception('Plugin has no versions.');
         }
@@ -348,5 +352,4 @@ class Client
 
         return $url;
     }
-
 }

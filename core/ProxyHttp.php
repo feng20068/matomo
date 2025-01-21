@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik;
 
 /**
@@ -16,8 +17,8 @@ namespace Piwik;
  */
 class ProxyHttp
 {
-    const DEFLATE_ENCODING_REGEX = '/(?:^|, ?)(deflate)(?:,|$)/';
-    const GZIP_ENCODING_REGEX = '/(?:^|, ?)((x-)?gzip)(?:,|$)/';
+    public const DEFLATE_ENCODING_REGEX = '/(?:^|, ?)(deflate)(?:,|$)/';
+    public const GZIP_ENCODING_REGEX = '/(?:^|, ?)((x-)?gzip)(?:,|$)/';
 
     /**
      * Returns true if the current request appears to be a secure HTTPS connection
@@ -64,11 +65,16 @@ class ProxyHttp
      *                               file should be sent as a different filename to the client you can specify
      *                               a custom filename here.
      */
-    public static function serverStaticFile($file, $contentType, $expireFarFutureDays = 100, $byteStart = false,
-                                            $byteEnd = false, $filename = false)
-    {
+    public static function serverStaticFile(
+        $file,
+        $contentType,
+        $expireFarFutureDays = 100,
+        $byteStart = false,
+        $byteEnd = false,
+        $filename = false
+    ) {
         // if the file cannot be found return HTTP status code '404'
-        if (!file_exists($file)) {
+        if (empty($file) || !file_exists($file)) {
             Common::sendResponseCode(404);
             return;
         }
@@ -117,7 +123,8 @@ class ProxyHttp
         $encoding = '';
         $compressedFileLocation = AssetManager::getInstance()->getAssetDirectory() . '/' . basename($file);
 
-        if (!($byteStart == 0
+        if (
+            !($byteStart == 0
               && $byteEnd == filesize($file))
         ) {
             $compressedFileLocation .= ".$byteStart.$byteEnd";
@@ -144,7 +151,8 @@ class ProxyHttp
                 }
             } else {
                 // if a compressed file exists, the file was manually compressed so we just serve that
-                if ($extension == '.gz'
+                if (
+                    $extension == '.gz'
                     && !self::shouldCompressFile($file, $filegz)
                 ) {
                     $compressed = true;
@@ -289,9 +297,13 @@ class ProxyHttp
         return !file_exists($compressedFilePath) || ($toCompressLastModified > $compressedLastModified);
     }
 
-    private static function compressFile($fileToCompress, $compressedFilePath, $compressionEncoding, $byteStart,
-                                         $byteEnd)
-    {
+    private static function compressFile(
+        $fileToCompress,
+        $compressedFilePath,
+        $compressionEncoding,
+        $byteStart,
+        $byteEnd
+    ) {
         $data = file_get_contents($fileToCompress);
         $data = substr($data, $byteStart, $byteEnd - $byteStart);
 
@@ -302,7 +314,7 @@ class ProxyHttp
         }
 
         if (false === $data) {
-            throw new \Exception('compressing file '.$fileToCompress.' failed');
+            throw new \Exception('compressing file ' . $fileToCompress . ' failed');
         }
 
         file_put_contents($compressedFilePath, $data);

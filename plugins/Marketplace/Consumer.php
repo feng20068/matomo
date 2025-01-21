@@ -1,15 +1,16 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Marketplace;
 
 /**
- * A consumer is a user having specified a license key in the Marketplace. 
+ * A consumer is a user having specified a license key in the Marketplace.
  */
 class Consumer
 {
@@ -20,6 +21,11 @@ class Consumer
 
     private $consumer = false;
     private $isValid = null;
+
+    /**
+     * @var array
+     */
+    private $pluginLicenseStatus = null;
 
     public function __construct(Api\Client $marketplaceClient)
     {
@@ -65,4 +71,18 @@ class Consumer
         return $this->isValid;
     }
 
+    public function getConsumerPluginLicenseStatus(): array
+    {
+        if ($this->pluginLicenseStatus === null) {
+            $consumer = $this->getConsumer();
+            $this->pluginLicenseStatus = [];
+            if (!empty($consumer['licenses'])) {
+                foreach ($consumer['licenses'] as $license) {
+                    $this->pluginLicenseStatus[$license['plugin']['name']] = $license['status'];
+                }
+            }
+        }
+
+        return $this->pluginLicenseStatus;
+    }
 }

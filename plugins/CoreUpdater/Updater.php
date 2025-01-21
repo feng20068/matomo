@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreUpdater;
@@ -30,9 +31,9 @@ use Piwik\Version;
 
 class Updater
 {
-    const OPTION_LATEST_VERSION = 'UpdateCheck_LatestVersion';
-    const PATH_TO_EXTRACT_LATEST_VERSION = '/latest/';
-    const DOWNLOAD_TIMEOUT = 720;
+    public const OPTION_LATEST_VERSION = 'UpdateCheck_LatestVersion';
+    public const PATH_TO_EXTRACT_LATEST_VERSION = '/latest/';
+    public const DOWNLOAD_TIMEOUT = 720;
 
     /**
      * @var Translator
@@ -108,7 +109,6 @@ class Updater
 
             $this->installNewFiles($extractedArchiveDirectory);
             $messages[] = $this->translator->translate('CoreUpdater_InstallingTheLatestVersion');
-
         } catch (ArchiveDownloadException $e) {
             throw $e;
         } catch (Exception $e) {
@@ -206,6 +206,8 @@ class Updater
         } catch (\Throwable $e) {
             throw new UpdaterException($e, $messages);
         }
+
+        Filesystem::deleteAllCacheOnUpdate();
 
         return $messages;
     }
@@ -396,8 +398,10 @@ class Updater
         }
 
         if (!empty($wrongPermissionDir)) {
-            throw new Exception($this->translator->translate('CoreUpdater_ExceptionDirWrongPermission',
-              implode(', ', $wrongPermissionDir)));
+            throw new Exception($this->translator->translate(
+                'CoreUpdater_ExceptionDirWrongPermission',
+                implode(', ', $wrongPermissionDir)
+            ));
         }
     }
 }

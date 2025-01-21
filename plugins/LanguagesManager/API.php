@@ -1,12 +1,14 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  *
  *
  */
+
 namespace Piwik\Plugins\LanguagesManager;
 
 use Piwik\Cache as PiwikCache;
@@ -102,7 +104,7 @@ class API extends \Piwik\Plugin\API
      *
      * @return array Array of arrays
      */
-    public function getAvailableLanguagesInfo($excludeNonCorePlugins=true, $_ignoreConfig = false)
+    public function getAvailableLanguagesInfo($excludeNonCorePlugins = true, $_ignoreConfig = false)
     {
         $data = file_get_contents(PIWIK_INCLUDE_PATH . '/lang/en.json');
         $englishTranslation = json_decode($data, true);

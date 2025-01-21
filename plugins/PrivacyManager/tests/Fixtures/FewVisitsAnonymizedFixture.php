@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\PrivacyManager\tests\Fixtures;
 
 use Piwik\Date;
@@ -14,7 +16,6 @@ use Piwik\Plugins\PrivacyManager\PrivacyManager;
 use Piwik\Plugins\PrivacyManager\ReferrerAnonymizer;
 use Piwik\Tests\Framework\Fixture;
 use Piwik\Tracker\Cache;
-
 
 class FewVisitsAnonymizedFixture extends Fixture
 {
@@ -89,7 +90,6 @@ class FewVisitsAnonymizedFixture extends Fixture
         $t->setUrlReferrer('https://www.foo.com/bar/?baz=exclude_all');
         $t->setUrl('http://example.com/exclude_all');
         self::checkResponse($t->doTrackPageView('Exclude all referrer website'));
-
     }
 
     protected function trackAnonymizedReferrerExcludePathWebsite()
@@ -102,7 +102,6 @@ class FewVisitsAnonymizedFixture extends Fixture
         $t->setUrlReferrer('https://www.foo.com/bar/?baz=exclude_path_website');
         $t->setUrl('http://example.com/exclude_path_website');
         self::checkResponse($t->doTrackPageView('Exclude path website'));
-
     }
 
     protected function trackAnonymizedReferrerExcludeAllSearch()
@@ -152,5 +151,4 @@ class FewVisitsAnonymizedFixture extends Fixture
         $t->setUrl('http://example.com/exclude_query_social?mtm_kwd=campaignkeyword&mtm_campaign=campaign');
         self::checkResponse($t->doTrackPageView('Exclude query social'));
     }
-
 }

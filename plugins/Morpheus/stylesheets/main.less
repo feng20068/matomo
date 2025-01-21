@@ -89,6 +89,26 @@ p {
   }
 }
 
+.list-style-decimal {
+  list-style: none;
+  counter-reset: steplist;
+  display: table;
+  width: 100%;
+
+  > li {
+    counter-increment: steplist;
+    display: table-row;
+  }
+
+  > li::before {
+    content: counter(steplist) ".";
+    display: table-cell;
+    text-align: left;
+    padding-right: 5px;
+    width: 0;
+  }
+}
+
 #content .card-content {
   p {
     color: @theme-color-text;
@@ -126,7 +146,6 @@ p {
 .dashboardSettings {
   border: 1px solid @theme-color-background-lowContrast;
   background: @theme-color-background-base;
-  z-index: 10;
   .border-radius(0);
 
   > span {
@@ -222,6 +241,7 @@ p {
       .submenu {
         li {
           .font-default(13px, 16px);
+          width: 100%;
 
           color: @theme-color-text-light;
         }
@@ -443,7 +463,6 @@ table.dataTable {
       }
 
       a {
-        text-decoration: none !important;
         color: @theme-color-link;
         width: inherit;
 
@@ -562,12 +581,12 @@ h6.sparkline-title {
 
 div.sparkline {
   display: -ms-flexbox;
-  -ms-box-orient: horizontal;
-  -ms-box-pack: center;
   display: -webkit-flex;
   display: -moz-flex;
   display: -ms-flex;
   display: flex;
+  -ms-box-orient: horizontal;
+  -ms-box-pack: center;
   -webkit-justify-content: flex-start;
   -moz-justify-content: flex-start;
   -ms-justify-content: flex-start;
@@ -678,8 +697,7 @@ tr:hover #token_auth {
   background: #fffff7;
 }
 
-#header_message .dropdown a,
-#header_message #updateCheckLinkContainer:hover {
+#header_message .dropdown a {
   text-decoration: underline;
 }
 
@@ -697,6 +715,7 @@ tr:hover #token_auth {
 .dropdown-content li > a,
  .dropdown-content li > span {
   color: @theme-color-link !important;
+  text-decoration: none;
 }
 
 .dropdown-content li:hover,
@@ -717,5 +736,5 @@ tr:hover #token_auth {
 }
 
 .icon-delete:hover {
-  color: #d4291f !important;
+  color: @color-red-matomo !important;
 }

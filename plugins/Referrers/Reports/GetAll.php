@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Referrers\Reports;
 
 use Piwik\Piwik;
@@ -48,15 +49,13 @@ class GetAll extends Base
 
         $view->config->show_exclude_low_population = false;
         $view->config->show_goals = true;
-        $view->config->addTranslation('label', $this->dimension->getName());
 
         $view->requestConfig->filter_limit = 20;
 
         if ($view->isViewDataTableId(HtmlTable::ID)) {
-            $view->config->disable_row_actions = true;
+            $view->config->disable_row_evolution = true;
         }
 
         $view->config->filters[] = array('MetadataCallbackAddMetadata', array('referer_type', 'html_label_prefix', $setGetAllHtmlPrefix));
     }
-
 }

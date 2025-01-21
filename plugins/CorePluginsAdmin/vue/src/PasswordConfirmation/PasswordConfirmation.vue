@@ -1,16 +1,26 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
   <div class="confirm-password-modal modal" ref="root">
     <div class="modal-content">
       <div class="modal-text">
-        <slot></slot>
+        <div ref="content"><slot></slot></div>
+        <h2 v-if="!requiresPasswordConfirmation && !slotHasContent">
+          {{ translate('UsersManager_ConfirmThisChange') }}
+        </h2>
+        <h2 v-if="requiresPasswordConfirmation && !slotHasContent">
+          {{ translate('UsersManager_ConfirmWithPassword') }}
+        </h2>
+        <div v-if="requiresPasswordConfirmation && slotHasContent">
+          {{ translate('UsersManager_ConfirmWithPassword') }}
+        </div>
       </div>
-      <div>
+      <div v-show="requiresPasswordConfirmation">
         <Field
           v-model="passwordConfirmation"
           :uicontrol="'password'"
@@ -28,15 +38,13 @@
         href=""
         class="modal-action modal-close btn"
         :disabled="requiresPasswordConfirmation && !passwordConfirmation ? 'disabled' : undefined"
-        @click="$event.preventDefault();
-                $emit('confirmed', passwordConfirmation);
-                passwordConfirmation = ''"
-      >{{ translate('General_Yes') }}</a>
+        @click="onClickConfirm($event)"
+      >{{ translate('General_Confirm') }}</a>
       <a
         href=""
         class="modal-action modal-close modal-no btn-flat"
-        @click="$event.preventDefault(); $emit('aborted')"
-      >{{ translate('General_No') }}</a>
+        @click="onClickCancel($event)"
+      >{{ translate('General_Cancel') }}</a>
     </div>
   </div>
 </template>
@@ -51,6 +59,7 @@ const { $ } = window;
 
 interface PasswordConfirmationState {
   passwordConfirmation: string;
+  slotHasContent: boolean;
 }
 
 export default defineComponent({
@@ -66,6 +75,7 @@ export default defineComponent({
   data(): PasswordConfirmationState {
     return {
       passwordConfirmation: '',
+      slotHasContent: true,
     };
   },
   emits: ['confirmed', 'aborted', 'update:modelValue'],
@@ -76,7 +86,18 @@ export default defineComponent({
     this.$emit('update:modelValue', false);
   },
   methods: {
+    onClickConfirm(event: MouseEvent) {
+      event.preventDefault();
+      this.$emit('confirmed', this.passwordConfirmation);
+      this.passwordConfirmation = '';
+    },
+    onClickCancel(event: MouseEvent) {
+      event.preventDefault();
+      this.$emit('aborted');
+      this.passwordConfirmation = '';
+    },
     showPasswordConfirmModal() {
+      this.slotHasContent = !(this.$refs.content as HTMLElement).matches(':empty');
       const root = this.$refs.root as HTMLElement;
       const $root = $(root);
       const onEnter = (event: KeyPressEvent) => {

@@ -3,9 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\PrivacyManager\Model;
@@ -135,9 +134,13 @@ class DataSubjects
         $invalidator = StaticContainer::get('Piwik\Archive\ArchiveInvalidator');
 
         foreach ($datesToInvalidateByIdSite as $idSite => $visitDates) {
+            $idSites = [$idSite];
+            Piwik::postEvent('Archiving.getIdSitesToMarkArchivesAsInvalidated', array(&$idSites, $visitDates, null, null, null, $isPrivacyDeleteData = true));
             foreach ($visitDates as $dateStr) {
                 $visitDate = Date::factory($dateStr);
-                $invalidator->rememberToInvalidateArchivedReportsLater($idSite, $visitDate);
+                foreach ($idSites as $siteId) {
+                    $invalidator->rememberToInvalidateArchivedReportsLater($siteId, $visitDate);
+                }
             }
         }
     }

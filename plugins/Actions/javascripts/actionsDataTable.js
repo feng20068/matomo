@@ -1,8 +1,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 (function ($, require) {
@@ -50,14 +50,14 @@
                 rows = $('tr', domElem);
             }
 
-            // we don't display the link on the row with subDataTable when we are already
-            // printing all the subTables (case of recursive search when the content is
-            // including recursively all the subtables
-            if (!self.param.filter_pattern_recursive) {
-                self.numberOfSubtables = rows.filter('.subDataTable').click(function () {
-                    self.onClickActionSubDataTable(this)
-                }).length;
-            }
+            self.numberOfSubtables = rows.filter('.subDataTable').click(function () {
+                if (!self.param.filter_pattern_recursive) {
+                    // we don't display the link on the row with subDataTable when we are already
+                    // printing all the subTables (case of recursive search when the content is
+                    // including recursively all the subtables
+                    self.onClickActionSubDataTable(this);
+                }
+            }).length;
             self.applyCosmetics(domElem, rows);
             self.handleColumnHighlighting(domElem);
             self.handleRowActions(domElem, rows);

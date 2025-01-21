@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Db;
@@ -31,6 +31,11 @@ class Settings
     public function getUsedCharset()
     {
         return strtolower($this->getDbSetting('charset'));
+    }
+
+    public function getUsedCollation()
+    {
+        return strtolower($this->getDbSetting('collation') ?? '');
     }
 
     public function getRowFormat()

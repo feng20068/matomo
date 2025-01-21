@@ -4,6 +4,50 @@ This is the Developer Changelog for Matomo platform developers. All changes in o
 
 The Product Changelog at **[matomo.org/changelog](https://matomo.org/changelog)** lets you see more details about any Matomo release, such as the list of new guides and FAQs, security fixes, and links to all closed issues. 
 
+## Matomo 5.3.0
+
+### Breaking Changes
+
+* When requesting goals for multiple sites at once using `Goals.getGoals`, the result will no longer be indexed by `idgoal`. Requesting the goals for a single site will still return them indexed by `idgoal`.
+
+## Matomo 5.2.0
+
+### Breaking Changes
+
+* The MultiSites API has been reworked. The previously incorrectly named metrics for the previous period now have correct names:
+    * `previous_Actions_nb_pageviews` => `previous_nb_pageviews`
+    * `previous_Goal_revenue` => `previous_revenue`
+    * `previous_Goal_nb_conversions` => `previous_nb_conversions`
+    * `previous_Goal_0_nb_conversions` => `previous_orders`
+    * `previous_Goal_0_revenue` => `previous_ecommerce_revenue`
+
+## Deprecations
+
+* The methods `Db::isOptimizeInnoDBSupported`, `Db::optimizeTables` have been deprecated. Use `Db\Schema::getInstance()->isOptimizeInnoDBSupported` and `Db\Schema::getInstance()->optimizeTables` instead
+* The method `TransactionLevel::setUncommitted` has been deprecated. Use `TransactionLevel::setTransactionLevelForNonLockingReads` instead
+* The method `Piwik\Plugins\SitesManager\API::setGlobalExcludedQueryParameters` has been deprecated. Use `Piwik\Plugins\SitesManager\API::setGlobalQueryParamExclusion` instead
+
+### New commands
+
+* New command `plugin:install-or-update` lets you install or update a plugin from the Marketplace.
+
+## Matomo 5.1.0
+
+### Breaking Changes
+
+* The `errorlog` (`\Monolog\Handler\ErrorLogHandler`) and `syslog` (`\Monolog\Handler\SyslogHandler`) handlers are no longer directly used. Plugins using or overwriting those handlers using DI should now use the scoped classes `Piwik\Plugins\Monolog\Handler\ErrorLogHandler` and `Piwik\Plugins\Monolog\Handler\SyslogHandler` instead.
+* The dependency `jQuery.dotdotdot` has been removed. Please use pure CSS instead or include the library in your plugin if needed.
+
+### Deprecations
+
+The API method `Overlay.getExcludedQueryParameters` has been deprecated and will be removed in Matomo 6. Use the new method `SitesManager.getExcludedQueryParameters` instead.
+
+### JavaScript Tracker
+
+#### New APIs
+
+* The method `disableCampaignParameters` have been added to the JavaScript tracker. It allows to disable processing of campaign parameters and forwarding them to the tracking endpoint.
+
 ## Matomo 5.0.0
 
 ### Breaking Changes
@@ -22,6 +66,7 @@ The Product Changelog at **[matomo.org/changelog](https://matomo.org/changelog)*
 * By default, the last ip address in the proxy list will now be used rather than the first ip address. To force the first ip address to be used set the config option `proxy_ip_read_last_in_list = 0`.
 * The deprecated method `Piwik\Log::setLogLevel()` has been removed
 * The deprecated method `Piwik\Log::getLogLevel()` has been removed
+* A parameter `$login` has been added to the methods `setCompleted()`, `isCompleted()`, `skipChallenge()` and `isSkipped()` in the `Piwik\Plugins\Tour\Engagement\Challenge` class
 * In order to encapsulate Matomo's dependencies from direct usage in plugins we introduce some proxy classes and patterns that need to be used instead. For plugin development avoid using any external Matomo dependency directly. 
   * Use `Piwik\Log\Logger` instead of `Monolog\Logger`
   * Use `Piwik\Log\LoggerInterface` instead of `Psr\Log\LoggerInterface`
@@ -42,6 +87,8 @@ The Product Changelog at **[matomo.org/changelog](https://matomo.org/changelog)*
       * For progress bars use the methods `initProgressBar`, `startProgressBar`, `advanceProgressBar` and `finishProgressBar`
       * Tables can be rendered using the new method `renderTable`
     * For executing another command within your command use the new method `runCommand`
+* Requests sent by Matomo to plugins.matomo.org will no longer include an `HTTP_X_FORWARDED_FOR` header containing the current user's IP address. If you use an outbound proxy rule that used this header to allow access for Matomo then it should be replaced with rule allowing access by IP and/or URL.    
+* Matomo does no longer include the jQuery browser plugin. If your plugin requires it, you need to include it yourself.
 
 ### New APIs
 
@@ -53,6 +100,7 @@ The Product Changelog at **[matomo.org/changelog](https://matomo.org/changelog)*
 
 * The method `Common::getRequestVar` is now deprecated, but will remain API until Matomo 6. You may already start using the new class `Piwik\Request` instead, but ensure to handle needed sanitizing / escaping yourself.
 * The brand related less variables for colors `color-black-piwik`, `color-blue-piwik`, `color-red-piwik` and `color-green-piwik` are now deprecated and will be removed in Matomo 6. New variables where `piwik` was replaced with `matomo` have been introduced. E.g. `color-black-matomo`
+* Support for jQuery UI is now depreated and might be removed in one of the next major releases. Please consider using Materialize CSS or Vue.js instead.
 
 ### Removed Config
 
@@ -70,7 +118,7 @@ The Product Changelog at **[matomo.org/changelog](https://matomo.org/changelog)*
 
 ### Usage of authentication tokens
 * By default, new authentication tokens will be restricted to be used in POST requests only. This is recommended for improved security. This option can be unselected when creating a new token. Existing tokens will continue to work with both, POST and GET requests.
-* A new config setting `only_allow_posted_auth_tokens`, defaulting to `0`, has been added. Enabling this option will prevent any use of tokens in GET API requests.
+* A new config setting `only_allow_secure_auth_tokens`, defaulting to `0`, has been added. Enabling this option will prevent any use of tokens in GET API requests.
 
 ## Matomo 4.14.0
 

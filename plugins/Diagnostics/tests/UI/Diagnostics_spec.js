@@ -3,8 +3,8 @@
  *
  * Screenshot tests for the DBStats plugin.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 describe("Diagnostics", function () {
@@ -24,6 +24,14 @@ describe("Diagnostics", function () {
                 html = html.replaceAll(directory.replaceAll('/', '\\/'), '\\/path\\/matomo');
                 $(this).html(html);
             });
+            // replace varying invalidation counts with 0
+            $('#systemCheckInformational td:contains(nvalidation) + td').each(function () {
+                let text = $(this).text();
+                if (text.match(/^[0-9]+$/)) {
+                  $(this).html($(this).html().replace(/[0-9]+/, '0'));
+                }
+            });
+
         }, PIWIK_INCLUDE_PATH);
         expect(await content.screenshot()).to.matchImage('page');
     });

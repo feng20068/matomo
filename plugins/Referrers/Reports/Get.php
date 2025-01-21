@@ -1,14 +1,13 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Referrers\Reports;
-
 
 use Piwik\API\Request;
 use Piwik\Common;
@@ -25,13 +24,12 @@ use Piwik\Piwik;
 use Piwik\Plugin\ViewDataTable;
 use Piwik\Plugins\CoreVisualizations\Visualizations\Sparklines;
 use Piwik\Plugins\Referrers\Archiver;
-use Piwik\Plugins\Referrers\Controller;
 use Piwik\Report\ReportWidgetFactory;
 use Piwik\Widget\WidgetsList;
 
 class Get extends Base
 {
-    const TOTAL_DIRECT_ENTRIES_METRIC_NAME = 'Referrers_directEntries';
+    public const TOTAL_DIRECT_ENTRIES_METRIC_NAME = 'Referrers_directEntries';
 
     protected function init()
     {
@@ -68,7 +66,8 @@ class Get extends Base
 
     public function configureView(ViewDataTable $view)
     {
-        if ($view->isViewDataTableId(Sparklines::ID)
+        if (
+            $view->isViewDataTableId(Sparklines::ID)
             && $view instanceof Sparklines
         ) {
             $this->addSparklineColumns($view);
@@ -145,28 +144,11 @@ class Get extends Base
 
     private function addSparklineColumns(Sparklines $view)
     {
-        $directEntry = Controller::getTranslatedReferrerTypeLabel(Common::REFERRER_TYPE_DIRECT_ENTRY);
-        $directEntry = urlencode($directEntry);
-
-        $website = Controller::getTranslatedReferrerTypeLabel(Common::REFERRER_TYPE_WEBSITE);
-        $website = urlencode($website);
-
-        $searchEngine = Controller::getTranslatedReferrerTypeLabel(Common::REFERRER_TYPE_SEARCH_ENGINE);
-        $searchEngine = urlencode($searchEngine);
-
-        $campaigns = Controller::getTranslatedReferrerTypeLabel(Common::REFERRER_TYPE_CAMPAIGN);
-        $campaigns = urlencode($campaigns);
-
-        $socialNetworks = Controller::getTranslatedReferrerTypeLabel(Common::REFERRER_TYPE_SOCIAL_NETWORK);
-        $socialNetworks = urlencode($socialNetworks);
-
-        $total = Piwik::translate('General_Total');
-
-        $view->config->addSparklineMetric(['Referrers_visitorsFromDirectEntry', 'Referrers_visitorsFromDirectEntry_percent'], 10, ['rows' => $directEntry . ',' . $total]);
-        $view->config->addSparklineMetric(['Referrers_visitorsFromWebsites', 'Referrers_visitorsFromWebsites_percent'], 20, ['rows' => $website . ',' . $total]);
-        $view->config->addSparklineMetric(['Referrers_visitorsFromSearchEngines', 'Referrers_visitorsFromSearchEngines_percent'], 30, ['rows' => $searchEngine . ',' . $total]);
-        $view->config->addSparklineMetric(['Referrers_visitorsFromSocialNetworks', 'Referrers_visitorsFromSocialNetworks_percent'], 40, ['rows' => $socialNetworks . ',' . $total]);
-        $view->config->addSparklineMetric(['Referrers_visitorsFromCampaigns', 'Referrers_visitorsFromCampaigns_percent'], 50, ['rows' => $campaigns . ',' . $total]);
+        $view->config->addSparklineMetric(['Referrers_visitorsFromDirectEntry', 'Referrers_visitorsFromDirectEntry_percent'], 10, ['rows' => Common::REFERRER_TYPE_DIRECT_ENTRY . ',total']);
+        $view->config->addSparklineMetric(['Referrers_visitorsFromWebsites', 'Referrers_visitorsFromWebsites_percent'], 20, ['rows' => Common::REFERRER_TYPE_WEBSITE . ',total']);
+        $view->config->addSparklineMetric(['Referrers_visitorsFromSearchEngines', 'Referrers_visitorsFromSearchEngines_percent'], 30, ['rows' => Common::REFERRER_TYPE_SEARCH_ENGINE . ',total']);
+        $view->config->addSparklineMetric(['Referrers_visitorsFromSocialNetworks', 'Referrers_visitorsFromSocialNetworks_percent'], 40, ['rows' => Common::REFERRER_TYPE_SOCIAL_NETWORK . ',total']);
+        $view->config->addSparklineMetric(['Referrers_visitorsFromCampaigns', 'Referrers_visitorsFromCampaigns_percent'], 50, ['rows' => Common::REFERRER_TYPE_CAMPAIGN . ',total']);
         $view->config->addSparklineMetric([Archiver::METRIC_DISTINCT_SEARCH_ENGINE_RECORD_NAME], 50);
         $view->config->addSparklineMetric([Archiver::METRIC_DISTINCT_SOCIAL_NETWORK_RECORD_NAME], 60);
         $view->config->addSparklineMetric([Archiver::METRIC_DISTINCT_WEBSITE_RECORD_NAME], 70);

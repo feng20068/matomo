@@ -9,8 +9,8 @@
         "CancelAndReturnToReports": "Zrušit a %1$svrátit se k seznamu hlášení%2$s",
         "CreateAndScheduleReport": "Vytvořit a naplánovat hlášení",
         "CreateReport": "Vytvořit hlášení",
-        "CustomVisitorSegment": "Vlastní segment návštěvníka",
-        "DescriptionOnFirstPage": "Popis hlášení bude zobrazen na první jeho straně.",
+        "CustomVisitorSegment": "Vlastní segment návštěvníka:",
+        "DescriptionOnFirstPage": "Popis hlášení se zobrazí v e-mailové zprávě a na první stránce hlášení.",
         "DisplayFormat_TablesOnly": "Pouze zobrazit tabulky (žádné grafy)",
         "EmailHello": "Ahoj,",
         "EmailReports": "E-mailová hlášení",
@@ -19,7 +19,7 @@
         "EvolutionGraphsShowForEachInPeriod": "Grafy vývoje ukazují vývoj pro %1$skaždý den%2$s v posledních %3$s",
         "EvolutionGraphsShowForPreviousN": "Evoluční grafy ukazují vývoj oproti předchozímu N %s",
         "FrontPage": "Hlavní strana",
-        "MonthlyScheduleHelp": "Měsíční plán: hlášení bude odesláno první den měsíce",
+        "MonthlyScheduleHelp": "Měsíční plán: hlášení bude odesláno první den měsíce.",
         "MustBeLoggedIn": "Musíte být přihlášen, abyste mohl vytvářet vlastní hlášení.",
         "NoRecipients": "Toto hlášení nemá příjemce",
         "NoSubscriptionFound": "Nebyl nalezen žádný odběr. Možná že odběr hlášení byl již odhlášen nebo odstraněn.",
@@ -43,6 +43,7 @@
         "ReportUpdated": "Hlášení aktualizováno",
         "ReportsIncluded": "Zahrnuté statistiky",
         "SegmentAppliedToReports": "Segment %s je aplikován na hlášení.",
+        "SegmentDeleted": "Segment odstraněn",
         "Segment_Deletion_Error": "Tento segment nemůže být smazán nebo zneviditelněn, protože se používá k vytváření e-mailových hlášení %s. Zkuste to znovu poté, co ho z těchto hlášení odstraníte.",
         "Segment_Help": "Můžete zvolit existující segment, který bude aplikován na data v tomto e-mailovém hlášení. Segmenty můžete vytvářet a upravovat vlastní segmenty na vaší nástěnce %1$s(klikněte zde pro otevření)%2$s, pak klikněte na box \"%3$s\", pak \"%4$s\".",
         "SendReportNow": "Odeslat hlášení ihned",
@@ -58,6 +59,6 @@
         "UnsubscribeFooter": "Chcete-li odhlásit odběr tohoto hlášení, klikněte na tento odkaz: %1$s",
         "UnsubscribeReportConfirmation": "Opravdu chcete odhlásit odběr hlášení %1$s?",
         "UpdateReport": "Aktualizovat hlášení",
-        "WeeklyScheduleHelp": "Týdenní plán: hlášení bude odesláno každé pondělí"
+        "WeeklyScheduleHelp": "Týdenní plán: hlášení bude odesláno každé pondělí."
     }
 }

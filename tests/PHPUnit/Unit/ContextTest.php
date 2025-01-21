@@ -1,26 +1,30 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Unit;
-
 
 use Piwik\Context;
 use Piwik\Tracker;
 
 class ContextTest extends \PHPUnit\Framework\TestCase
 {
-
     /**
      * @dataProvider getTestDataForOverwriteIdSiteForCache
      */
-    public function test_overwriteIdSiteForCache_shouldModifySuperGlobalsCorrectly(
-        $originalGet, $originalPost, $inTrackerMode, $idSite, $expectedChangedGet, $expectedChangedPost)
-    {
+    public function testOverwriteIdSiteForCacheShouldModifySuperGlobalsCorrectly(
+        $originalGet,
+        $originalPost,
+        $inTrackerMode,
+        $idSite,
+        $expectedChangedGet,
+        $expectedChangedPost
+    ) {
         $originalTrackerMode = Tracker::$initTrackerMode;
         try {
             Tracker::$initTrackerMode = $inTrackerMode;

@@ -2,8 +2,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 //-----------------------------------------------------------------------------
@@ -119,13 +119,28 @@ $.extend(DataTable.prototype, UIControl.prototype, {
     },
 
     enableStickHead: function (domElem) {
-      // Bind to the resize event of the window object
-      $(window).on('resize', function () {
-        var tableScrollerWidth = $(domElem).find('.dataTableScroller').width();
+      var resizeTimeout = null;
+      var resize = function(domElem) {
+        var tableScroller = $(domElem).find('.dataTableScroller');
+        var tableScrollerWidth = tableScroller.width();
         var tableWidth = $(domElem).find('table').width();
         if (tableScrollerWidth < tableWidth) {
-          $('.dataTableScroller').css('overflow-x', 'scroll');
+          tableScroller.css('overflow-x', 'scroll');
+        } else {
+          tableScroller.css('overflow-x', '');
         }
+      };
+      // Bind to the resize event of the window object
+      $(window).on('resize', function () {
+        resize(domElem);
+        // trigger another check after a certain delay as during fast resizing
+        // the width is sometimes reported incorrectly
+        if (resizeTimeout) {
+          window.clearTimeout(resizeTimeout);
+        }
+        resizeTimeout = window.setTimeout(function(){
+          resize(domElem);
+        }, 500);
         // Invoke the resize event immediately
       }).resize();
     },
@@ -193,7 +208,8 @@ $.extend(DataTable.prototype, UIControl.prototype, {
             'include_aggregate_rows',
             'totalRows',
             'pivotBy',
-            'pivotByColumn'
+            'pivotByColumn',
+            'filter_trigger_id'
         ];
 
         for (var key = 0; key < filters.length; key++) {
@@ -417,49 +433,6 @@ $.extend(DataTable.prototype, UIControl.prototype, {
             return parseInt(totalWidth, 10);
         }
 
-        function setMaxTableWidthIfNeeded (domElem, maxTableWidth)
-        {
-            var $domElem = $(domElem);
-            var dataTableInCard = $domElem.parents('.card').first();
-            var parentDataTable = $domElem.parent('.dataTable');
-
-            if ($domElem.is('.dataTableVizEvolution,.dataTableVizStackedBarEvolution')) {
-                return; // don't resize evolution charts
-            }
-
-            dataTableInCard.width('');
-            $domElem.width('');
-            parentDataTable.width('');
-
-            var tableWidth = getTableWidth(domElem);
-
-            if (tableWidth <= maxTableWidth && tableWidth > 0) {
-                return;
-            }
-
-            if (self.isWidgetized() || self.isDashboard()) {
-                return;
-            }
-
-            if (dataTableInCard && dataTableInCard.length) {
-                // makes sure card has the same width
-                dataTableInCard.css('max-width', maxTableWidth);
-            } else {
-                $domElem.css('max-width', maxTableWidth);
-            }
-
-            if (parentDataTable && parentDataTable.length) {
-                // makes sure dataTableWrapper and DataTable has same size => makes sure maxLabelWidth does not get
-                // applied in getLabelWidth() since they will have the same size.
-
-                if (dataTableInCard.length) {
-                    dataTableInCard.css('max-width', maxTableWidth);
-                } else {
-                    parentDataTable.css('max-width', maxTableWidth);
-                }
-            }
-        }
-
         function getLabelWidth(domElem, tableWidth, minLabelWidth, maxLabelWidth)
         {
             var labelWidth = minLabelWidth;
@@ -496,8 +469,11 @@ $.extend(DataTable.prototype, UIControl.prototype, {
             if (allColumns > 2 * firstTableColumn) {
                 amount = 2 * firstTableColumn;
             }
-
-            return parseInt(labelWidth / amount, 10);
+            var newWidth = parseInt(labelWidth / amount, 10)
+            if (newWidth == 0) {
+                newWidth = maxLabelWidth; // fallback to the maximum width if zero
+            }
+            return newWidth;
         }
 
         function getLabelColumnMinWidth(domElem)
@@ -556,8 +532,6 @@ $.extend(DataTable.prototype, UIControl.prototype, {
 
             return labelWidth - paddingLeft - paddingRight;
         }
-
-        setMaxTableWidthIfNeeded(domElem, 1200);
 
         var isTableVisualization = this.param.viewDataTable
             && typeof this.param.viewDataTable === 'string'
@@ -877,8 +851,8 @@ $.extend(DataTable.prototype, UIControl.prototype, {
 
         var $searchInput = $('.dataTableSearchInput', domElem);
 
-        function getOptimalWidthForSearchField() {
-            var controlBarWidth = $('.dataTableControls', domElem).width();
+        function getOptimalWidthForSearchField($searchAction) {
+            var controlBarWidth = $searchAction.parents('.dataTableControls').first().width();
             var spaceLeft = controlBarWidth - $searchAction.position().left;
             var idealWidthForSearchBar = 250;
             var minimalWidthForSearchBar = 150; // if it's only 150 pixel we still show it on same line
@@ -916,18 +890,42 @@ $.extend(DataTable.prototype, UIControl.prototype, {
             event.preventDefault();
             event.stopPropagation();
 
+            var triggerField;
+            if (typeof self.param.filter_trigger_id != "undefined"
+              && self.param.filter_trigger_id.length > 0) {
+              triggerField = document.getElementById(self.param.filter_trigger_id);
+            } else if (event && event.target) {
+              triggerField = $(event.target).siblings('input');
+            }
+
             var $searchAction = $(this);
             $searchAction.addClass('searchActive forceActionVisible');
-            var width = getOptimalWidthForSearchField();
+            var width = getOptimalWidthForSearchField($searchAction);
             $searchAction.css('width', width + 'px');
-            $searchAction.find('.dataTableSearchInput').focus();
+
+            if (triggerField) {
+              triggerField.focus();
+            }
 
             $searchAction.find('.icon-search').on('click', searchForPattern);
             $searchAction.off('click', showSearch);
         }
 
-        function searchForPattern() {
-            var keyword = $searchInput.val();
+        function searchForPattern(event) {
+            var keyword = '';
+            if (event) {
+                var $input;
+                if (event.target.tagName.toLowerCase() === 'input') {
+                    $input = $(event.target);
+                } else if (event.target.tagName.toLowerCase() === 'span') {
+                    $input = $(event.target).siblings('input');
+                }
+
+                if ($input && $input.length) {
+                    keyword = $input.val();
+                    self.param.filter_trigger_id = $input.attr('id');
+                }
+            }
 
             if (!keyword && !currentPattern) {
                 // we search only if a keyword is actually given, or if no keyword is given and a search was performed
@@ -959,15 +957,19 @@ $.extend(DataTable.prototype, UIControl.prototype, {
 
         $searchInput.on("keyup", function (e) {
             if (isEnterKey(e)) {
-                searchForPattern();
+                searchForPattern(e);
             } else if (isEscapeKey(e)) {
                 $searchAction.find('.icon-close').click();
             }
         });
 
+        const $dataTable = $searchInput.parents('.dataTable').first();
         if (currentPattern) {
+            $dataTable.addClass('hasSearchKeyword');
             $searchInput.val(currentPattern);
             $searchAction.click();
+        } else {
+            $dataTable.removeClass('hasSearchKeyword');
         }
 
         if (this.isEmpty && !currentPattern) {
@@ -1266,10 +1268,15 @@ $.extend(DataTable.prototype, UIControl.prototype, {
         if ((typeof self.numberOfSubtables == 'undefined' || self.numberOfSubtables == 0)
             && (typeof self.param.flat == 'undefined' || self.param.flat != 1)
         ) {
-            // if there are no subtables, remove the flatten action
-            const dataTableActionsVueApp = $('[vue-entry="CoreHome.DataTableActions"]', domElem).data('vueAppInstance');
-            if (dataTableActionsVueApp) {
-              dataTableActionsVueApp.showFlattenTable_ = false;
+            // if there are no subtables, remove the flatten action from all data table actions
+            const dataTableActionsVueApps = $('[vue-entry="CoreHome.DataTableActions"]', domElem);
+            if (dataTableActionsVueApps.length) {
+              dataTableActionsVueApps.each(function() {
+                const appData = $(this).data('vueAppInstance');
+                if (appData) {
+                  appData.showFlattenTable_ = false;
+                }
+              });
             }
         }
 
@@ -1514,7 +1521,7 @@ $.extend(DataTable.prototype, UIControl.prototype, {
                     self.param.idSubtable = idSubTable;
                     self.param.action = self.props.subtable_controller_action;
 
-					delete self.param.totalRows;
+					          delete self.param.totalRows;
 
                     var extraParams = {};
                     extraParams.comparisonIdSubtables = self.getComparisonIdSubtables($(this));
@@ -1754,7 +1761,8 @@ $.extend(DataTable.prototype, UIControl.prototype, {
     },
 
     handleSummaryRow: function (domElem) {
-        var details = _pk_translate('General_LearnMore', [' (<a href="https://matomo.org/faq/how-to/faq_54/" rel="noreferrer noopener" target="_blank">', '</a>)']);
+        var details = _pk_translate('General_LearnMore', [' (<a href="'
+        + _pk_externalRawLink('https://matomo.org/faq/how-to/faq_54/') + '" rel="noreferrer noopener" target="_blank">', '</a>)']);
 
         domElem.find('tr.summaryRow').each(function () {
             var labelSpan = $(this).find('.label .value').filter(function(index, elem){

@@ -1,13 +1,16 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Annotations\tests\System;
 
 use Piwik\API\Request;
+use Piwik\Date;
 use Piwik\Plugins\Annotations\API;
 use Piwik\Tests\Framework\Mock\FakeAccess;
 use Piwik\Tests\Framework\TestCase\SystemTestCase;
@@ -21,6 +24,21 @@ use Exception;
 class AnnotationsTest extends SystemTestCase
 {
     public static $fixture = null;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        // Fixed time necessary for "last30" API tests.
+        Date::$now = strtotime('2012-03-03 12:00:00');
+    }
+
+    public function tearDown(): void
+    {
+        Date::$now = null;
+
+        parent::tearDown();
+    }
 
     public static function getOutputPrefix()
     {
@@ -60,6 +78,11 @@ class AnnotationsTest extends SystemTestCase
                                               'periods'                => array('range'),
                                               'otherRequestParameters' => array('lastN' => 6),
                                               'testSuffix'             => '_range')),
+            array('Annotations.getAll', array('idSite'                 => $idSite1,
+                                              'date'                   => 'last30',
+                                              'periods'                => array('range'),
+                                              'otherRequestParameters' => array('lastN' => 6),
+                                              'testSuffix'             => '_last30')),
             array('Annotations.getAll', array('idSite'     => 'all',
                                               'date'       => '2012-01-01',
                                               'periods'    => array('month'),
@@ -82,6 +105,11 @@ class AnnotationsTest extends SystemTestCase
                                                                   'periods'                => array('range'),
                                                                   'otherRequestParameters' => array('lastN' => 6),
                                                                   'testSuffix'             => '_range')),
+            array('Annotations.getAnnotationCountForDates', array('idSite'                 => $idSite1,
+                                                                  'date'                   => 'last30',
+                                                                  'periods'                => array('range'),
+                                                                  'otherRequestParameters' => array('lastN' => 6),
+                                                                  'testSuffix'             => '_last30')),
             array('Annotations.getAnnotationCountForDates', array('idSite'     => 'all',
                                                                   'date'       => '2012-01-01',
                                                                   'periods'    => array('month'),
@@ -99,7 +127,7 @@ class AnnotationsTest extends SystemTestCase
 
     public function testAddMultipleSitesFail()
     {
-        self::expectException(Exception::class);
+        self::expectError();
 
         API::getInstance()->add("1,2,3", "2012-01-01", "whatever");
     }
@@ -113,7 +141,7 @@ class AnnotationsTest extends SystemTestCase
 
     public function testSaveMultipleSitesFail()
     {
-        self::expectException(Exception::class);
+        self::expectError();
 
         API::getInstance()->save("1,2,3", 0);
     }
@@ -134,7 +162,7 @@ class AnnotationsTest extends SystemTestCase
 
     public function testDeleteMultipleSitesFail()
     {
-        self::expectException(Exception::class);
+        self::expectError();
 
         API::getInstance()->delete("1,2,3", 0);
     }
@@ -148,7 +176,7 @@ class AnnotationsTest extends SystemTestCase
 
     public function testGetMultipleSitesFail()
     {
-        self::expectException(Exception::class);
+        self::expectError();
 
         API::getInstance()->get("1,2,3", 0);
     }
@@ -163,7 +191,12 @@ class AnnotationsTest extends SystemTestCase
     public function testSaveSuccess()
     {
         API::getInstance()->save(
-            self::$fixture->idSite1, 0, $date = '2011-04-01', $note = 'new note text', $starred = 1);
+            self::$fixture->idSite1,
+            0,
+            $date = '2011-04-01',
+            $note = 'new note text',
+            $starred = 1
+        );
 
         $expectedAnnotation = array(
             'date'            => '2011-04-01',
@@ -245,7 +278,7 @@ class AnnotationsTest extends SystemTestCase
         FakeAccess::$idSitesAdmin = $hasAdminAccess ? array(self::$fixture->idSite1) : array();
         FakeAccess::$idSitesView = $hasViewAccess ? array(self::$fixture->idSite1) : array();
 
-        $request = new Request($request.'&format=original');
+        $request = new Request($request . '&format=original');
         $request->process();
     }
 

@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tests\Unit\DataAccess;
 
 use Piwik\DataAccess\ArchiveTableCreator;
@@ -40,7 +41,7 @@ class ArchiveTableCreatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getTestDataForGetTablesArchivesInstalled
      */
-    public function test_getTablesArchivesInstalled_CorrectlyFiltersTableNames($type, $expectedTables)
+    public function testGetTablesArchivesInstalledCorrectlyFiltersTableNames($type, $expectedTables)
     {
         ArchiveTableCreator::$tablesAlreadyInstalled = $this->tables;
 
@@ -49,52 +50,75 @@ class ArchiveTableCreatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expectedTables, $tables);
     }
 
-    public function getTestDataForGetTablesArchivesInstalled()
+    public function getTestDataForGetTablesArchivesInstalled(): array
     {
-        return array(
-            array(
+        return [
+            [
                 ArchiveTableCreator::BLOB_TABLE,
-                array(
+                [
                     'archive_blob_2015_05',
                     'archive_blob_2015_01',
                     'archive_blob_2015_02',
-                ),
-            ),
+                ],
+            ],
 
-            array(
+            [
                 ArchiveTableCreator::NUMERIC_TABLE,
-                array(
+                [
                     'archive_numeric_2015_02',
                     'archive_numeric_2014_03',
-                ),
-            ),
+                ],
+            ],
 
-            array(
+            [
                 'qewroufsjdlf',
-                array(),
-            ),
+                [],
+            ],
 
-            array(
+            [
                 '',
-                array(
+                [
                     'archive_numeric_2015_02',
                     'archive_blob_2015_05',
                     'archive_numeric_2014_03',
                     'archive_blob_2015_01',
                     'archive_blob_2015_02',
-                ),
-            ),
+                ],
+            ],
 
-            array(
+            [
                 null,
-                array(
+                [
                     'archive_numeric_2015_02',
                     'archive_blob_2015_05',
                     'archive_numeric_2014_03',
                     'archive_blob_2015_01',
                     'archive_blob_2015_02',
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider getTestDataForGetLatestArchiveTableInstalled
+     */
+    public function testGetLatestArchiveTableInstalled($type, $expectedLatestTable)
+    {
+        ArchiveTableCreator::$tablesAlreadyInstalled = $this->tables;
+
+        $latestTable = ArchiveTableCreator::getLatestArchiveTableInstalled($type);
+
+        $this->assertEquals($expectedLatestTable, $latestTable);
+    }
+
+    public function getTestDataForGetLatestArchiveTableInstalled(): array
+    {
+        return [
+            [ArchiveTableCreator::BLOB_TABLE, 'archive_blob_2015_05'],
+            [ArchiveTableCreator::NUMERIC_TABLE, 'archive_numeric_2015_02'],
+            ['qewroufsjdlf', ''],
+            ['', 'archive_blob_2015_05'],
+            [null, 'archive_blob_2015_05'],
+        ];
     }
 }

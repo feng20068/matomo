@@ -26,7 +26,7 @@
 	</row>
 	<row>
 		<id>add_user</id>
-		<name>Add a user</name>
+		<name>Invite a user</name>
 		<description>Users Management lets you add new users, edit existing users and give them access to view or administrate websites.</description>
 		<isCompleted>0</isCompleted>
 		<isSkipped>0</isSkipped>
@@ -34,7 +34,7 @@
 	</row>
 	<row>
 		<id>add_website</id>
-		<name>Add a website</name>
+		<name>Add another website</name>
 		<description>Websites management lets you add a new website and edit existing websites.</description>
 		<isCompleted>1</isCompleted>
 		<isSkipped>0</isSkipped>

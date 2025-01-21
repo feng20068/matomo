@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\DataAccess;
 
 use Exception;
@@ -38,9 +39,9 @@ use Piwik\Log\LoggerInterface;
  */
 class ArchiveSelector
 {
-    const NB_VISITS_RECORD_LOOKED_UP = "nb_visits";
+    public const NB_VISITS_RECORD_LOOKED_UP = "nb_visits";
 
-    const NB_VISITS_CONVERTED_RECORD_LOOKED_UP = "nb_visits_converted";
+    public const NB_VISITS_CONVERTED_RECORD_LOOKED_UP = "nb_visits_converted";
 
     private static function getModel()
     {
@@ -115,7 +116,8 @@ class ArchiveSelector
             // we have to check whether the requested data is actually within them. if we just report the
             // partial archives, Archive.php will find no archive data and simply report this. returning no
             // idarchive here, however, will initiate archiving, causing the missing data to populate.
-            if (empty($requestedReport)
+            if (
+                empty($requestedReport)
                 || !empty($result['idarchive'])
             ) {
                 $result['idarchive'] = array_merge($result['idarchive'], $result['partial']);
@@ -127,7 +129,8 @@ class ArchiveSelector
             }
         }
 
-        if (empty($result['idarchive'])
+        if (
+            empty($result['idarchive'])
             || (isset($result['value'])
                 && !in_array($result['value'], $doneFlagValues))
         ) { // the archive cannot be considered valid for this request (has wrong done flag value)
@@ -147,7 +150,8 @@ class ArchiveSelector
         }
 
         // the archive is too old
-        if ($minDatetimeArchiveProcessedUTC
+        if (
+            $minDatetimeArchiveProcessedUTC
             && !empty($result['idarchive'])
             && Date::factory($tsArchived)->isEarlier($minDatetimeArchiveProcessedUTC)
         ) {
@@ -192,9 +196,66 @@ class ArchiveSelector
      *               )
      * @throws
      */
-    public static function getArchiveIds($siteIds, $periods, $segment, $plugins, $includeInvalidated = true, $_skipSetGroupConcatMaxLen = false)
-    {
+    public static function getArchiveIds(
+        $siteIds,
+        $periods,
+        $segment,
+        $plugins,
+        $includeInvalidated = true,
+        $_skipSetGroupConcatMaxLen = false
+    ) {
+        return self::getArchiveIdsAndStates(
+            $siteIds,
+            $periods,
+            $segment,
+            $plugins,
+            $includeInvalidated,
+            $_skipSetGroupConcatMaxLen
+        )[0];
+    }
+
+    /**
+     * Queries and returns archive IDs and the associated doneFlag
+     * values for a set of sites, periods, and a segment.
+     *
+     * @param int[] $siteIds
+     * @param Period[] $periods
+     * @param Segment $segment
+     * @param string[] $plugins List of plugin names for which data is being requested.
+     * @param bool $includeInvalidated true to include archives that are DONE_INVALIDATED, false if only DONE_OK.
+     * @param bool $_skipSetGroupConcatMaxLen for tests
+     *
+     * @return array Archive IDs are grouped by archive name and period range, ie,
+     *               array(
+     *                   array(
+     *                       'VisitsSummary.done' => array(
+     *                           '2010-01-01' => array(1,2,3)
+     *                       )
+     *                   )
+     *                   array(
+     *                       100 => array(
+     *                           'VisitsSummary.done' => array(
+     *                               '2010-01-01' => array(
+     *                                   1 => 1,
+     *                                   2 => 4,
+     *                                   3 => 5
+     *                               )
+     *                           )
+     *                       )
+     *                   )
+     *               )
+     * @throws
+     */
+    public static function getArchiveIdsAndStates(
+        $siteIds,
+        $periods,
+        $segment,
+        $plugins,
+        $includeInvalidated = true,
+        $_skipSetGroupConcatMaxLen = false
+    ): array {
         $logger = StaticContainer::get(LoggerInterface::class);
+
         if (!$_skipSetGroupConcatMaxLen) {
             try {
                 Db::get()->query('SET SESSION group_concat_max_len=' . (128 * 1024));
@@ -232,11 +293,12 @@ class ArchiveSelector
         $db = Db::get();
 
         // for every month within the archive query, select from numeric table
-        $result = array();
+        $idarchives = [];
+        $idarchiveStates = [];
+
         foreach ($monthToPeriods as $table => $periods) {
             $firstPeriod = reset($periods);
-
-            $bind = array();
+            $bind = [];
 
             if ($firstPeriod instanceof Range) {
                 $dateCondition = "date1 = ? AND date2 = ?";
@@ -267,22 +329,28 @@ class ArchiveSelector
             // everything older than that one is discarded.
             foreach ($archiveIds as $row) {
                 $dateStr = $row['date1'] . ',' . $row['date2'];
+                $idSite = $row['idsite'];
 
                 $archives = $row['archives'];
                 $pairs = explode(',', $archives);
+
                 foreach ($pairs as $pair) {
                     $parts = explode('|', $pair);
+
                     if (count($parts) != 3) { // GROUP_CONCAT got cut off, have to ignore the rest
                         // note: in this edge case, we end up not selecting the all plugins archive because it will be older than the partials.
                         // not ideal, but it avoids an exception.
-                        $logger->info("GROUP_CONCAT got cut off in ArchiveSelector." . __FUNCTION__ . ' for idsite = ' . $row['idsite'] . ', period = ' . $dateStr);
+                        $logger->info("GROUP_CONCAT got cut off in ArchiveSelector." . __FUNCTION__ . ' for idsite = ' . $idSite . ', period = ' . $dateStr);
                         continue;
                     }
 
-                    list($idarchive, $doneFlag, $value) = $parts;
+                    [$idarchive, $doneFlag, $value] = $parts;
 
-                    $result[$doneFlag][$dateStr][] = $idarchive;
-                    if (strpos($doneFlag, '.') === false // all plugins archive
+                    $idarchives[$doneFlag][$dateStr][] = $idarchive;
+                    $idarchiveStates[$idSite][$doneFlag][$dateStr][$idarchive] = (int) $value;
+
+                    if (
+                        strpos($doneFlag, '.') === false // all plugins archive
                         // sanity check: DONE_PARTIAL shouldn't be used w/ done archives, but in case we see one,
                         // don't treat it like an all plugins archive
                         && $value != ArchiveWriter::DONE_PARTIAL
@@ -293,7 +361,7 @@ class ArchiveSelector
             }
         }
 
-        return $result;
+        return [$idarchives, $idarchiveStates];
     }
 
     /**
@@ -451,7 +519,8 @@ class ArchiveSelector
         ];
 
         foreach ($results as $result) {
-            if (in_array($result['name'], $doneFlags)
+            if (
+                in_array($result['name'], $doneFlags)
                 && in_array($result['idarchive'], $idArchives)
                 && $result['value'] != ArchiveWriter::DONE_PARTIAL
             ) {
@@ -488,7 +557,8 @@ class ArchiveSelector
             }
 
             $thisTsArchived = Date::factory($row['ts_archived']);
-            if ($row['value'] == ArchiveWriter::DONE_PARTIAL
+            if (
+                $row['value'] == ArchiveWriter::DONE_PARTIAL
                 && (empty($mainTsArchived) || !Date::factory($mainTsArchived)->isLater($thisTsArchived))
             ) {
                 $archiveData['partial'][] = $row['idarchive'];
@@ -523,7 +593,10 @@ class ArchiveSelector
         $chunk = new Chunk();
 
         [$getValuesSql, $bind] = self::getSqlTemplateToFetchArchiveData(
-            [$recordName], Archive::ID_SUBTABLE_LOAD_ALL_SUBTABLES, true);
+            [$recordName],
+            Archive::ID_SUBTABLE_LOAD_ALL_SUBTABLES,
+            true
+        );
 
         $archiveIdsPerMonth = self::getArchiveIdsByYearMonth($archiveIds);
 
@@ -623,7 +696,7 @@ class ArchiveSelector
                                     AND SUBSTRING(name, $nameEndAppendix, 1) <= '9')";
 
             $whereNameIs = "(name = ? OR (name LIKE ? AND ( $checkForChunkBlob OR $checkForSubtableId ) ))";
-            $bind = array($name, $name . '%');
+            $bind = array($name, addcslashes($name, '%_') . '%');
 
             if ($orderBySubtableId && count($recordNames) == 1) {
                 $idSubtableAsInt = self::getExtractIdSubtableFromBlobNameSql($chunk, $name);

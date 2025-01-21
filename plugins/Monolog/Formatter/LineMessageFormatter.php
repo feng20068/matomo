@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Monolog\Formatter;
@@ -52,6 +53,8 @@ class LineMessageFormatter implements FormatterInterface
         $total = '';
 
         foreach ($messages as $message) {
+            // escape control characters
+            $message = addcslashes($message, "\x00..\x09\x0B..\x1F\x7F");
             $message = $this->prefixMessageWithRequestId($record, $message);
             $total  .= $this->formatMessage($class, $message, $date, $record);
         }

@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik;
 
 use Exception;
@@ -31,7 +32,7 @@ function piwik_filter_truncate($string, $size)
     if (mb_strlen(html_entity_decode($string)) <= $size) {
         return $string;
     } else {
-        preg_match('/^(&(?:[a-z\d]+|#\d+|#x[a-f\d]+);|.){'.$size.'}/i', $string, $shortenString);
+        preg_match('/^(&(?:[a-z\d]+|#\d+|#x[a-f\d]+);|.){' . $size . '}/i', $string, $shortenString);
         return reset($shortenString) . "...";
     }
 }
@@ -42,7 +43,8 @@ function piwik_format_number($string, $minFractionDigits, $maxFractionDigits)
     return $formatter->format($string, $minFractionDigits, $maxFractionDigits);
 }
 
-function piwik_escape_filter(Environment $env, $string, $strategy = 'html', $charset = null, $autoescape = false) {
+function piwik_escape_filter(Environment $env, $string, $strategy = 'html', $charset = null, $autoescape = false)
+{
 
     $string = twig_escape_filter($env, $string, $strategy, $charset, $autoescape);
 
@@ -68,7 +70,7 @@ function piwik_format_money($amount, $idSite)
  */
 class Twig
 {
-    const SPARKLINE_TEMPLATE = '<img loading="lazy" alt="" data-src="%s" width="%d" height="%d" />
+    public const SPARKLINE_TEMPLATE = '<img loading="lazy" alt="" data-src="%s" width="%d" height="%d" />
     <script type="text/javascript">$(function() { piwik.initSparklines(); });</script>';
 
     /**
@@ -107,7 +109,8 @@ class Twig
         // Create new Twig Environment and set cache dir
         $cache = StaticContainer::get('twig.cache');
 
-        $this->twig = new Environment($chainLoader,
+        $this->twig = new Environment(
+            $chainLoader,
             array(
                  'debug'            => true, // to use {{ dump(var) }} in twig templates
                  'strict_variables' => true, // throw an exception if variables are invalid
@@ -134,6 +137,7 @@ class Twig
         $this->addFilterMd5();
         $this->addFilterOnlyDomain();
         $this->addFilterSafelink();
+        $this->addFilterTrackMatomoLink();
         $this->addFilterImplode();
         $this->twig->addFilter(new TwigFilter('ucwords', 'ucwords'));
         $this->twig->addFilter(new TwigFilter('lcfirst', 'lcfirst'));
@@ -142,6 +146,8 @@ class Twig
             return preg_replace($pattern, $replacement, $subject);
         }));
 
+        $this->addFunctionExternalLink();
+        $this->addFunctionExternalRawLink();
         $this->addFunctionIncludeAssets();
         $this->addFunctionLinkTo();
         $this->addFunctionSparkline();
@@ -268,12 +274,39 @@ class Twig
     }
 
     /**
+     * Build an external link for a URL
+     *
+     * Usage:
+     *     externallink(url)
+     *
+     */
+    private function addFunctionExternalLink()
+    {
+        $externalLink = new TwigFunction('externallink', function ($url) {
+            // Add tracking parameters if a matomo.org link
+            $url =  Url::addCampaignParametersToMatomoLink($url);
+
+            return "<a target='_blank' rel='noreferrer noopener' href='" . $url . "'>";
+        });
+        $this->twig->addFunction($externalLink);
+    }
+
+    private function addFunctionExternalRawLink()
+    {
+        $externalRawLink = new TwigFunction('externalrawlink', function ($url) {
+            // Add tracking parameters if a matomo.org link
+            return Url::addCampaignParametersToMatomoLink($url);
+        });
+        $this->twig->addFunction($externalRawLink);
+    }
+
+    /**
      * @return FilesystemLoader
      */
     private function getDefaultThemeLoader()
     {
         $themeDir = Manager::getPluginDirectory(\Piwik\Plugin\Manager::DEFAULT_THEME) . '/templates/';
-        $themeLoader = new FilesystemLoader(array($themeDir), PIWIK_DOCUMENT_ROOT.DIRECTORY_SEPARATOR);
+        $themeLoader = new FilesystemLoader(array($themeDir), PIWIK_DOCUMENT_ROOT . DIRECTORY_SEPARATOR);
 
         return $themeLoader;
     }
@@ -291,7 +324,7 @@ class Twig
         if (!file_exists($themeDir)) {
             return false;
         }
-        $themeLoader = new FilesystemLoader(array($themeDir), PIWIK_DOCUMENT_ROOT.DIRECTORY_SEPARATOR);
+        $themeLoader = new FilesystemLoader(array($themeDir), PIWIK_DOCUMENT_ROOT . DIRECTORY_SEPARATOR);
 
         return $themeLoader;
     }
@@ -325,7 +358,6 @@ class Twig
             $template .= '</div>';
 
             return $template;
-
         }, array('is_safe' => array('html')));
         $this->twig->addFilter($notificationFunction);
     }
@@ -344,7 +376,6 @@ class Twig
             $string = SafeDecodeLabel::decodeLabelSafe($string);
 
             return $string;
-
         }, array('is_safe' => array('all')));
         $this->twig->addFilter($rawSafeDecoded);
     }
@@ -406,9 +437,9 @@ class Twig
             if ($string === false || $string === true) {
                 return (int) $string;
             }
-            $string = str_replace([PIWIK_DOCUMENT_ROOT,  str_replace( '/', '\/', PIWIK_DOCUMENT_ROOT )], '$DOC_ROOT', $string);
-            $string = str_replace([PIWIK_USER_PATH,  str_replace( '/', '\/', PIWIK_USER_PATH ) ], '$USER_PATH', $string);
-            $string = str_replace([PIWIK_INCLUDE_PATH,  str_replace( '/', '\/', PIWIK_INCLUDE_PATH ) ], '$INCLUDE_PATH', $string);
+            $string = str_replace([PIWIK_DOCUMENT_ROOT,  str_replace('/', '\/', PIWIK_DOCUMENT_ROOT)], '$DOC_ROOT', $string);
+            $string = str_replace([PIWIK_USER_PATH,  str_replace('/', '\/', PIWIK_USER_PATH) ], '$USER_PATH', $string);
+            $string = str_replace([PIWIK_INCLUDE_PATH,  str_replace('/', '\/', PIWIK_INCLUDE_PATH) ], '$INCLUDE_PATH', $string);
 
             // replace anything token like
             $string = preg_replace('/[[:xdigit:]]{31,80}/', 'TOKEN_REPLACED', $string);
@@ -582,6 +613,31 @@ class Twig
             return $url;
         });
         $this->twig->addFilter($safelink);
+    }
+
+    /**
+     * Modify any links to matomo domains to add campaign tracking parameters
+     *
+     * Typical usage:
+     *
+     * Apply default campaign tracking parameters:
+     * {{ 'https://matomo.org/faq/123'|trackmatomolink }}
+     *
+     * Apply custom campaign tracking parameters:
+     * {{ 'https://matomo.org/faq/123'|trackmatomolink('SomeCampaign', 'SomeSource', 'SomeMedium') }}
+     *
+     */
+    private function addFilterTrackMatomoLink()
+    {
+        $trackLink = new TwigFilter('trackmatomolink', function ($url) {
+            $params = func_get_args();
+            array_shift($params);
+            $campaign = (count($params) > 0 ? $params[0] : null);
+            $source = (count($params) > 1 ? $params[1] : null);
+            $medium = (count($params) > 2 ? $params[2] : null);
+            return Url::addCampaignParametersToMatomoLink($url, $campaign, $source, $medium);
+        });
+        $this->twig->addFilter($trackLink);
     }
 
     private function addFilterImplode()

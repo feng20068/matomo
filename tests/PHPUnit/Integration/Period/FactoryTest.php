@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration\Period;
@@ -69,7 +70,7 @@ class FactoryTest extends UnitTestCase
     /**
      * @dataProvider getTestDataForMakePeriodFromQueryParams
      */
-    public function test_makePeriodFromQueryParams_appliesTimezoneProperly($now, $timezone, $period, $date, $expectedLabel, $expectedRange)
+    public function testMakePeriodFromQueryParamsAppliesTimezoneProperly($now, $timezone, $period, $date, $expectedLabel, $expectedRange)
     {
         Date::$now = strtotime($now);
 
@@ -101,9 +102,13 @@ class FactoryTest extends UnitTestCase
     /**
      * @dataProvider getBuildTestData
      */
-    public function test_build_CreatesCorrectPeriodInstances($strPeriod, $date, $timezone, $expectedPeriodClass,
-                                                             $expectedRangeString)
-    {
+    public function testBuildCreatesCorrectPeriodInstances(
+        $strPeriod,
+        $date,
+        $timezone,
+        $expectedPeriodClass,
+        $expectedRangeString
+    ) {
         $period = Period\Factory::build($strPeriod, $date, $timezone);
         $this->assertInstanceOf($expectedPeriodClass, $period);
         $this->assertEquals($expectedRangeString, $period->getRangeString());
@@ -129,14 +134,14 @@ class FactoryTest extends UnitTestCase
         ];
     }
 
-    public function test_makePeriodFromQueryParams()
+    public function testMakePeriodFromQueryParams()
     {
         $factory = Period\Factory::makePeriodFromQueryParams('UTC', 'range', '2019-01-01,2019-01-01');
         $this->assertTrue($factory instanceof Day);
         $this->assertEquals('2019-01-01', $factory->toString());
     }
 
-    public function test_build_CreatesCustomPeriodInstances()
+    public function testBuildCreatesCustomPeriodInstances()
     {
         Config::getInstance()->General['enabled_periods_API'] .= ',customperiod';
 
@@ -144,7 +149,7 @@ class FactoryTest extends UnitTestCase
         $this->assertInstanceOf(TestPeriod::class, $period);
     }
 
-    public function test_build_ThrowsIfPeriodIsUnrecognized()
+    public function testBuildThrowsIfPeriodIsUnrecognized()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('General_ExceptionInvalidPeriod');
@@ -152,7 +157,7 @@ class FactoryTest extends UnitTestCase
         Period\Factory::build('garbageperiod', '2015-01-01');
     }
 
-    public function test_build_ThrowsIfPeriodIsNotEnabledForApi()
+    public function testBuildThrowsIfPeriodIsNotEnabledForApi()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('General_ExceptionInvalidPeriod');

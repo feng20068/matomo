@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Dashboard\tests\Integration;
@@ -59,7 +60,7 @@ class APITest extends IntegrationTestCase
 
     public function testGetDashboardsShouldReturnOwnDashboardsForSuperUser()
     {
-        $layout ='[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
+        $layout = '[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
         $this->model->createNewDashboardForUser('eva', 'any name', $layout);
 
         FakeAccess::$superUser = true;
@@ -81,7 +82,7 @@ class APITest extends IntegrationTestCase
 
     public function testGetDashboardsShouldReturnForeignDashboardsForSuperUser()
     {
-        $layout ='[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
+        $layout = '[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
         $this->model->createNewDashboardForUser('peter', 'any name', $layout);
 
         FakeAccess::$superUser = true;
@@ -94,7 +95,7 @@ class APITest extends IntegrationTestCase
 
     public function testGetDashboardsShouldReturnOwnDashboardsForUser()
     {
-        $layout ='[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
+        $layout = '[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
         $this->model->createNewDashboardForUser('eva', 'any name', $layout);
 
         FakeAccess::$superUser = false;
@@ -122,7 +123,7 @@ class APITest extends IntegrationTestCase
 
         FakeAccess::$superUser = false;
 
-        $layout ='[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
+        $layout = '[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
         $this->api->createNewDashboardForUser('eva', 'name', $layout);
     }
 
@@ -134,7 +135,7 @@ class APITest extends IntegrationTestCase
         FakeAccess::$superUser = false;
         FakeAccess::$identity = 'anonymous';
 
-        $layout ='[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
+        $layout = '[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
         $this->api->createNewDashboardForUser('anonymous', 'name', $layout);
     }
 
@@ -146,7 +147,7 @@ class APITest extends IntegrationTestCase
         FakeAccess::$superUser = true;
         FakeAccess::$identity = 'eva';
 
-        $layout ='[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
+        $layout = '[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
         $this->api->createNewDashboardForUser('anonymous', 'name', $layout);
     }
 
@@ -176,7 +177,7 @@ class APITest extends IntegrationTestCase
 
     public function testCopyDashboardToUser()
     {
-        $layout ='[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
+        $layout = '[[{"uniqueId":"widgetLivewidget","parameters":{"module":"Live","action":"widget"}}]]';
         $id = $this->model->createNewDashboardForUser('superUserLogin', 'any name', $layout);
 
         $this->assertNotEmpty($id);

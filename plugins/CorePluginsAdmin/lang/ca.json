@@ -9,7 +9,7 @@
         "AlwaysActivatedPluginsList": "Els connectors següents sempre estan activats i no es poden desactivar: %s",
         "AreThereAnyRisks": "Hi ha cap risc?",
         "AreThereAnyRisksDetails1": "Quan activeu el Gestor d'etiquetes, els usuaris amb accés d'administrador podran crear etiquetes HTML personalitzades, activadors i variables que poden executar JavaScript al vostre lloc web. Aquestes plantilles personalitzades es podrien utilitzar malament per robar, per exemple, informació confidencial dels visitants del vostre lloc web (coneguda com a %1$sXSS%2$s).",
-        "AreThereAnyRisksDetails2": "Podeu desactivar aquestes plantilles personalitzades a \"Administració =&gt; Configuració general\" un cop hàgiu activat el Gestor d'etiquetes. Alternativament, també podeu restringir l'ús d'aquestes plantilles només a usuaris específics o superusuaris.",
+        "AreThereAnyRisksDetails2": "Podeu desactivar aquestes plantilles personalitzades a \"Administració → Configuració general\" un cop hàgiu activat el Gestor d'Etiquetes. Alternativament també podeu restringir l'ús d'aquestes plantilles només a usuaris específics o superusuaris.",
         "AuthorHomepage": "Pàgina d'inici de l'autor",
         "ChangeLookByManageThemes": "Podeu canviar l'aspecte de Matomo a %1$sGestió dels temes%2$s.",
         "ChangeSettingsPossible": "Podeu canviar %1$sla configuració%2$s per a aquest connector.",
@@ -47,6 +47,9 @@
         "OriginOfficial": "Oficial",
         "OriginThirdParty": "Tercers",
         "PluginActivated": "Connector activat",
+        "PluginFreeTrialStarted": "%1$sLa vostra prova gratuïta de 30 dies ha començat%2$s per a %3$s.",
+        "PluginFreeTrialStartedAccountCreatedMessage": "Hem afegit la vostra clau de llicència i hem iniciat una prova gratuïta de 30 dies per a %1$s. Feu el següent pas instal·lant i activant el vostre connector.",
+        "PluginFreeTrialStartedAccountCreatedTitle": "S'ha creat el vostre compte",
         "PluginHomepage": "Pàgina d'inici del connector",
         "PluginNotCompatibleWith": "El connector %1$s no és compatible amb %2$s.",
         "PluginNotDownloadable": "El connector no es pot descarregar.",
@@ -74,7 +77,7 @@
         "Themes": "Temes",
         "ThemesDescription": "Els temes poden canviar l'aspecte de la interfície d'usuari de Matomo i proporcionar una experiència visual completament nova per gaudir dels vostres informes d'anàlisi.",
         "ThemesManagement": "Gestionar els temes",
-        "UninstallConfirm": "Esteu a punt de desinstal·lar un connector %s. El connector s'eliminarà completament de la vostra plataforma i no es podrà recuperar. Esteu segur que voleu fer-ho?",
+        "UninstallConfirm": "Esteu a punt de desinstal·lar un connector %s. El connector i totes les dades recollides s'eliminaran completament de la vostra plataforma i no es podran recuperar. Esteu segur que voleu fer-ho?",
         "UpdateSelected": "Actualitzar els escollits",
         "Version": "Versió",
         "ViewAllMarketplacePlugins": "Veure tots els connectors de Marketplace",
@@ -86,6 +89,6 @@
         "WhyUsingATagManager": "Per què un gestor d'etiquetes?",
         "WhyUsingATagManagerDetails1": "Un gestor d'etiquetes et facilita la vida! Ja no cal que espereu que un desenvolupador modifiqui cap fragment vostre o de tercers al vostre lloc web, ja que el Gestor d'etiquetes us ofereix una experiència sense estrès per fer aquests canvis i implementar el vostre lloc web vosaltres mateixos.",
         "WhyUsingATagManagerDetails2": "No podria ser més còmode i no només us permet introduir canvis al mercat més ràpidament, sinó que també en redueix el cost.",
-        "WhyUsingATagManagerDetails3": "Això fa que els equips de màrqueting, els equips digitals i els informàtics estiguin contents... És un avantatge per a tots!"
+        "WhyUsingATagManagerDetails3": "Això fa que els equips de màrqueting, els equips digitals i els informàtics estiguin contents... És ideal per a tots!"
     }
 }

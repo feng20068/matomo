@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\TestRunner\Commands;
@@ -19,8 +19,8 @@ use Piwik\View;
  */
 class GenerateGitHubTestActionFile extends ConsoleCommand
 {
-    const COMMAND_NAME = 'generate:test-action';
-    const LATEST_PHP_VERSION = '8.1';
+    public const COMMAND_NAME = 'generate:test-action';
+    public const LATEST_PHP_VERSION = '8.1';
 
     protected $plugin = null;
     protected $phpVersions = null;
@@ -87,7 +87,7 @@ class GenerateGitHubTestActionFile extends ConsoleCommand
 
         // remove patch version
         if (substr_count($minimalPHPVersion, '.') > 1) {
-            $minimalPHPVersion = substr($minimalPHPVersion, 0, strpos($minimalPHPVersion, '.', strpos($minimalPHPVersion, '.')+1));
+            $minimalPHPVersion = substr($minimalPHPVersion, 0, strpos($minimalPHPVersion, '.', strpos($minimalPHPVersion, '.') + 1));
         }
 
         if (empty($this->phpVersions)) {

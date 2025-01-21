@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Morpheus;
@@ -21,6 +22,7 @@ class Controller extends \Piwik\Plugin\Controller
 
         $snippets = [];
 
+        // @phpcs:disable Generic.Files.LineLength
         $snippets[] = [
             'id' => 'ActivityIndicator',
             'title' => 'Loading indicator',
@@ -69,6 +71,7 @@ export default defineComponent({
             ],
         ];
 
+        // Alerts
         $snippets[] = [
             'id' => 'Alert',
             'title' => 'Alerts',
@@ -96,12 +99,52 @@ export default defineComponent({
   <strong>Warning!</strong> Better <a>check</a> yourself, you\'re not looking too good.
 </Alert>
 <Alert severity="danger">
-  <strong>Error!</strong> Change <a>a few things</a> up and try submitting again.
+  <strong>Error!</strong> Change <a>a few things</a> and try submitting again.
 </Alert>',
             'components' => [
                 ['plugin' => 'CoreHome', 'component' => 'Alert'],
             ],
         ];
+
+        // Notifications
+        $snippets[] = [
+            'id' => 'Notification',
+            'title' => 'Notifications',
+            'code' => '<template>
+  %vue_embed%
+</template>       
+<script lang="ts">
+import { defineComponent } from \'vue\';
+import { Notification } from \'CoreHome\';
+
+export default defineComponent({
+  components: {
+    Notification,
+  },
+});
+</script>',
+            'vue_embed' => '<Notification context="info">
+      <strong>Info</strong>:
+      This notification needs <a>your attention</a> but it\'s not super important and has a close button.
+    </Notification>
+    <Notification context="success">
+      <strong>Success</strong>:
+      You successfully read this important <a>alert message</a>, it also has a close button.
+    </Notification>
+    <Notification context="warning" :noclear="true">
+      <strong>Warning</strong>:
+      Better <a>check</a> yourself, you\'re not looking too good. There is no close button.
+    </Notification>
+    <Notification context="error" :noclear="true">
+      <strong>Error</strong><br>
+      Change <a>a few things</a> and try submitting again, this notification does not have a close button, but it does contain multiple lines of text. Textus sine sensu ultra finem lineae pergit ante movens infra et iterum ad sinistram.
+    </Notification>',
+            'desc' => 'This is a Vue component. You can use the :noclear="true" property to hide the close button',
+            'components' => [
+                ['plugin' => 'CoreHome', 'component' => 'Notification'],
+            ],
+        ];
+
 
         // forms
         $snippets[] = [
@@ -213,7 +256,11 @@ export default defineComponent({
 
         // TODOO: handle arrays
         $snippets[] = $this->formSnippet(
-            'language', ['language', 'phoneNumber', 'selectedExpand'], ['1', '[\'1\']', 'null'], [1, ['1'], null], '<div v-form>
+            'language',
+            ['language', 'phoneNumber', 'selectedExpand'],
+            ['1', '[\'1\']', 'null'],
+            [1, ['1'], null],
+            '<div v-form>
   <Field
     uicontrol="select"
     name="language"
@@ -239,7 +286,8 @@ export default defineComponent({
     :options="[{group: \'Group 1\',key:\'1\',value:\'Hello\'}, {group: \'Group 1\',key:\'2\',value:\'How\',tooltip: \'Help text\'}, {group: \'Group 1\',key:\'3\',value:\'Are\'}, {group: \'Group 2\',key:\'4\',value:\'You\'}]"
     v-model="selectedExpand"
   />
-</div>');
+</div>'
+        );
 
         $snippets[] = $this->formSnippet('multitupletext', 'values', '[]', [], '<div v-form>
   <Field
@@ -252,9 +300,12 @@ export default defineComponent({
   />
 </div>');
 
-        $snippets[] = $this->formSnippet('multitupletextvalue', 'values',
+        $snippets[] = $this->formSnippet(
+            'multitupletextvalue',
+            'values',
             '[{\'index\': \'test\', \'value\':\'myfoo\'},{\'index\': \'test 2\', \'value\':\'myfoo 2\'}]',
-            [['index' => 'test', 'value' => 'myfoo'], ['index' => 'test 2', 'value' => 'myfoo 2']], '<div v-form>
+            [['index' => 'test', 'value' => 'myfoo'], ['index' => 'test 2', 'value' => 'myfoo 2']],
+            '<div v-form>
   <Field
     uicontrol="multituple"
     name="multitupletextvalue"
@@ -263,11 +314,15 @@ export default defineComponent({
     :ui-control-attributes="{\'field1\':{\'key\':\'index\',\'title\':\'Index\',\'uiControl\':\'text\',\'availableValues\':null},\'field2\':{\'key\':\'value\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null}}"
     v-model="values"
   />
-</div>');
+</div>'
+        );
 
-        $snippets[] = $this->formSnippet('multitupleselect', 'values',
+        $snippets[] = $this->formSnippet(
+            'multitupleselect',
+            'values',
             '[{\'index\': \'test\', \'value\': \'myfoo\'}]',
-            [["index" => "test", "value" => "myfoo"]], '<div v-form>
+            [["index" => "test", "value" => "myfoo"]],
+            '<div v-form>
   <Field
     uicontrol="multituple"
     name="multitupleselect"
@@ -276,7 +331,8 @@ export default defineComponent({
     :ui-control-attributes="{\'field1\':{\'key\':\'index\',\'title\':\'Index\',\'uiControl\':\'select\',\'availableValues\':{\'test\':\'test\'}},\'field2\':{\'key\':\'value\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null}}"
     v-model="values"
   />
-</div>');
+</div>'
+        );
 
         $snippets[] = $this->formSnippet('multitupletext2', 'values', '[]', [], '<div v-form>
   <Field
@@ -289,9 +345,12 @@ export default defineComponent({
   />
 </div>');
 
-        $snippets[] = $this->formSnippet('multitupletextvalue2', 'values',
+        $snippets[] = $this->formSnippet(
+            'multitupletextvalue2',
+            'values',
             "[{'index': 'test', 'value':'myfoo'},{'index': 'test 2', 'value':'myfoo 2'}]",
-            [["index" => "test", "value" => "myfoo"], ["index" => "test 2", "value" => "myfoo 2"]], '<div v-form>
+            [["index" => "test", "value" => "myfoo"], ["index" => "test 2", "value" => "myfoo 2"]],
+            '<div v-form>
   <Field
     uicontrol="multituple"
     name="multitupletextvalue2"
@@ -300,11 +359,15 @@ export default defineComponent({
     :ui-control-attributes="{\'field1\':{\'key\':\'index\',\'title\':\'Index\',\'uiControl\':\'text\',\'availableValues\':null},\'field2\':{\'key\':\'value\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null},\'field3\':{\'key\':\'value2\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null}}"
     v-model="values"
   />
-</div>');
+</div>'
+        );
 
-        $snippets[] = $this->formSnippet('multitupleselect2', 'values',
+        $snippets[] = $this->formSnippet(
+            'multitupleselect2',
+            'values',
             '[{\'index\': \'test\', \'value\': \'myfoo\'}]',
-            [['index' => 'test', 'value' => 'myfoo']], '<div v-form>
+            [['index' => 'test', 'value' => 'myfoo']],
+            '<div v-form>
   <Field
     uicontrol="multituple"
     name="multitupleselect2"
@@ -314,7 +377,8 @@ export default defineComponent({
     v-model="values"
     rows="3"
   />
-</div>');
+</div>'
+        );
 
         $snippets[] = $this->formSnippet('multitupletext3', 'values', '[]', [], '<div v-form>
   <Field
@@ -339,9 +403,12 @@ export default defineComponent({
   />
 </div>');
 
-        $snippets[] = $this->formSnippet('multitupletextvalue3', 'values',
+        $snippets[] = $this->formSnippet(
+            'multitupletextvalue3',
+            'values',
             '[{\'index\': \'test\', \'value\':\'myfoo\'},{\'index\': \'test 2\', \'value\':\'myfoo 2\'}]',
-            [["index" => "test", "value" => "myfoo"], ["index" => "test 2", "value" => "myfoo 2"]], '<div v-form>
+            [["index" => "test", "value" => "myfoo"], ["index" => "test 2", "value" => "myfoo 2"]],
+            '<div v-form>
   <Field
     uicontrol="multituple"
     name="multitupletextvalue3"
@@ -350,11 +417,15 @@ export default defineComponent({
     :ui-control-attributes="{\'field1\':{\'key\':\'index\',\'title\':\'Index\',\'uiControl\':\'text\',\'availableValues\':null},\'field2\':{\'key\':\'value\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null},\'field3\':{\'key\':\'value2\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null},\'field4\':{\'key\':\'value3\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null}}"
     v-model="values"
   />
-</div>');
+</div>'
+        );
 
-        $snippets[] = $this->formSnippet('multitupleselect3', 'values',
-        '[{\'index\': \'test\', \'value\': \'myfoo\'}]',
-            [["index" => "test", "value" => "myfoo"]], '<div v-form>
+        $snippets[] = $this->formSnippet(
+            'multitupleselect3',
+            'values',
+            '[{\'index\': \'test\', \'value\': \'myfoo\'}]',
+            [["index" => "test", "value" => "myfoo"]],
+            '<div v-form>
   <Field
     uicontrol="multituple"
     name="multitupleselect3"
@@ -363,11 +434,15 @@ export default defineComponent({
     :ui-control-attributes="{\'field1\':{\'key\':\'index\',\'title\':\'Index\',\'uiControl\':\'select\',\'availableValues\':{\'test\':\'test\'}},\'field2\':{\'key\':\'value\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null},\'field3\':{\'key\':\'value2\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null},\'field4\':{\'key\':\'value3\',\'title\':\'Value\',\'uiControl\':\'text\',\'availableValues\':null}}"
     v-model="values"
   />
-</div>');
+</div>'
+        );
 
-        $snippets[] = $this->formSnippet('multituplesingleselect', 'values',
+        $snippets[] = $this->formSnippet(
+            'multituplesingleselect',
+            'values',
             '[{\'index\': \'test\', \'value\': \'myfoo\'}]',
-            [["index" => "test", "value" => "myfoo"]], '<div v-form>
+            [["index" => "test", "value" => "myfoo"]],
+            '<div v-form>
   <Field
     uicontrol="multituple"
     name="multituplesingleselect"
@@ -376,11 +451,15 @@ export default defineComponent({
     :ui-control-attributes="{\'field1\':{\'key\':\'index\',\'title\':\'Index\',\'uiControl\':\'select\',\'availableValues\':{\'test\':\'test\'}}}"
     v-model="values"
   />
-</div>');
+</div>'
+        );
 
-        $snippets[] = $this->formSnippet('multituplesingletext', 'values',
+        $snippets[] = $this->formSnippet(
+            'multituplesingletext',
+            'values',
             '[{\'index\': \'test\', \'value\': \'myfoo\'}]',
-            [["index" => "test", "value" => "myfoo"]], '<div v-form>
+            [["index" => "test", "value" => "myfoo"]],
+            '<div v-form>
   <Field
     uicontrol="multituple"
     name="multituplesingletext"
@@ -389,7 +468,8 @@ export default defineComponent({
     :ui-control-attributes="{\'field1\':{\'key\':\'index\',\'title\':\'Index\',\'uiControl\':\'text\',\'availableValues\':null}}"
     v-model="values"
   />
-</div>');
+</div>'
+        );
 
         $snippets[] = $this->formSnippet('text-field-array', 'values', "['text one', 'text two']", ['text one', 'text two'], '<div v-form>
   <Field
@@ -414,8 +494,12 @@ export default defineComponent({
   />
 </div>');
 
-        $snippets[] = $this->formSnippet('enableFeatures', ['enable', 'enableArray', 'defaultReportDate'],
-            ['false', '[]', 'null'], [false, [], null], '<div v-form>
+        $snippets[] = $this->formSnippet(
+            'enableFeatures',
+            ['enable', 'enableArray', 'defaultReportDate'],
+            ['false', '[]', 'null'],
+            [false, [], null],
+            '<div v-form>
   <Field
     uicontrol="checkbox"
     name="enableFeature"
@@ -429,7 +513,7 @@ export default defineComponent({
     name="enableFeature"
     title="Enable feature"
     var-type="array"
-    :options="{today: \'Today\', yesterday: \'Yesterday\',week: \'Previous 30 days (not including today)\'}"
+    :options=\'[{"name":"enableFeatures[]", "key":"today", "value":"Today"},{"name":"enableFeatures[]", "key":"yesterday", "value":"Yesterday"},{"name":"enableFeatures[]", "key":"week", "value":"Previous 30 days (not including today)"}]\'
     inline-help="This field shows multiple checkboxes as we declare we want to get an array of values."
     v-model="enableArray"
   />
@@ -441,7 +525,8 @@ export default defineComponent({
     inline-help="This is a help text that can be used to describe the field. This help text may extend over several lines."
     v-model="defaultReportDate"
   />
-</div>');
+</div>'
+        );
 
         $snippets[] = $this->formSnippet('currentsite', ['site', 'isDisabled', 'saveCount', 'isLoading'], ['null', 'false', '0', 'false'], [null, false, 0, false], '<div v-form>
   <Field
@@ -636,16 +721,16 @@ export default defineComponent({
                 'delete',
                 'plus',
                 'minus',
-                'archive'
+                'archive',
+                'add1',
+                'remove'
             ],
             'Alerts' => [
                 'error',
                 'warning',
                 'info',
-                'info2',
                 'success',
                 'help',
-                'help-alt',
                 'ok'
             ],
             'Navigation' => [
@@ -655,7 +740,6 @@ export default defineComponent({
                 'arrow-right-2',
                 'arrow-top',
                 'arrow-bottom',
-                'arrow-collapsed',
                 'zoom-in',
                 'zoom-out',
                 'show',
@@ -676,7 +760,6 @@ export default defineComponent({
                 'fullscreen',
                 'close',
                 'maximise',
-                'newtab',
                 'refresh',
                 'reload'
             ],
@@ -685,8 +768,6 @@ export default defineComponent({
                 'table-more',
                 'chart-bar',
                 'chart-pie',
-                'chart-line',
-                'chart-line-details',
                 'evolution',
                 'funnel',
                 'form',
@@ -699,10 +780,12 @@ export default defineComponent({
                 'user',
                 'user-add',
                 'users',
-                'alien'
+                'user-personal'
             ],
             'Date-picker' => [
-                'calendar'
+                'calendar',
+                'datepicker-arr-l',
+                'datepicker-arr-r'
             ],
             'Annotations' => [
                 'annotation'
@@ -725,10 +808,18 @@ export default defineComponent({
                 'segmented-visits-log'
             ],
             'Lock' => [
-                'locked',
-                'locked-2',
-                'locked-3',
-                'locked-4'
+                'locked'
+            ],
+            'Media' => [
+                'audio',
+                'play',
+                'pause',
+                'replay',
+                'stop',
+                'fast-forward',
+                'fast-rewind',
+                'skip-next',
+                'skip-previous'
             ],
             'Other' => [
                 'configure',
@@ -741,25 +832,15 @@ export default defineComponent({
                 'code',
                 'star',
                 'drop',
+                'drop-crossed',
                 'business',
                 'finance',
                 'folder',
-                'folder-charts',
                 'github',
                 'open-source',
                 'puzzle',
                 'server',
-                'server-alt',
                 'tag-cloud',
-                'audio',
-                'play',
-                'pause',
-                'replay',
-                'stop',
-                'fast-forward',
-                'fast-rewind',
-                'skip-next',
-                'skip-previous',
                 'sign-in',
                 'sign-out',
                 'settings',
@@ -769,9 +850,25 @@ export default defineComponent({
                 'embed',
                 'heart',
                 'merge',
-                'content-copy'
+                'content-copy',
+                'new_releases',
+                'notifications_on',
+                'reporting-dashboard',
+                'reporting-actions',
+                'reporting-visitors',
+                'reporting-referer',
+                'admin-diagnostic',
+                'admin-platform',
+                'admin-development',
+                'admin-settings',
+                'marketplace',
+                'plugin',
+                'circle',
+                'dollar-sign',
+                'hits',
             ],
         ];
+        // @phpcs:enable Generic.Files.LineLength
 
         return $this->renderTemplate('demo', [
             'snippets' => $snippets,

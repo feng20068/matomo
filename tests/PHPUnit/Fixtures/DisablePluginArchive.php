@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tests\Fixtures;
 
 use Piwik\Date;
@@ -61,19 +63,19 @@ class DisablePluginArchive extends Fixture
         // testing URL excluded parameters
         $parameterToExclude = 'excluded_parameter';
         APISitesManager::getInstance()->updateSite(
-          $idSite,
-          'new name',
-          $url = array('http://site.com'),
-          $ecommerce = 0,
-          $siteSearch = 0,
-          $searchKeywordParameters = null,
-          $searchCategoryParameters = null,
-          $excludedIps = null,
-          $parameterToExclude . ',anotherParameter',
-          $timezone = null,
-          $currency = null,
-          $group = null,
-          $startDate = null
+            $idSite,
+            'new name',
+            $url = array('http://site.com'),
+            $ecommerce = 0,
+            $siteSearch = 0,
+            $searchKeywordParameters = null,
+            $searchCategoryParameters = null,
+            $excludedIps = null,
+            $parameterToExclude . ',anotherParameter',
+            $timezone = null,
+            $currency = null,
+            $group = null,
+            $startDate = null
         );
 
         // Record 1st page view
@@ -153,14 +155,14 @@ class DisablePluginArchive extends Fixture
     private function setUpConfig()
     {
         $testEnvironment = $this->getTestEnvironment();
-        $testEnvironment->overrideConfig('General','disable_archiving_segment_for_plugins','Referrers');
+        $testEnvironment->overrideConfig('General', 'disable_archiving_segment_for_plugins', 'Referrers');
         $testEnvironment->save();
     }
 
     private function removeConfig()
     {
         $testEnvironment = $this->getTestEnvironment();
-        $testEnvironment->overrideConfig('General','disable_archiving_segment_for_plugins','');
+        $testEnvironment->overrideConfig('General', 'disable_archiving_segment_for_plugins', '');
         $testEnvironment->save();
     }
 }

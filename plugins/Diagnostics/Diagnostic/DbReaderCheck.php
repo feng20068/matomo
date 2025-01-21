@@ -1,15 +1,17 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Diagnostics\Diagnostic;
 
-use Piwik\Config;
 use Piwik\Db;
 use Piwik\Piwik;
+use Piwik\SettingsPiwik;
 use Piwik\Translation\Translator;
 
 /**
@@ -29,15 +31,14 @@ class DbReaderCheck implements Diagnostic
 
     public function execute()
     {
-        $isPiwikInstalling = !Config::getInstance()->existsLocalConfig();
-        if ($isPiwikInstalling) {
-            // Skip the diagnostic if Piwik is being installed
-            return array();
+        if (!SettingsPiwik::isMatomoInstalled()) {
+            // Skip the diagnostic if Matomo is being installed
+            return [];
         }
 
         if (!Db::hasReaderConfigured()) {
             // only show an entry when reader is actually configured
-            return array();
+            return [];
         }
 
         $label = $this->translator->translate('Diagnostics_DatabaseReaderConnection');
@@ -46,7 +47,6 @@ class DbReaderCheck implements Diagnostic
             Db::getReader();
             return array(DiagnosticResult::singleResult($label, DiagnosticResult::STATUS_OK, ''));
         } catch (\Exception $e) {
-
         }
 
         $comment = Piwik::translate('Installation_CannotConnectToDb');

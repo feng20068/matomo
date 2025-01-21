@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -22,7 +23,7 @@
             <span v-html="$sanitize(typeof item.comment !== 'string' ? '' : item.comment)"></span>
           </span>
           <span v-else-if="item.status === 'informational'">
-            <span class="icon-info2"></span>
+            <span class="icon-info"></span>
             <span v-html="$sanitize(typeof item.comment !== 'string' ? '' : item.comment)"></span>
           </span>
           <span v-else>

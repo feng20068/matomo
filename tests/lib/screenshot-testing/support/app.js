@@ -3,8 +3,8 @@
  *
  * UI screenshot test runner Application class
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 var fs = require('fs'),
@@ -60,7 +60,7 @@ var Application = function () {
 };
 
 Application.prototype.printHelpAndExit = function () {
-    console.log("Usage: phantomjs run-tests.js [options] [test-files]");
+    console.log("Usage: node run-tests.js [options] [test-files]");
     console.log();
     console.log("Available options:");
     console.log("  --help:                   Prints this message.");
@@ -70,7 +70,7 @@ Application.prototype.printHelpAndExit = function () {
     console.log("  --plugin=name:            Runs all tests for a plugin.");
     console.log("  --keep-symlinks:          If supplied, the recursive symlinks created in tests/PHPUnit/proxy");
     console.log("                            aren't deleted after tests are run. Specify this option if you'd like");
-    console.log("                            to view pages phantomjs captures in a browser.");
+    console.log("                            to view pages puppeteer captures in a browser.");
     console.log("  --print-logs:             Prints webpage logs even if tests succeed.");
     console.log("  --store-in-ui-tests-repo: Stores processed screenshots within the UI tests repository even if");
     console.log("                            the tests are in another plugin. For use with CI build.");
@@ -191,6 +191,10 @@ Application.prototype.loadTestModules = function () {
     mocha.suite.suites.forEach(function (suite) {
         var fixture = typeof suite.fixture === 'undefined' ? "Piwik\\Tests\\Fixtures\\UITestFixture" : suite.fixture;
 
+        suite.beforeAll(async function () {
+            await page.createPage();
+        });
+
         suite.beforeAll(function (done) {
             this.timeout(0); // no timeout for fixture setup (this requires normal anonymous function, not fat arrow function)
 
@@ -208,7 +212,8 @@ Application.prototype.loadTestModules = function () {
             });
         });
 
-        // move to before other hooks
+        // move in front of other beforeAll hooks (called twice as we're adding two beforeAll handlers)
+        suite._beforeAll.unshift(suite._beforeAll.pop());
         suite._beforeAll.unshift(suite._beforeAll.pop());
 
         suite.afterAll(function (done) {
@@ -281,7 +286,7 @@ Application.prototype.loadTestModules = function () {
 };
 
 Application.prototype.runTests = function (mocha) {
-    // make sure all necessary directories exist (symlinks handled by PHP since phantomjs can't create any)
+    // make sure all necessary directories exist (symlinks handled by PHP since puppeteer can't create any)
     var dirsToCreate = [
         path.join(PIWIK_INCLUDE_PATH, 'tmp/sessions')
     ];
@@ -311,21 +316,16 @@ Application.prototype.doRunTests = function (mocha) {
                 }
             });
         }
-
-        process.exit(failures);
-    });
-
-    this.runner.on('suite', function() {
-        page.webpage.mouse.move(-10, -10);
     });
 
     this.runner.on('test', function () {
         page._reset();
     });
-};
 
-Application.prototype.finish = function () {
-    process.exit(this.runner ? this.runner.failures : -1);
+    this.runner.on('end', function() {
+      // we are terminating but we are waiting for all other events to finish
+      setTimeout(() => process.exit(this.failures), 10000);
+    })
 };
 
 Application.prototype.appendMissingExpected = function (screenName) {

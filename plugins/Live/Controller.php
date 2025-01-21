@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Live;
 
 use Piwik\API\Request;
@@ -22,7 +23,7 @@ use Piwik\View;
  */
 class Controller extends \Piwik\Plugin\Controller
 {
-    const SIMPLE_VISIT_COUNT_WIDGET_LAST_MINUTES_CONFIG_KEY = 'live_widget_visitor_count_last_minutes';
+    public const SIMPLE_VISIT_COUNT_WIDGET_LAST_MINUTES_CONFIG_KEY = 'live_widget_visitor_count_last_minutes';
 
     private $profileSummaryProvider;
 
@@ -32,7 +33,7 @@ class Controller extends \Piwik\Plugin\Controller
         parent::__construct();
     }
 
-    function index()
+    public function index()
     {
         return $this->widget();
     }
@@ -56,7 +57,7 @@ class Controller extends \Piwik\Plugin\Controller
     public function ajaxTotalVisitors()
     {
         Piwik::checkUserHasViewAccess($this->idSite);
-        
+
         $view = new View('@Live/ajaxTotalVisitors');
         $view = $this->setCounters($view);
         $view->idSite = $this->idSite;
@@ -87,7 +88,7 @@ class Controller extends \Piwik\Plugin\Controller
     {
         return $this->renderReport('getLastVisitsDetails');
     }
-    
+
     public function getLastVisitsStart()
     {
         Piwik::checkUserHasViewAccess($this->idSite);
@@ -191,13 +192,13 @@ class Controller extends \Piwik\Plugin\Controller
             $summaryEntries[] = [$profileSummary->getOrder(), $profileSummary->render()];
         }
 
-        usort($summaryEntries, function($a, $b) {
+        usort($summaryEntries, function ($a, $b) {
             return version_compare($a[0], $b[0]);
         });
 
         $summary = '';
 
-        foreach ($summaryEntries AS $summaryEntry) {
+        foreach ($summaryEntries as $summaryEntry) {
             $summary .= $summaryEntry[1];
         }
 
@@ -210,7 +211,7 @@ class Controller extends \Piwik\Plugin\Controller
     {
         $this->checkSitePermission();
         Piwik::checkUserHasViewAccess($this->idSite);
-        
+
         $filterLimit = Common::getRequestVar('filter_offset', 0, 'int');
         $startCounter = Common::getRequestVar('start_number', 0, 'int');
         $limit = Config::getInstance()->General['live_visitor_profile_max_visits_to_aggregate'];

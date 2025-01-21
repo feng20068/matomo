@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Diagnostics\Diagnostic;
 
 use Piwik\Common;
@@ -14,7 +16,7 @@ use Piwik\SettingsPiwik;
 use Piwik\Translation\Translator;
 
 /**
- * Informatation about the database.
+ * Information about the database.
  */
 class DatabaseInformational implements Diagnostic
 {
@@ -36,6 +38,7 @@ class DatabaseInformational implements Diagnostic
             $dbConfig = Config::getInstance()->database;
             $results[] = DiagnosticResult::informationalResult('DB Prefix', $dbConfig['tables_prefix']);
             $results[] = DiagnosticResult::informationalResult('DB Charset', $dbConfig['charset']);
+            $results[] = DiagnosticResult::informationalResult('DB Collation', $dbConfig['collation']);
             $results[] = DiagnosticResult::informationalResult('DB Adapter', $dbConfig['adapter']);
             $results[] = DiagnosticResult::informationalResult('MySQL Version', $this->getServerVersion());
             $results[] = DiagnosticResult::informationalResult('Num Tables', $this->getNumMatomoTables());
@@ -44,7 +47,8 @@ class DatabaseInformational implements Diagnostic
         return $results;
     }
 
-    private function getServerVErsion() {
+    private function getServerVErsion()
+    {
         try {
             return Db::get()->getServerVersion();
         } catch (\Exception $e) {
@@ -52,7 +56,8 @@ class DatabaseInformational implements Diagnostic
         }
     }
 
-    private function getNumMatomoTables() {
+    private function getNumMatomoTables()
+    {
         $prefix = Common::prefixTable('');
 
         $results = null;
@@ -68,5 +73,4 @@ class DatabaseInformational implements Diagnostic
 
         return count($results);
     }
-
 }

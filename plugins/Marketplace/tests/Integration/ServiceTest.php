@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Marketplace\tests\Integration\Api;
@@ -19,7 +20,6 @@ use Piwik\Plugins\Marketplace\tests\Framework\Mock\Service as TestService;
  */
 class ServiceTest extends IntegrationTestCase
 {
-
     /**
      * @var TestService
      */
@@ -32,7 +32,7 @@ class ServiceTest extends IntegrationTestCase
         $this->service = new TestService();
     }
 
-    public function test_fetch_throwsApiError_WhenMarketplaceReturnsAnError()
+    public function testFetchThrowsApiErrorWhenMarketplaceReturnsAnError()
     {
         $this->expectException(\Piwik\Plugins\Marketplace\Api\Service\Exception::class);
         $this->expectExceptionCode(101);
@@ -42,7 +42,7 @@ class ServiceTest extends IntegrationTestCase
         $this->service->fetch('plugins/CustomPlugin1/info', array());
     }
 
-    public function test_fetch_throwsHttpError_WhenMarketplaceReturnsNoResultWhichMeansHttpError()
+    public function testFetchThrowsHttpErrorWhenMarketplaceReturnsNoResultWhichMeansHttpError()
     {
         $this->expectException(\Piwik\Plugins\Marketplace\Api\Service\Exception::class);
         $this->expectExceptionCode(100);
@@ -54,12 +54,11 @@ class ServiceTest extends IntegrationTestCase
         $this->service->fetch('plugins/CustomPlugin1/info', array());
     }
 
-    public function test_fetch_jsonDecodesTheHttpResponse()
+    public function testFetchJsonDecodesTheHttpResponse()
     {
         $this->service->returnFixture('v2.0_consumer-access_token-consumer1_paid2_custom1.json');
         $consumer = $this->service->fetch('consumer', array());
         $this->assertTrue(is_array($consumer));
         $this->assertNotEmpty($consumer);
     }
-
 }

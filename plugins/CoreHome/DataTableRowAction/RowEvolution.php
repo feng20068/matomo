@@ -1,25 +1,27 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreHome\DataTableRowAction;
 
 use Exception;
 use Piwik\API\DataTablePostProcessor;
 use Piwik\API\Request;
 use Piwik\Common;
+use Piwik\DataTable\DataTableInterface;
 use Piwik\Date;
 use Piwik\Metrics;
 use Piwik\NumberFormatter;
 use Piwik\Period\Factory as PeriodFactory;
 use Piwik\Piwik;
 use Piwik\Plugins\API\Filter\DataComparisonFilter;
-use Piwik\Plugins\CoreVisualizations\Visualizations\Graph\Config As GraphConfig;
-use Piwik\Plugins\CoreVisualizations\Visualizations\JqplotGraph\Config As JqplotGraphConfig;
+use Piwik\Plugins\CoreVisualizations\Visualizations\Graph\Config as GraphConfig;
+use Piwik\Plugins\CoreVisualizations\Visualizations\JqplotGraph\Config as JqplotGraphConfig;
 use Piwik\Plugins\CoreVisualizations\Visualizations\JqplotGraph\Evolution as EvolutionViz;
 use Piwik\Url;
 use Piwik\ViewDataTable\Factory;
@@ -31,7 +33,6 @@ use Piwik\ViewDataTable\Manager as ViewDataTableManager;
  */
 class RowEvolution
 {
-
     /** The current site id */
     protected $idSite;
 
@@ -115,8 +116,10 @@ class RowEvolution
         if ($this->period != 'range') {
             // handle day, week, month and year: display last X periods
             //handle cache if exist
-            $cache = ViewDataTableManager::getViewDataTableParameters(Piwik::getCurrentUserLogin(),
-              'CoreHome.getRowEvolutionGraph');
+            $cache = ViewDataTableManager::getViewDataTableParameters(
+                Piwik::getCurrentUserLogin(),
+                'CoreHome.getRowEvolutionGraph'
+            );
             $lastDay = (isset($cache['evolution_' . $this->period . '_last_n']) ? $cache['evolution_' . $this->period . '_last_n'] : null);
             $end = $date->toString();
             [$this->date, $lastN] = EvolutionViz::getDateRangeAndLastN($this->period, $end, $lastDay);
@@ -146,7 +149,7 @@ class RowEvolution
         $popoverTitle = '';
         if ($this->rowLabel) {
             $icon = $this->rowIcon ? '<img height="16px" src="' . $this->rowIcon . '" alt="">' : '';
-            $rowLabel = str_replace('/', '<wbr>/', str_replace('&', '<wbr>&', $this->rowLabel ));
+            $rowLabel = str_replace('/', '<wbr>/', str_replace('&', '<wbr>&', $this->rowLabel));
             $metricsText = sprintf(Piwik::translate('RowEvolution_MetricsFor'), $this->dimension . ': ' . $icon . ' ' . $rowLabel);
             $popoverTitle = $icon . ' ' . $this->rowLabel;
         }
@@ -220,7 +223,8 @@ class RowEvolution
         // at this point the report data will reference the comparison series labels for the changed compare periods/dates. We don't
         // want to show this to users because they will not recognize the changed periods, so we have to replace them.
         if ($isComparing) {
-            $modifiedSeriesLabels = reset($report['reportData']->getDataTables())->getMetadata('comparisonSeries');
+            $dataTables = $report['reportData']->getDataTables();
+            $modifiedSeriesLabels = reset($dataTables)->getMetadata('comparisonSeries');
             $seriesMap = array_combine($modifiedSeriesLabels, $unmodifiedSeriesLabels);
 
             foreach ($report['metadata']['metrics'] as $key => $metricInfo) {
@@ -252,8 +256,12 @@ class RowEvolution
     public function getRowEvolutionGraph($graphType = false, $metrics = false)
     {
         // set up the view data table
-        $view = Factory::build($graphType ? : $this->graphType, $this->apiMethod,
-            $controllerAction = 'CoreHome.getRowEvolutionGraph', $forceDefault = true);
+        $view = Factory::build(
+            $graphType ? : $this->graphType,
+            $this->apiMethod,
+            $controllerAction = 'CoreHome.getRowEvolutionGraph',
+            $forceDefault = true
+        );
         $view->setDataTable($this->dataTable);
 
         if (!empty($this->graphMetrics)) { // In row Evolution popover, this is empty
@@ -308,7 +316,7 @@ class RowEvolution
                 if (substr($change, 0, 1) == '+') {
                     $changeClass = $lowerIsBetter ? 'bad' : 'good';
                     $changeImage = $lowerIsBetter ? 'arrow_up_red' : 'arrow_up';
-                } else if (substr($change, 0, 1) == '-') {
+                } elseif (substr($change, 0, 1) == '-') {
                     $changeClass = $lowerIsBetter ? 'good' : 'bad';
                     $changeImage = $lowerIsBetter ? 'arrow_down_green' : 'arrow_down';
                 } else {
@@ -344,7 +352,8 @@ class RowEvolution
             }
 
             // TODO: this check should be determined by metric metadata, not hardcoded here
-            if ($metric == 'nb_users'
+            if (
+                $metric == 'nb_users'
                 && $first == 0
                 && $last == 0
             ) {
@@ -419,11 +428,13 @@ class RowEvolution
         $dataTableMap = $report['reportData'];
 
         // If the dataTable specifies a label_html, use this instead
-        $labelPretty = $dataTableMap->getColumn('label_html');
-        $labelPretty = array_filter($labelPretty, 'strlen');
-        $labelPretty = current($labelPretty);
-        if (!empty($labelPretty)) {
-            return $labelPretty;
+        if ($dataTableMap instanceof DataTableInterface) {
+            $labelPretty = $dataTableMap->getColumn('label_html');
+            $labelPretty = array_filter($labelPretty, 'strlen');
+            $labelPretty = current($labelPretty);
+            if (!empty($labelPretty)) {
+                return $labelPretty;
+            }
         }
         return $rowLabel;
     }

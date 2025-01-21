@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\ArchiveProcessor;
@@ -14,8 +15,8 @@ namespace Piwik\ArchiveProcessor;
  */
 class Record
 {
-    const TYPE_NUMERIC = 'numeric';
-    const TYPE_BLOB = 'blob';
+    public const TYPE_NUMERIC = 'numeric';
+    public const TYPE_BLOB = 'blob';
 
     /**
      * @var string
@@ -61,6 +62,11 @@ class Record
      * @var array|null
      */
     private $blobColumnAggregationOps = null;
+
+    /**
+     * @var callable|null
+     */
+    private $multiplePeriodTransform = null;
 
     public static function make($type, $name)
     {
@@ -239,5 +245,23 @@ class Record
     public function getBlobColumnAggregationOps(): ?array
     {
         return $this->blobColumnAggregationOps;
+    }
+
+    /**
+     * @param ?callable $multiplePeriodTransform
+     * @return Record
+     */
+    public function setMultiplePeriodTransform(?callable $multiplePeriodTransform): Record
+    {
+        $this->multiplePeriodTransform = $multiplePeriodTransform;
+        return $this;
+    }
+
+    /**
+     * @return callable
+     */
+    public function getMultiplePeriodTransform(): ?callable
+    {
+        return $this->multiplePeriodTransform;
     }
 }

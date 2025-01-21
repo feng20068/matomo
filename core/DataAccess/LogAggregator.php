@@ -1,16 +1,18 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\DataAccess;
 
 use Piwik\ArchiveProcessor\Parameters;
 use Piwik\Common;
 use Piwik\Config;
+use Piwik\Config\DatabaseConfig;
 use Piwik\Container\StaticContainer;
 use Piwik\DataArray;
 use Piwik\Date;
@@ -104,35 +106,35 @@ use Piwik\Log\LoggerInterface;
  */
 class LogAggregator
 {
-    const LOG_VISIT_TABLE = 'log_visit';
+    public const LOG_VISIT_TABLE = 'log_visit';
 
-    const LOG_ACTIONS_TABLE = 'log_link_visit_action';
+    public const LOG_ACTIONS_TABLE = 'log_link_visit_action';
 
-    const LOG_CONVERSION_TABLE = "log_conversion";
+    public const LOG_CONVERSION_TABLE = "log_conversion";
 
-    const REVENUE_SUBTOTAL_FIELD = 'revenue_subtotal';
+    public const REVENUE_SUBTOTAL_FIELD = 'revenue_subtotal';
 
-    const REVENUE_TAX_FIELD = 'revenue_tax';
+    public const REVENUE_TAX_FIELD = 'revenue_tax';
 
-    const REVENUE_SHIPPING_FIELD = 'revenue_shipping';
+    public const REVENUE_SHIPPING_FIELD = 'revenue_shipping';
 
-    const REVENUE_DISCOUNT_FIELD = 'revenue_discount';
+    public const REVENUE_DISCOUNT_FIELD = 'revenue_discount';
 
-    const TOTAL_REVENUE_FIELD = 'revenue';
+    public const TOTAL_REVENUE_FIELD = 'revenue';
 
-    const ITEMS_COUNT_FIELD = "items";
+    public const ITEMS_COUNT_FIELD = "items";
 
-    const CONVERSION_DATETIME_FIELD = "server_time";
+    public const CONVERSION_DATETIME_FIELD = "server_time";
 
-    const ACTION_DATETIME_FIELD = "server_time";
+    public const ACTION_DATETIME_FIELD = "server_time";
 
-    const VISIT_DATETIME_FIELD = 'visit_last_action_time';
+    public const VISIT_DATETIME_FIELD = 'visit_last_action_time';
 
-    const IDGOAL_FIELD = 'idgoal';
+    public const IDGOAL_FIELD = 'idgoal';
 
-    const FIELDS_SEPARATOR = ", \n\t\t\t";
+    public const FIELDS_SEPARATOR = ", \n\t\t\t";
 
-    const LOG_TABLE_SEGMENT_TEMPORARY_PREFIX = 'logtmpsegment';
+    public const LOG_TABLE_SEGMENT_TEMPORARY_PREFIX = 'logtmpsegment';
 
     /** @var \Piwik\Date */
     protected $dateStart;
@@ -171,7 +173,7 @@ class LogAggregator
      *
      * @param \Piwik\ArchiveProcessor\Parameters $params
      */
-    public function __construct(Parameters $params, LoggerInterface $logger = null)
+    public function __construct(Parameters $params, ?LoggerInterface $logger = null)
     {
         $this->dateStart = $params->getDateTimeStart();
         $this->dateEnd = $params->getDateTimeEnd();
@@ -292,7 +294,7 @@ class LogAggregator
         } catch (\Exception $e) {
             if ($readerDb->isErrNo($e, \Piwik\Updater\Migration\Db::ERROR_CODE_TABLE_EXISTS)) {
                 return;
-            }  else {
+            } else {
                 throw $e;
             }
         }
@@ -305,7 +307,7 @@ class LogAggregator
             // set uncommitted is easily noticeable in the code as it could be missed quite easily otherwise
             // we set uncommitted so we don't make the INSERT INTO... SELECT... locking ... we do not want to lock
             // eg the visits table
-            if (!$transactionLevel->setUncommitted()) {
+            if (!$transactionLevel->setTransactionLevelForNonLockingReads()) {
                 $canSetTransactionLevel = false;
             }
         }
@@ -316,7 +318,7 @@ class LogAggregator
             $all = $readerDb->fetchAll($segmentSelectSql, $segmentSelectBind);
             if (!empty($all)) {
                 // we're not using batchinsert since this would not support the reader DB.
-                $readerDb->query('INSERT INTO ' . $table . ' VALUES ('.implode('),(', array_column($all, 'idvisit')).')');
+                $readerDb->query('INSERT IGNORE INTO ' . $table . ' VALUES (' . implode('),(', array_column($all, 'idvisit')) . ')');
             }
             return;
         }
@@ -348,7 +350,6 @@ class LogAggregator
         $bind = $this->getGeneralQueryBindParams();
 
         if (!$this->segment->isEmpty() && $this->isSegmentCacheEnabled()) {
-
             $segment = new Segment('', $this->sites, $this->params->getPeriod()->getDateTimeStart(), $this->params->getPeriod()->getDateTimeEnd());
 
             $logTablesProvider = $this->getLogTableProvider();
@@ -364,6 +365,18 @@ class LogAggregator
             }
 
             foreach ($logTablesProvider->getAllLogTables() as $logTable) {
+                // In cases where log tables are right joined to the segment temporary table it is better for
+                // performance to allow the where condition to be applied, otherwise without a range limit the entire
+                // log table will be used
+                foreach ($from as $fromJoin) {
+                    if (
+                        !empty($fromJoin['table']) && $fromJoin['table'] === $logTable->getName() &&
+                        !empty($fromJoin['join']) && strtoupper($fromJoin['join']) === 'RIGHT JOIN'
+                    ) {
+                        continue 2;
+                    }
+                }
+
                 if ($logTable->getDateTimeColumn()) {
                     $whereTest = $this->getWhereStatement($logTable->getName(), $logTable->getDateTimeColumn());
                     if (strpos($where, $whereTest) === 0) {
@@ -378,13 +391,17 @@ class LogAggregator
                     }
                 }
             }
-
         }
 
         $query = $segment->getSelectQuery($select, $from, $where, $bind, $orderBy, $groupBy, $limit, $offset);
 
         if (is_array($query) && array_key_exists('sql', $query)) {
             $query['sql'] = DbHelper::addOriginHintToQuery($query['sql'], $this->queryOriginHint, $this->dateStart, $this->dateEnd, $this->sites, $this->segment);
+            if (DatabaseConfig::getConfigValue('enable_first_table_join_prefix')) {
+                $fromTable = is_array($from) ? reset($from) : $from;
+                $fromTable = is_array($fromTable) ? $fromTable['table'] : $fromTable;
+                $query['sql'] = DbHelper::addJoinPrefixHintToQuery($query['sql'], $fromTable);
+            }
         }
 
         return $query;
@@ -401,6 +418,22 @@ class LogAggregator
     private function createSegmentTable(): string
     {
         $segmentTable = $this->getSegmentTmpTableName();
+        $segmentSql = $this->getSegmentTableSql();
+
+        $this->createTemporaryTable($segmentTable, $segmentSql['sql'], $segmentSql['bind']);
+
+        return $segmentTable;
+    }
+
+    /**
+     * Return the SQL query used to populate the segment temporary table
+     *
+     * @return array
+     * @throws \Piwik\Exception\DI\DependencyException
+     * @throws \Piwik\Exception\DI\NotFoundException
+     */
+    public function getSegmentTableSql(): array
+    {
         $segmentWhere = $this->getWhereStatement('log_visit', 'visit_last_action_time');
         $segmentBind = $this->getGeneralQueryBindParams();
 
@@ -408,13 +441,17 @@ class LogAggregator
         $forceGroupByBackup = $logQueryBuilder->getForcedInnerGroupBySubselect();
         $logQueryBuilder->forceInnerGroupBySubselect(LogQueryBuilder::FORCE_INNER_GROUP_BY_NO_SUBSELECT);
         $segmentSql = $this->segment->getSelectQuery('distinct log_visit.idvisit as idvisit', 'log_visit', $segmentWhere, $segmentBind, 'log_visit.idvisit ASC');
+
+        if (is_array($segmentSql) && array_key_exists('sql', $segmentSql)) {
+            if (DatabaseConfig::getConfigValue('enable_segment_first_table_join_prefix')) {
+                $segmentSql['sql'] = DbHelper::addJoinPrefixHintToQuery($segmentSql['sql'], 'log_visit');
+            }
+        }
+
         $logQueryBuilder->forceInnerGroupBySubselect($forceGroupByBackup);
 
-        $this->createTemporaryTable($segmentTable, $segmentSql['sql'], $segmentSql['bind']);
-
-        return $segmentTable;
+        return $segmentSql;
     }
-
 
     protected function getVisitsMetricFields()
     {
@@ -544,7 +581,8 @@ class LogAggregator
      *                                   A pre-configured ranking query instance that will be used to limit the result.
      *                                   If set, the return value is the array returned by {@link \Piwik\RankingQuery::execute()}.
      * @param bool|string $orderBy       Order By clause to add (e.g. user_id ASC)
-     * @param int $timeLimitInMs         Adds a MAX_EXECUTION_TIME query hint to the query if $timeLimitInMs > 0
+     * @param int $timeLimit             Adds a MAX_EXECUTION_TIME query hint to the query if $timeLimit > 0
+     *                                   for more details see {@link DbHelper::addMaxExecutionTimeHintToQuery}
      *
      * @return mixed A Zend_Db_Statement if `$rankingQuery` isn't supplied, otherwise the result of
      *               {@link \Piwik\RankingQuery::execute()}. Read {@link queryVisitsByDimension() this}
@@ -553,10 +591,61 @@ class LogAggregator
      *                                   ranking query SQL will be immediately executed and the results returned.
      * @api
      */
-    public function queryVisitsByDimension(array $dimensions = array(), $where = false, array $additionalSelects = array(),
-                                           $metrics = false, $rankingQuery = false, $orderBy = false, $timeLimitInMs = -1,
-                                           $rankingQueryGenerate = false)
-    {
+    public function queryVisitsByDimension(
+        array $dimensions = [],
+        $where = false,
+        array $additionalSelects = [],
+        $metrics = false,
+        $rankingQuery = false,
+        $orderBy = false,
+        $timeLimit = -1,
+        $rankingQueryGenerate = false
+    ) {
+        $query = $this->getQueryByDimensionSql(
+            $dimensions,
+            $where,
+            $additionalSelects,
+            $metrics,
+            $rankingQuery,
+            $orderBy,
+            $timeLimit,
+            $rankingQueryGenerate
+        );
+
+        // Ranking queries will return the data directly
+        if ($rankingQuery && !$rankingQueryGenerate) {
+            return $query;
+        }
+
+        return $this->getDb()->query($query['sql'], $query['bind']);
+    }
+
+    /**
+     * Build the sql query used to query dimension data
+     *
+     * @param array                     $dimensions
+     * @param bool|string               $where
+     * @param array                     $additionalSelects
+     * @param bool|array                $metrics
+     * @param bool|\Piwik\RankingQuery  $rankingQuery
+     * @param bool|string               $orderBy
+     * @param int                       $timeLimit
+     * @param bool                      $rankingQueryGenerate
+     *
+     * @return array
+     * @throws \Piwik\Exception\DI\DependencyException
+     * @throws \Piwik\Exception\DI\NotFoundException
+     */
+    public function getQueryByDimensionSql(
+        array $dimensions,
+        $where,
+        array $additionalSelects,
+        $metrics,
+        $rankingQuery,
+        $orderBy,
+        $timeLimit,
+        $rankingQueryGenerate
+    ): array {
         $tableName = self::LOG_VISIT_TABLE;
         $availableMetrics = $this->getVisitsMetricFields();
 
@@ -594,13 +683,13 @@ class LogAggregator
             if ($rankingQueryGenerate) {
                 $query['sql'] = $rankingQuery->generateRankingQuery($query['sql']);
             } else {
-                return $rankingQuery->execute($query['sql'], $query['bind'], $timeLimitInMs);
+                return $rankingQuery->execute($query['sql'], $query['bind'], $timeLimit);
             }
         }
 
-        $query['sql'] = DbHelper::addMaxExecutionTimeHintToQuery($query['sql'], $timeLimitInMs);
+        $query['sql'] = DbHelper::addMaxExecutionTimeHintToQuery($query['sql'], $timeLimit);
 
-        return $this->getDb()->query($query['sql'], $query['bind']);
+        return $query;
     }
 
     protected function getSelectsMetrics($metricsAvailable, $metricsRequested = false)
@@ -659,45 +748,73 @@ class LogAggregator
     }
 
     /**
-     * Returns the dimensions array, where
-     * (1) the table name is prepended to the field
-     * (2) the "AS `label` " is appended to the field
+     * Returns an array of select expressions based on the provided dimensions array
+     * Each dimension will be prefixed with the table name, if it's not an expression and will be alias
+     * with the dimension name or an custom alias if one was provided as array key.
      *
-     * @param $dimensions
-     * @param $tableName
-     * @param bool $appendSelectAs
-     * @return mixed
+     * @param array $dimensions An array of dimensions, where an alias can be provided as key
+     * @param string $tableName
+     * @return array
      */
-    protected function getSelectDimensions($dimensions, $tableName, $appendSelectAs = true)
+    protected function getSelectDimensions(array $dimensions, string $tableName): array
     {
-        foreach ($dimensions as $selectAs => &$field) {
-            $selectAsString = $field;
+        $selectDimensions = [];
 
-            if (!is_numeric($selectAs)) {
-                $selectAsString = $selectAs;
-            } else if ($this->isFieldFunctionOrComplexExpression($field)) {
-                // if complex expression has a select as, use it
-                if (!$appendSelectAs && preg_match('/\s+AS\s+(.*?)\s*$/', $field, $matches)) {
-                    $field = $matches[1];
-                    continue;
-                }
-
-                // if function w/o select as, do not alias or prefix
-                $selectAsString = $appendSelectAs = false;
+        foreach ($dimensions as $selectAs => $field) {
+            if ($this->isFieldFunctionOrComplexExpression($field) && is_numeric($selectAs)) {
+                // an expression or field function without an alias should be used as is
+                $selectDimensions[] = $field;
+                continue;
             }
 
-            $isKnownField = !in_array($field, array('referrer_data'));
+            $selectAlias = !is_numeric($selectAs) ? $selectAs : $field;
 
-            if ($selectAsString == $field && $isKnownField) {
+            if (!$this->isFieldFunctionOrComplexExpression($field)) {
+                // prefix field name with table if it's not an expression
                 $field = $this->prefixColumn($field, $tableName);
             }
 
-            if ($appendSelectAs && $selectAsString) {
-                $field = $this->prefixColumn($field, $tableName) . $this->getSelectAliasAs($selectAsString);
-            }
+            // append " AS alias"
+            $field .= $this->getSelectAliasAs($selectAlias);
+            $selectDimensions[] = $field;
         }
 
-        return $dimensions;
+        return $selectDimensions;
+    }
+
+    /**
+     * Returns an array of fields to be used in an grouped by statement.
+     * For that either the alias, the field expression or prefixed column name of the provided dimensions will be used.
+     *
+     * @param array $dimensions An array of dimensions, where an alias can be provided as key
+     * @param string $tableName
+     * @return array
+     */
+    protected function getGroupByDimensions(array $dimensions, string $tableName): array
+    {
+        $orderByDimensions = [];
+
+        foreach ($dimensions as $selectAs => $field) {
+            if (!is_numeric($selectAs)) {
+                $orderByDimensions[] = $selectAs;
+                continue;
+            }
+
+            if ($this->isFieldFunctionOrComplexExpression($field)) {
+                // if complex expression has a select as, use it
+                if (preg_match('/\s+AS\s+(.*?)\s*$/', $field, $matches)) {
+                    $orderByDimensions[] = $matches[1];
+                    continue;
+                }
+
+                $orderByDimensions[] = $field;
+                continue;
+            }
+
+            $orderByDimensions[] = $this->prefixColumn($field, $tableName);
+        }
+
+        return $orderByDimensions;
     }
 
     /**
@@ -743,7 +860,7 @@ class LogAggregator
     {
         $where = "$tableName.$datetimeField >= ?
 				AND $tableName.$datetimeField <= ?
-				AND $tableName.idsite IN (". Common::getSqlStringFieldsArray($this->sites) . ")";
+				AND $tableName.idsite IN (" . Common::getSqlStringFieldsArray($this->sites) . ")";
 
         if (!empty($extraWhere)) {
             $extraWhere = sprintf($extraWhere, $tableName, $tableName);
@@ -755,7 +872,7 @@ class LogAggregator
 
     protected function getGroupByStatement($dimensions, $tableName)
     {
-        $dimensions = $this->getSelectDimensions($dimensions, $tableName, $appendSelectAs = false);
+        $dimensions = $this->getGroupByDimensions($dimensions, $tableName);
         $groupBy    = implode(", ", $dimensions);
 
         return $groupBy;
@@ -847,7 +964,6 @@ class LogAggregator
                     )
                 )
             ),
-
             // FROM ...
             array(
                 "log_conversion_item",
@@ -856,7 +972,6 @@ class LogAggregator
                     "joinOn" => sprintf("log_conversion_item.%s = log_action.idaction", $dimension)
                 )
             ),
-
             // WHERE ... AND ...
             implode(
                 ' AND ',
@@ -867,13 +982,11 @@ class LogAggregator
                     'log_conversion_item.deleted = 0'
                 )
             ),
-
             // GROUP BY ...
             sprintf(
                 "ecommerceType, log_conversion_item.%s",
                 $dimension
             ),
-
             // ORDER ...
             false
         );
@@ -924,7 +1037,8 @@ class LogAggregator
      *                                           If a string is used for this parameter, the table alias is not
      *                                           suffixed (since there is only one column).
      * @param string $secondaryOrderBy      A secondary order by clause for the ranking query
-     * @param int $timeLimitInMs                Adds a MAX_EXECUTION_TIME hint to the query if $timeLimitInMs > 0
+     * @param int $timeLimit                Adds a MAX_EXECUTION_TIME hint to the query if $timeLimit > 0
+     *                                      for more details see {@link DbHelper::addMaxExecutionTimeHintToQuery}
      * @return mixed A Zend_Db_Statement if `$rankingQuery` isn't supplied, otherwise the result of
      *               {@link Piwik\RankingQuery::execute()}. Read [this](#queryEcommerceItems-result-set)
      *               to see what aggregate data is calculated by the query.
@@ -938,7 +1052,7 @@ class LogAggregator
         $rankingQuery = null,
         $joinLogActionOnColumn = false,
         $secondaryOrderBy = null,
-        $timeLimitInMs = -1
+        $timeLimit = -1
     ) {
         $tableName = self::LOG_ACTIONS_TABLE;
         $availableMetrics = $this->getActionsMetricFields();
@@ -990,10 +1104,10 @@ class LogAggregator
 
             $rankingQuery->addColumn($sumColumns, 'sum');
 
-            return $rankingQuery->execute($query['sql'], $query['bind'], $timeLimitInMs);
+            return $rankingQuery->execute($query['sql'], $query['bind'], $timeLimit);
         }
 
-        $query['sql'] = DbHelper::addMaxExecutionTimeHintToQuery($query['sql'], $timeLimitInMs);
+        $query['sql'] = DbHelper::addMaxExecutionTimeHintToQuery($query['sql'], $timeLimit);
 
         return $this->getDb()->query($query['sql'], $query['bind']);
     }
@@ -1064,18 +1178,27 @@ class LogAggregator
      * @param RankingQuery|bool $rankingQuery
      * @param bool $rankingQueryGenerate if `true`, generates a SQL query / bind array pair and returns it. If false, the
      *                                   ranking query SQL will be immediately executed and the results returned.
+     * @param bool $forceSiteDateIndex Forces the resulting query to use the index_idsite_datetime index. For some
+     * reason, the engine doesn't always use that index automatically. This allows us to make sure that it uses it.
      * @return \Zend_Db_Statement|array
      */
-    public function queryConversionsByDimension($dimensions = array(), $where = false, $additionalSelects = array(), $extraFrom = [],
-                                                $rankingQuery = false, $rankingQueryGenerate = false)
-    {
+    public function queryConversionsByDimension(
+        $dimensions = array(),
+        $where = false,
+        $additionalSelects = array(),
+        $extraFrom = [],
+        $rankingQuery = false,
+        $rankingQueryGenerate = false,
+        $forceSiteDateIndex = false
+    ) {
         $dimensions = array_merge(array(self::IDGOAL_FIELD), $dimensions);
         $tableName  = self::LOG_CONVERSION_TABLE;
         $availableMetrics = $this->getConversionsMetricFields();
 
         $select = $this->getSelectStatement($dimensions, $tableName, $additionalSelects, $availableMetrics);
 
-        $from    = array_merge([$tableName], $extraFrom);
+        $primaryFrom = !$forceSiteDateIndex ? [$tableName] : [['table' => $tableName, 'useIndex' => 'index_idsite_datetime']];
+        $from    = array_merge($primaryFrom, $extraFrom);
         $where   = $this->getWhereStatement($tableName, self::CONVERSION_DATETIME_FIELD, $where);
         $groupBy = $this->getGroupByStatement($dimensions, $tableName);
         $orderBy = false;
@@ -1119,9 +1242,9 @@ class LogAggregator
             " . sprintf("ROUND(SUM(1 / log_conversion.pageviews_before * log_conversion.revenue_tax),2) AS `%d`,", Metrics::INDEX_GOAL_ECOMMERCE_REVENUE_TAX) . "
             " . sprintf("ROUND(SUM(1 / log_conversion.pageviews_before * log_conversion.revenue_shipping),2) AS `%d`,", Metrics::INDEX_GOAL_ECOMMERCE_REVENUE_SHIPPING) . "
             " . sprintf("ROUND(SUM(1 / log_conversion.pageviews_before * log_conversion.revenue_discount),2) AS `%d`,", Metrics::INDEX_GOAL_ECOMMERCE_REVENUE_DISCOUNT) . "
-            " . sprintf("SUM(1 / log_conversion.pageviews_before * log_conversion.items) AS `%d`,", Metrics::INDEX_GOAL_ECOMMERCE_ITEMS) . "
+            " . sprintf("SUM(ROUND(1 / log_conversion.pageviews_before * log_conversion.items, 4)) AS `%d`,", Metrics::INDEX_GOAL_ECOMMERCE_ITEMS) . "
             " . sprintf("log_conversion.pageviews_before AS `%d`,", Metrics::INDEX_GOAL_NB_PAGES_UNIQ_BEFORE) . "
-            " . sprintf("SUM(1 / log_conversion.pageviews_before) AS `%d`,", Metrics::INDEX_GOAL_NB_CONVERSIONS_ATTRIB) . "
+            " . sprintf("SUM(ROUND(1 / log_conversion.pageviews_before, 4)) AS `%d`,", Metrics::INDEX_GOAL_NB_CONVERSIONS_ATTRIB) . "
             " . sprintf("COUNT(*) AS `%d`,", Metrics::INDEX_GOAL_NB_CONVERSIONS_PAGE_UNIQ) . "
             " . sprintf("ROUND(SUM(1 / log_conversion.pageviews_before * log_conversion.revenue),2) AS `%d`", Metrics::INDEX_GOAL_REVENUE_ATTRIB);
 
@@ -1130,14 +1253,17 @@ class LogAggregator
                 ['table' => 'log_link_visit_action', 'tableAlias' => 'logva', 'join' => 'RIGHT JOIN',
                             'joinOn' => 'log_conversion.idvisit = logva.idvisit'],
                 ['table' => 'log_action', 'tableAlias' => 'lac',
-                            'joinOn' => 'logva.'.$linkField.' = lac.idaction']
+                            'joinOn' => 'logva.' . $linkField . ' = lac.idaction']
         ];
 
         $where = $this->getWhereStatement('log_conversion', 'server_time');
-        $where .= sprintf('AND log_conversion.idgoal = %d
+        $where .= sprintf(
+            'AND log_conversion.idgoal = %d
                           AND logva.server_time <= log_conversion.server_time
                           AND lac.type = %s',
-                          (int) $idGoal, ($linkField == 'idaction_url' ? Action::TYPE_PAGE_URL : Action::TYPE_PAGE_TITLE));
+            (int) $idGoal,
+            ($linkField == 'idaction_url' ? Action::TYPE_PAGE_URL : Action::TYPE_PAGE_TITLE)
+        );
 
         $groupBy = 'log_conversion.idvisit, lac.idaction';
 
@@ -1158,8 +1284,8 @@ class LogAggregator
         $tableName  = self::LOG_CONVERSION_TABLE;
 
         $select = implode(
-                ', ',
-                [
+            ', ',
+            [
                     'log_conversion.idgoal AS idgoal',
                     sprintf('log_visit.%s AS idaction', $linkField),
                     'log_action.type',
@@ -1173,7 +1299,7 @@ class LogAggregator
                     sprintf('SUM(log_conversion.items) AS `%d`', Metrics::INDEX_GOAL_ECOMMERCE_ITEMS),
                     sprintf('COUNT(*) AS `%d`', Metrics::INDEX_GOAL_NB_CONVERSIONS_ENTRY)
                 ]
-            );
+        );
 
         $from = [
             $tableName,
@@ -1183,13 +1309,13 @@ class LogAggregator
                 ],
                 [
                     "table" => "log_action",
-                    "joinOn" => "log_action.idaction = log_visit.".$linkField
+                    "joinOn" => "log_action.idaction = log_visit." . $linkField
                 ]
         ];
 
-        $where   = $linkField.' IS NOT NULL AND log_conversion.idgoal >= 0';
+        $where   = $linkField . ' IS NOT NULL AND log_conversion.idgoal >= 0';
         $where   = $this->getWhereStatement($tableName, self::CONVERSION_DATETIME_FIELD, $where);
-        $groupBy = 'log_visit.'.$linkField.', log_conversion.idgoal';
+        $groupBy = 'log_visit.' . $linkField . ', log_conversion.idgoal';
         $orderBy = false;
 
         $query   = $this->generateQuery($select, $from, $where, $groupBy, $orderBy);
@@ -1323,7 +1449,8 @@ class LogAggregator
         $cleanRow = array();
 
         foreach ($row as $label => $count) {
-            if (empty($lookForThisPrefix)
+            if (
+                empty($lookForThisPrefix)
                 || strpos($label, $lookForThisPrefix) === 0
             ) {
                 $cleanLabel = substr($label, strlen($lookForThisPrefix));

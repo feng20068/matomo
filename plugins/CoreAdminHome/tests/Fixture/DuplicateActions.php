@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreAdminHome\tests\Fixture;
 
 use Piwik\Common;
@@ -16,7 +18,7 @@ use Piwik\Tests\Framework\Fixture;
  */
 class DuplicateActions extends Fixture
 {
-    const DUMMY_IDVISITOR = 'c1d2a36653fd88e2';
+    public const DUMMY_IDVISITOR = 'c1d2a36653fd88e2';
 
     private static $dataToInsert = array(
         'log_action' => array(
@@ -163,7 +165,9 @@ class DuplicateActions extends Fixture
                 $row['idvisitor'] = pack("H*", $row['idvisitor']);
             }
 
-            $placeholders = array_map(function () { return "?"; }, $row);
+            $placeholders = array_map(function () {
+                return "?";
+            }, $row);
             $sql = "INSERT INTO $table (" . implode(',', array_keys($row)) . ") VALUES (" . implode(',', $placeholders) . ")";
             Db::query($sql, array_values($row));
         }

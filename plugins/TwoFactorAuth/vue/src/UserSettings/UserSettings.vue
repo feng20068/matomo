@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -74,6 +75,7 @@ import {
   MatomoUrl,
   translate,
   Matomo,
+  externalLink,
 } from 'CoreHome';
 
 export default defineComponent({
@@ -95,10 +97,9 @@ export default defineComponent({
       return `${part1} (${part2})`;
     },
     twoFactorAuthIntro() {
-      const link = 'https://matomo.org/faq/general/faq_27245';
       return translate(
         'TwoFactorAuth_TwoFactorAuthenticationIntro',
-        `<a href="${link}" rel="noreferrer noopener" target="_blank">`,
+        externalLink('https://matomo.org/faq/general/faq_27245'),
         '</a>',
       );
     },

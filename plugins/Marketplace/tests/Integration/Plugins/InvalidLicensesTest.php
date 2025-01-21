@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Marketplace\tests\Integration\Plugins;
@@ -18,7 +19,8 @@ use Piwik\Tests\Framework\Fixture;
 use Piwik\Tests\Framework\TestCase\IntegrationTestCase;
 use Piwik\Plugins\Marketplace\tests\Framework\Mock\Consumer as ConsumerBuilder;
 
-class CustomInvalidLicenses extends InvalidLicenses {
+class CustomInvalidLicenses extends InvalidLicenses
+{
     private $isActivated = true;
 
     public function setPluginIsActivated($isActivated)
@@ -62,7 +64,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         parent::tearDown();
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_validLicenses_noPaidPluginActivated()
+    public function testGetNamesOfExpiredPaidPluginsValidLicensesNoPaidPluginActivated()
     {
         $expired = $this->buildWithValidLicense();
         $expired->setPluginIsActivated(false);
@@ -72,7 +74,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertSame($expected, $expired->getPluginNamesOfInvalidLicenses());
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_noLicenses_noPaidPluginActivated()
+    public function testGetNamesOfExpiredPaidPluginsNoLicensesNoPaidPluginActivated()
     {
         $expired = $this->buildWithNoLicense();
         $expired->setPluginIsActivated(false);
@@ -85,7 +87,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertSame($expected, $expired->getPluginNamesOfInvalidLicenses());
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_invalidLicenses_noPaidPluginActivated()
+    public function testGetNamesOfExpiredPaidPluginsInvalidLicensesNoPaidPluginActivated()
     {
         $expired = $this->buildWithExpiredLicense();
         $expired->setPluginIsActivated(false);
@@ -98,7 +100,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertSame($expected, $expired->getPluginNamesOfInvalidLicenses());
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_exceededLicenses_noPaidPluginActivated()
+    public function testGetNamesOfExpiredPaidPluginsExceededLicensesNoPaidPluginActivated()
     {
         $expired = $this->buildWithExceededLicense();
         $expired->setPluginIsActivated(false);
@@ -108,16 +110,16 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertSame($expected, $expired->getPluginNamesOfInvalidLicenses());
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_validLicenses()
+    public function testGetNamesOfExpiredPaidPluginsValidLicenses()
     {
         $expired = $this->buildWithValidLicense();
 
-        $expected = array('exceeded' => array(), 'expired' => array(), 'noLicense' => array());
+        $expected = array('exceeded' => array(), 'expired' => array(), 'noLicense' => array('PaidPlugin3'));
 
         $this->assertSame($expected, $expired->getPluginNamesOfInvalidLicenses());
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_noLicenses()
+    public function testGetNamesOfExpiredPaidPluginsNoLicenses()
     {
         $expired = $this->buildWithNoLicense();
 
@@ -129,7 +131,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertSame($expected, $expired->getPluginNamesOfInvalidLicenses());
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_invalidLicenses()
+    public function testGetNamesOfExpiredPaidPluginsInvalidLicenses()
     {
         $expired = $this->buildWithExpiredLicense();
 
@@ -141,7 +143,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertSame($expected, $expired->getPluginNamesOfInvalidLicenses());
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_exceededLicenses()
+    public function testGetNamesOfExpiredPaidPluginsExceededLicenses()
     {
         $expired = $this->buildWithExceededLicense();
 
@@ -152,7 +154,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertEquals($expected, $expired->getPluginNamesOfInvalidLicenses());
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_shouldCacheAnyResult()
+    public function testGetNamesOfExpiredPaidPluginsShouldCacheAnyResult()
     {
         $this->assertFalse($this->cache->contains($this->cacheKey));
 
@@ -160,12 +162,12 @@ class InvalidLicensesTest extends IntegrationTestCase
 
         $this->assertTrue($this->cache->contains($this->cacheKey));
 
-        $expected = array('exceeded' => array(), 'expired' => array(), 'noLicense' => array());
+        $expected = array('exceeded' => array(), 'expired' => array(), 'noLicense' => array('PaidPlugin3'));
 
         $this->assertSame($expected, $this->cache->fetch($this->cacheKey));
     }
 
-    public function test_getNamesOfExpiredPaidPlugins_shouldCache_IfNotValidLicenseKeyButPaidPluginsInstalled()
+    public function testGetNamesOfExpiredPaidPluginsShouldCacheIfNotValidLicenseKeyButPaidPluginsInstalled()
     {
         $this->buildWithExpiredLicense()->getPluginNamesOfInvalidLicenses();
 
@@ -177,7 +179,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertSame($expected, $this->cache->fetch($this->cacheKey));
     }
 
-    public function test_getMessageExceededLicenses_getMessageExpiredLicenses_validLicenses_noPaidPluginActivated()
+    public function testGetMessageExceededLicensesGetMessageExpiredLicensesValidLicensesNoPaidPluginActivated()
     {
         $expired = $this->buildWithValidLicense();
         $expired->setPluginIsActivated(false);
@@ -187,7 +189,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertNull($expired->getMessageNoLicense());
     }
 
-    public function test_getMessageExceededLicenses_getMessageExpiredLicenses_invalidLicenses_noPaidPluginActivated()
+    public function testGetMessageExceededLicensesGetMessageExpiredLicensesInvalidLicensesNoPaidPluginActivated()
     {
         $expired = $this->buildWithExpiredLicense();
         $expired->setPluginIsActivated(false);
@@ -197,7 +199,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertNull($expired->getMessageNoLicense());
     }
 
-    public function test_getMessageExceededLicenses_getMessageExpiredLicenses_exceededLicenses_noPaidPluginActivated()
+    public function testGetMessageExceededLicensesGetMessageExpiredLicensesExceededLicensesNoPaidPluginActivated()
     {
         $expired = $this->buildWithExceededLicense();
         $expired->setPluginIsActivated(false);
@@ -206,16 +208,19 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertNull($expired->getMessageNoLicense());
     }
 
-    public function test_getMessageExceededLicenses_getMessageExpiredLicenses_validLicenses_PaidPluginActivated()
+    public function testGetMessageExceededLicensesGetMessageExpiredLicensesValidLicensesPaidPluginActivated()
     {
         $expired = $this->buildWithValidLicense();
 
         $this->assertNull($expired->getMessageExceededLicenses());
         $this->assertNull($expired->getMessageExpiredLicenses());
-        $this->assertNull($expired->getMessageNoLicense());
+        $this->assertEquals(
+            'The following plugins have been deactivated because you are using them without a license: <strong>PaidPlugin3</strong>. <br/>To resolve this issue either update your license key, <strong><a href="https://shop.piwik.org/my-account" target="_blank" rel="noreferrer noopener">get a subscription now</a></strong> or deactivate the plugin. <br/><a href="?module=Marketplace&action=subscriptionOverview">View your plugin subscriptions.</a>',
+            $expired->getMessageNoLicense()
+        );
     }
 
-    public function test_getMessageExceededLicenses_getMessageExpiredLicenses_noLicenses_PaidPluginActivated()
+    public function testGetMessageExceededLicensesGetMessageExpiredLicensesNoLicensesPaidPluginActivated()
     {
         // in theory we would need to show a warning as there is no license, but this can also happen if there's some random
         // error and the user actually has a license, eg if the request aborted when fetching consumer etc
@@ -226,7 +231,7 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertEquals('The following plugins have been deactivated because you are using them without a license: <strong>PaidPlugin1</strong>. <br/>To resolve this issue either update your license key, <strong><a href="https://shop.piwik.org/my-account" target="_blank" rel="noreferrer noopener">get a subscription now</a></strong> or deactivate the plugin. <br/><a href="?module=Marketplace&action=subscriptionOverview">View your plugin subscriptions.</a>', $expired->getMessageNoLicense());
     }
 
-    public function test_getMessageExceededLicenses_getMessageExpiredLicenses_invalidLicenses_PaidPluginActivated()
+    public function testGetMessageExceededLicensesGetMessageExpiredLicensesInvalidLicensesPaidPluginActivated()
     {
         $expired = $this->buildWithExpiredLicense();
 
@@ -234,14 +239,14 @@ class InvalidLicensesTest extends IntegrationTestCase
         $this->assertEquals('The licenses for the following plugins are expired: <strong>PaidPlugin1</strong>. <br/>You will no longer receive any updates for these plugins. To resolve this issue either <strong><a href="https://shop.piwik.org/my-account" target="_blank" rel="noreferrer noopener">renew your subscription now</a></strong>, or deactivate the plugin if you no longer use it. <br/><a href="?module=Marketplace&action=subscriptionOverview">View your plugin subscriptions.</a>', $expired->getMessageExpiredLicenses());
     }
 
-    public function test_getMessageExceededLicenses_getMessageExpiredLicenses_exceededLicenses_PaidPluginActivated()
+    public function testGetMessageExceededLicensesGetMessageExpiredLicensesExceededLicensesPaidPluginActivated()
     {
         $expired = $this->buildWithExceededLicense();
         $this->assertEquals('The licenses for the following plugins are no longer valid as the number of authorized users for the license is exceeded: <strong>PaidPlugin2</strong>. <br/>You will not be able to download updates for these plugins. To resolve this issue either delete some users or <strong><a href="https://shop.piwik.org/my-account" target="_blank" rel="noreferrer noopener">upgrade the subscription now</a></strong>. <br/><a href="?module=Marketplace&action=subscriptionOverview">View your plugin subscriptions.</a>', $expired->getMessageExceededLicenses());
         $this->assertEquals('The licenses for the following plugins are expired: <strong>PaidPlugin1</strong>. <br/>You will no longer receive any updates for these plugins. To resolve this issue either <strong><a href="https://shop.piwik.org/my-account" target="_blank" rel="noreferrer noopener">renew your subscription now</a></strong>, or deactivate the plugin if you no longer use it. <br/><a href="?module=Marketplace&action=subscriptionOverview">View your plugin subscriptions.</a>', $expired->getMessageExpiredLicenses());
     }
 
-    public function test_getMessageMissingLicenses_getMessageMissingLicenses_PaidPluginActivated()
+    public function testGetMessageMissingLicensesGetMessageMissingLicensesPaidPluginActivated()
     {
         $expired = $this->buildWithNoLicense();
         $this->assertEquals('The following plugins have been deactivated because you are using them without a license: <strong>PaidPlugin1</strong>. <br/>To resolve this issue either update your license key, <strong><a href="https://shop.piwik.org/my-account" target="_blank" rel="noreferrer noopener">get a subscription now</a></strong> or deactivate the plugin. <br/><a href="?module=Marketplace&action=subscriptionOverview">View your plugin subscriptions.</a>', $expired->getMessageNoLicense());
@@ -286,5 +291,4 @@ class InvalidLicensesTest extends IntegrationTestCase
         $licenses->clearCache();
         return $licenses;
     }
-
 }

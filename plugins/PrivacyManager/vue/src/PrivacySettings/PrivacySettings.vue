@@ -1,14 +1,15 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
   <div>
     <div v-content-intro>
       <h2>
-        <EnrichedHeadline help-url="https://matomo.org/docs/privacy/">
+        <EnrichedHeadline :help-url="externalRawLink('https://matomo.org/docs/privacy/')">
           {{ translate('PrivacyManager_AnonymizeData') }}
         </EnrichedHeadline>
       </h2>
@@ -100,6 +101,7 @@ import {
   ContentIntro,
   EnrichedHeadline,
   translate,
+  externalLink,
 } from 'CoreHome';
 import AnonymizeIp from '../AnonymizeIp/AnonymizeIp.vue';
 import DeleteOldLogs from '../DeleteOldLogs/DeleteOldLogs.vue';
@@ -183,7 +185,7 @@ export default defineComponent({
     seeAlsoOurOfficialGuide() {
       return translate(
         'PrivacyManager_SeeAlsoOurOfficialGuidePrivacy',
-        '<a href="https://matomo.org/docs/privacy/" rel="noreferrer noopener" target="_blank">',
+        externalLink('https://matomo.org/privacy/'),
         '</a>',
       );
     },

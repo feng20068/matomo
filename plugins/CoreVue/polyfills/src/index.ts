@@ -1,8 +1,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 /* eslint-disable */
@@ -43,7 +43,5 @@ DOMPurify.addHook('afterSanitizeAttributes', (node: Element) => {
 });
 
 window.vueSanitize = function vueSanitize(val: unknown): string {
-  let result = DOMPurify.sanitize(val, { ADD_ATTR: ['target'] });
-  result = result.replace(/{{/g, '{&#8291;{');
-  return result;
+  return DOMPurify.sanitize(val, { ADD_ATTR: ['target'] });
 };

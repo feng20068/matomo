@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -38,9 +39,7 @@
     <PasswordConfirmation
       v-model="showPasswordConfirmModal"
       @confirmed="confirmPassword"
-    >
-      <h2>{{ translate('UsersManager_ConfirmWithPassword') }}</h2>
-    </PasswordConfirmation>
+    />
   </div>
 </template>
 
@@ -198,6 +197,10 @@ export default defineComponent({
           postValue = '0';
         } else if (postValue === true) {
           postValue = '1';
+        }
+
+        if (Array.isArray(postValue) && postValue.length === 0) {
+          postValue = '__empty__';
         }
 
         values[pluginName].push({

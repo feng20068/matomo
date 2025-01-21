@@ -4,8 +4,7 @@
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Ecommerce;
@@ -95,7 +94,6 @@ class Controller extends \Piwik\Plugins\Goals\Controller
             $previousDataRow = $previousData->getFirstRow();
 
             $return = $this->addSparklineEvolutionValues($return, $idGoal, $date, $lastPeriodDate, $dataRow, $previousDataRow);
-
         }
         return $return;
     }
@@ -112,9 +110,14 @@ class Controller extends \Piwik\Plugins\Goals\Controller
      *
      * @return array
      */
-    private function addSparklineEvolutionValues(array $return, $idGoal, string $date, string $lastPeriodDate,
-                                                 DataTable\Row $currentDataRow, DataTable\Row $previousDataRow) : array
-    {
+    private function addSparklineEvolutionValues(
+        array $return,
+        $idGoal,
+        string $date,
+        string $lastPeriodDate,
+        DataTable\Row $currentDataRow,
+        DataTable\Row $previousDataRow
+    ): array {
         $metrics = [
             'nb_conversions' => Piwik::translate('General_EcommerceOrders'),
             'nb_visits_converted' => Piwik::translate('General_NVisits'),
@@ -130,7 +133,7 @@ class Controller extends \Piwik\Plugins\Goals\Controller
         }
 
         if ($idGoal == Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_CART) {
-            $abandonedCart = Piwik::translate('Goals_AbandonedCart');;
+            $abandonedCart = Piwik::translate('Goals_AbandonedCart');
             $metrics['nb_conversions'] = Piwik::translate('General_VisitsWith', $abandonedCart);
             $metrics['conversion_rate'] = Piwik::translate('General_VisitsWith', $abandonedCart);
             $metrics['revenue'] = Piwik::translate('Ecommerce_RevenueLeftInCart', Piwik::translate('General_ColumnRevenue'));
@@ -145,9 +148,7 @@ class Controller extends \Piwik\Plugins\Goals\Controller
         $formatter = new Metrics\Formatter();
 
         foreach ($return as $columnName => $value) {
-
             if (array_key_exists($columnName, $metrics) && array_key_exists($columnName, $return)) {
-
                 $pastValue = $previousDataRow ? $previousDataRow->getColumn($columnName) : 0;
 
                 if (in_array($columnName, ['revenue', 'avg_order_revenue'])) {
@@ -169,12 +170,12 @@ class Controller extends \Piwik\Plugins\Goals\Controller
                 }
                 $trend = CalculateEvolutionFilter::calculate($value, $pastValue, $precision = 1);
 
-                $return[$columnName.'_trend'] = ($pastValue - $value > 0 ? -1 : ($pastValue - $value < 0 ? 1 : 0));
-                $return[$columnName.'_trend_percent'] = $trend;
-                $return[$columnName.'_tooltip'] = Piwik::translate('General_EvolutionSummaryGeneric', array(
-                    $currentValueFormatted.' '.Piwik::translate($metricTranslationKey),
+                $return[$columnName . '_trend'] = ($pastValue - $value > 0 ? -1 : ($pastValue - $value < 0 ? 1 : 0));
+                $return[$columnName . '_trend_percent'] = $trend;
+                $return[$columnName . '_tooltip'] = Piwik::translate('General_EvolutionSummaryGeneric', array(
+                    $currentValueFormatted . ' ' . Piwik::translate($metricTranslationKey),
                     $currentPrettyDate,
-                    $pastValueFormatted.' '.Piwik::translate($metricTranslationKey),
+                    $pastValueFormatted . ' ' . Piwik::translate($metricTranslationKey),
                     $lastPrettyDate,
                     $trend));
             }

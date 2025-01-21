@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\API\tests\System;
@@ -109,7 +110,6 @@ class AutoSuggestAPITest extends SystemTestCase
                     'date' => '1998-07-12,today',
                     'period' => 'range',
                     'otherRequestParameters' => array('filter_limit' => 1000)));
-
         }
         return $apiForTesting;
     }
@@ -219,7 +219,6 @@ class AutoSuggestAPITest extends SystemTestCase
         } else {
             self::$skipped[] = $params['segmentToComplete'];
         }
-
     }
 
     public function getAnotherApiForTesting()
@@ -269,7 +268,8 @@ class AutoSuggestAPITest extends SystemTestCase
             $environment->getContainer()->get('Piwik\Plugin\Manager')->loadActivatedPlugins();
 
             foreach (Dimension::getAllDimensions() as $dimension) {
-                if ($dimension instanceof CustomVariableName
+                if (
+                    $dimension instanceof CustomVariableName
                     || $dimension instanceof CustomVariableValue
                 ) {
                     continue; // ignore custom variables dimensions as they are tested in the plugin

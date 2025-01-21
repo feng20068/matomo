@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\ExampleUI\Reports;
@@ -50,27 +51,22 @@ class GetTemperatures extends Base
                         ->setSubcategoryId('Treemap')
                         ->forceViewDataTable('infoviz-treemap')
             );
-
         }
     }
 
     public function configureView(ViewDataTable $view)
     {
         if ($view->isViewDataTableId(Bar::ID)) {
-
             $view->config->y_axis_unit = '°C';
             $view->config->show_footer = false;
             $view->config->translations['value'] = "Temperature";
             $view->config->selectable_columns = array("value");
             $view->config->max_graph_elements = 24;
-
         } elseif ($view->isViewDataTableId('infoviz-treemap')) {
-
             $view->config->translations['value'] = "Temperature";
             $view->config->columns_to_display = array("label", "value");
             $view->config->selectable_columns = array("value");
             $view->config->show_evolution_values = 0;
-
         } else {
             // for default view datatable, eg HtmlTable
 
@@ -88,5 +84,4 @@ class GetTemperatures extends Base
             $view->config->metrics_documentation = array('value' => 'Documentation for temperature metric');
         }
     }
-
 }

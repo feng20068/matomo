@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration\Tracker;
@@ -30,29 +31,29 @@ class FingerprintSaltTest extends IntegrationTestCase
         $this->fingerprintSalt = new FingerprintSalt();
     }
 
-    public function test_generateSalt()
+    public function testGenerateSalt()
     {
         $salt = $this->fingerprintSalt->generateSalt();
         $this->assertEquals(32, strlen($salt));
         $this->assertTrue(ctype_alnum($salt));
     }
 
-    public function test_generateSalt_isRandom()
+    public function testGenerateSaltIsRandom()
     {
         $this->assertNotSame($this->fingerprintSalt->generateSalt(), $this->fingerprintSalt->generateSalt());
     }
 
-    public function test_getDateString()
+    public function testGetDateString()
     {
         $date = Date::factory('2020-05-05 14:04:05');
-        $this->assertSame('2020-05-06',$this->fingerprintSalt->getDateString($date, 'Pacific/Auckland'));
-        $this->assertSame('2020-05-05',$this->fingerprintSalt->getDateString($date, 'Europe/Berlin'));
+        $this->assertSame('2020-05-06', $this->fingerprintSalt->getDateString($date, 'Pacific/Auckland'));
+        $this->assertSame('2020-05-05', $this->fingerprintSalt->getDateString($date, 'Europe/Berlin'));
     }
 
-    public function test_getDateString_doubleCheckingWeAreGeneratingRightString()
+    public function testGetDateStringDoubleCheckingWeAreGeneratingRightString()
     {
         for ($i = 0; $i <= 23; $i++) {
-            $d  = '2020-05-05 ' . $i.':04:05';
+            $d  = '2020-05-05 ' . $i . ':04:05';
             $date = Date::factory($d);
             // double checking using the logic used in CoreHome::VisitRequestProcesser::wasLastActionNotToday where we detect midnight
             // in timezone just to double check we return the correct date string for the given timezone. Should anything change and test not pass
@@ -64,7 +65,7 @@ class FingerprintSaltTest extends IntegrationTestCase
         }
     }
 
-    public function test_getSalt_remembersSaltPerSite()
+    public function testGetSaltRemembersSaltPerSite()
     {
         $salt05_1 = $this->fingerprintSalt->getSalt('2020-05-05', $idSite = 1);
         $salt06_1 = $this->fingerprintSalt->getSalt('2020-05-06', $idSite = 1);
@@ -80,7 +81,7 @@ class FingerprintSaltTest extends IntegrationTestCase
         $this->assertSame($salt05_2, $this->fingerprintSalt->getSalt('2020-05-05', $idSite = 2));
     }
 
-    public function test_deleteOldSalts_whenNothingToDelete()
+    public function testDeleteOldSaltsWhenNothingToDelete()
     {
         $this->fingerprintSalt->getSalt('2020-05-05', $idSite = 1);
         $this->fingerprintSalt->getSalt('2020-05-06', $idSite = 1);
@@ -93,7 +94,7 @@ class FingerprintSaltTest extends IntegrationTestCase
         $this->assertSame(array(), $this->fingerprintSalt->deleteOldSalts());
     }
 
-    public function test_deleteOldSalts_someToBeDeleted()
+    public function testDeleteOldSaltsSomeToBeDeleted()
     {
         $this->fingerprintSalt->getSalt('2020-05-05', $idSite = 1);
 
@@ -112,5 +113,4 @@ class FingerprintSaltTest extends IntegrationTestCase
         // executing it again wont delete anything
         $this->assertSame(array(), $this->fingerprintSalt->deleteOldSalts());
     }
-
 }

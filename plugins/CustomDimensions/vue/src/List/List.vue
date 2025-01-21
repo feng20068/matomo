@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -175,7 +176,7 @@ export default defineComponent({
       return result;
     },
     siteName(): string {
-      return Matomo.helper.htmlDecode(Matomo.siteName);
+      return Matomo.helper.htmlEntities(Matomo.helper.htmlDecode(Matomo.siteName));
     },
   },
 });

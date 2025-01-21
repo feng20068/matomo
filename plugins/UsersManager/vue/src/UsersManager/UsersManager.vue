@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -10,7 +11,7 @@
       <div v-content-intro>
         <h2>
           <EnrichedHeadline
-            help-url="https://matomo.org/docs/manage-users/"
+            :help-url="externalRawLink('https://matomo.org/docs/manage-users/')"
             feature-name="Users Management"
           >
             {{ translate('UsersManager_ManageUsers') }}
@@ -47,7 +48,7 @@
         </div>
         <PagedUsersList
           @edit-user="onEditUser($event.user)"
-          @change-user-role="onChangeUserRole($event.users, $event.role)"
+          @change-user-role="onChangeUserRole($event.users, $event.role, $event.password)"
           @delete-user="onDeleteUser($event.users, $event.password)"
           @search-change="searchParams = $event.params; fetchUsers()"
           @resend-invite="showResendPopup($event.user)"
@@ -75,6 +76,7 @@
         :filter-access-levels="filterAccessLevels"
         :initial-site-id="initialSiteId"
         :initial-site-name="initialSiteName"
+        :activated-plugins="activatedPlugins"
         @resend-invite="showResendPopup($event.user)"
         @updated="userBeingEdited = $event.user"
       />
@@ -140,9 +142,7 @@
     <PasswordConfirmation
       v-model="showPasswordConfirmationForInviteAction"
       @confirmed="onInviteAction"
-    >
-      <p>{{ translate('UsersManager_ConfirmWithPassword') }}</p>
-    </PasswordConfirmation>
+    />
   </div>
 </template>
 
@@ -209,6 +209,10 @@ export default defineComponent({
       required: true,
     },
     filterStatusLevels: {
+      type: Array,
+      required: true,
+    },
+    activatedPlugins: {
       type: Array,
       required: true,
     },
@@ -295,7 +299,7 @@ export default defineComponent({
     showAddExistingUserModal() {
       $(this.$refs.addExistingUserModal as HTMLElement).modal({ dismissible: false }).modal('open');
     },
-    onChangeUserRole(users: User[]|string, role: string) {
+    onChangeUserRole(users: User[]|string, role: string, password: string) {
       this.isLoadingUsers = true;
 
       Promise.resolve().then(() => {
@@ -316,6 +320,7 @@ export default defineComponent({
             userLogin: login,
             capabilities: role,
             idSites: this.searchParams.idSite,
+            passwordConfirmation: password,
           }));
         } else {
           requests = userLogins.map((login) => ({
@@ -323,13 +328,16 @@ export default defineComponent({
             userLogin: login,
             access: role,
             idSites: this.searchParams.idSite,
+            passwordConfirmation: password,
           }));
         }
 
         return AjaxHelper.fetch(requests, { createErrorNotification: true });
       }).catch(() => {
         // ignore (errors will still be displayed to the user)
-      }).then(() => this.fetchUsers());
+      }).finally(
+        () => this.fetchUsers(),
+      );
     },
     getAllUsersInSearch() {
       return AjaxHelper.fetch<User[]>({
@@ -386,9 +394,10 @@ export default defineComponent({
       }
       this.loading = true;
       try {
-        const res = await AjaxHelper.fetch<{ value: string }>(
+        const res = await AjaxHelper.post<{ value: string }>(
           {
             method: 'UsersManager.generateInviteLink',
+          }, {
             userLogin: this.userBeingEdited!.login,
             passwordConfirmation: password,
           },
@@ -431,10 +440,12 @@ ${translate('UsersManager_CopyDeniedHints', [`<br><span class="invite-link">${va
     },
     onResendInvite(password: string) {
       if (password === '') return;
-      AjaxHelper.fetch<AjaxHelper>(
+      AjaxHelper.post<AjaxHelper>(
         {
           method: 'UsersManager.resendInvite',
           userLogin: this.userBeingEdited!.login,
+        },
+        {
           passwordConfirmation: password,
         },
       ).then(() => {

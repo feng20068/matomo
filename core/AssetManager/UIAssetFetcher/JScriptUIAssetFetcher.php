@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\AssetManager\UIAssetFetcher;
 
 use Piwik\AssetManager\UIAssetFetcher;
@@ -13,7 +14,6 @@ use Piwik\Piwik;
 
 class JScriptUIAssetFetcher extends UIAssetFetcher
 {
-
     protected function retrieveFileLocations()
     {
         if (!empty($this->plugins)) {
@@ -75,7 +75,6 @@ class JScriptUIAssetFetcher extends UIAssetFetcher
             'node_modules/jquery-ui-dist/jquery-ui.min.js',
             'node_modules/jquery-ui-dist/jquery-ui.js',
             "plugins/CoreHome/javascripts/materialize-bc.js",
-            "node_modules/jquery.browser/dist/jquery.browser.min.js",
             'node_modules/',
             'libs/',
             'js/',

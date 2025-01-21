@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -92,7 +93,7 @@
               <button
                 class="table-action"
                 v-show="theSite.idsite"
-                @click="this.showRemoveDialog = true"
+                @click="getMessagesToWarnOnSiteRemoval()"
                 :title="translate('General_Delete')"
               >
                 <span class="icon-delete"></span>
@@ -186,7 +187,7 @@
     >
         <h2>{{ removeDialogTitle }}</h2>
         <p>{{ translate('SitesManager_DeleteSiteExplanation') }}</p>
-        <p>{{ translate('UsersManager_ConfirmWithPassword') }}</p>
+        <p v-if="deleteSiteExplanation" v-html="$sanitize(deleteSiteExplanation)"></p>
     </PasswordConfirmation>
   </div>
 </template>
@@ -222,6 +223,7 @@ interface SiteFieldsState {
   measurableSettings: DeepReadonly<SettingsForSinglePlugin[]>;
   settingValues: Record<string, unknown>;
   showRemoveDialog: boolean;
+  deleteSiteExplanation: string;
 }
 
 interface CreateEditSiteResponse {
@@ -267,6 +269,7 @@ export default defineComponent({
       measurableSettings: [],
       settingValues: {},
       showRemoveDialog: false,
+      deleteSiteExplanation: '',
     };
   },
   components: {
@@ -402,7 +405,6 @@ export default defineComponent({
         values,
       ).then((response) => {
         this.editMode = false;
-        this.isSaving = false;
 
         if (!this.theSite.idsite && response && response.value) {
           this.theSite.idsite = `${response.value}`;
@@ -430,6 +432,8 @@ export default defineComponent({
         SiteTypesStore.removeEditSiteIdParameterFromHash();
 
         this.$emit('save', { site: this.theSite, settingValues: values.settingValues, isNew });
+      }).finally(() => {
+        this.isSaving = false;
       });
     },
     cancelEditSite(site: Site) {
@@ -449,6 +453,20 @@ export default defineComponent({
         passwordConfirmation: password,
       }).then(() => {
         this.$emit('delete', this.theSite);
+      });
+    },
+    getMessagesToWarnOnSiteRemoval() {
+      AjaxHelper.post({
+        idSite: this.theSite.idsite,
+        module: 'API',
+        format: 'json',
+        method: 'SitesManager.getMessagesToWarnOnSiteRemoval',
+      }).then((response) => {
+        this.deleteSiteExplanation = '';
+        if (response.length) {
+          this.deleteSiteExplanation += response.join('<br>');
+        }
+        this.showRemoveDialog = true;
       });
     },
   },

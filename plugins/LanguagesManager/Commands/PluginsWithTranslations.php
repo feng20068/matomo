@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\LanguagesManager\Commands;
@@ -29,7 +29,7 @@ class PluginsWithTranslations extends TranslationBase
         foreach (Manager::getPluginsDirectories() as $pluginsDir) {
             $pluginFiles = array_merge($pluginsDir, glob(sprintf('%s*/lang/en.json', $pluginsDir)));
         }
-        $pluginFiles = array_map(function($elem){
+        $pluginFiles = array_map(function ($elem) {
             $replace = Manager::getPluginsDirectories();
             $replace[] = '/lang/en.json';
             return str_replace($replace, '', $elem);

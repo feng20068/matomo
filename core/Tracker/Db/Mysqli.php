@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tracker\Db;
 
 use Exception;
@@ -25,6 +26,7 @@ class Mysqli extends Db
     protected $username;
     protected $password;
     protected $charset;
+    protected $collation;
     protected $activeTransaction = false;
 
     protected $enable_ssl;
@@ -56,34 +58,34 @@ class Mysqli extends Db
             $this->port = (int)$dbInfo['port'];
             $this->socket = null;
         }
+
         $this->dbname = $dbInfo['dbname'];
         $this->username = $dbInfo['username'];
         $this->password = $dbInfo['password'];
-        $this->charset = isset($dbInfo['charset']) ? $dbInfo['charset'] : null;
+        $this->charset = $dbInfo['charset'] ?? null;
+        $this->collation = $dbInfo['collation'] ?? null;
 
-
-        if(!empty($dbInfo['enable_ssl'])){
+        if (!empty($dbInfo['enable_ssl'])) {
             $this->enable_ssl = $dbInfo['enable_ssl'];
         }
-        if(!empty($dbInfo['ssl_key'])){
+        if (!empty($dbInfo['ssl_key'])) {
             $this->ssl_key = $dbInfo['ssl_key'];
         }
-        if(!empty($dbInfo['ssl_cert'])){
+        if (!empty($dbInfo['ssl_cert'])) {
             $this->ssl_cert = $dbInfo['ssl_cert'];
         }
-        if(!empty($dbInfo['ssl_ca'])){
+        if (!empty($dbInfo['ssl_ca'])) {
             $this->ssl_ca = $dbInfo['ssl_ca'];
         }
-        if(!empty($dbInfo['ssl_ca_path'])){
+        if (!empty($dbInfo['ssl_ca_path'])) {
             $this->ssl_ca_path = $dbInfo['ssl_ca_path'];
         }
-        if(!empty($dbInfo['ssl_cipher'])){
+        if (!empty($dbInfo['ssl_cipher'])) {
             $this->ssl_cipher = $dbInfo['ssl_cipher'];
         }
-        if(!empty($dbInfo['ssl_no_verify'])){
+        if (!empty($dbInfo['ssl_no_verify'])) {
             $this->ssl_no_verify = $dbInfo['ssl_no_verify'];
         }
-
     }
 
     /**
@@ -113,7 +115,7 @@ class Mysqli extends Db
         $this->connection = mysqli_init();
 
 
-        if($this->enable_ssl){
+        if ($this->enable_ssl) {
             mysqli_ssl_set($this->connection, $this->ssl_key, $this->ssl_cert, $this->ssl_ca, $this->ssl_ca_path, $this->ssl_cipher);
         }
 
@@ -122,10 +124,10 @@ class Mysqli extends Db
         // change. This matches common behaviour among other database systems.
         // See #6296 why this is important in tracker
         $flags = MYSQLI_CLIENT_FOUND_ROWS;
-        if ($this->enable_ssl){
+        if ($this->enable_ssl) {
             $flags = $flags | MYSQLI_CLIENT_SSL;
         }
-        if ($this->ssl_no_verify && defined('MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT')){
+        if ($this->ssl_no_verify && defined('MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT')) {
             $flags = $flags | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT;
         }
         mysqli_real_connect($this->connection, $this->host, $this->username, $this->password, $this->dbname, $this->port, $this->socket, $flags);
@@ -133,8 +135,17 @@ class Mysqli extends Db
             throw new DbException("Connect failed: " . mysqli_connect_error());
         }
 
-        if ($this->charset && !mysqli_set_charset($this->connection, $this->charset)) {
-            throw new DbException("Set Charset failed: " . mysqli_error($this->connection));
+        if ($this->charset && $this->collation) {
+            // mysqli_set_charset does not support setting a collation
+            $query = "SET NAMES '" . $this->charset . "' COLLATE '" . $this->collation . "'";
+
+            if (!mysqli_query($this->connection, $query)) {
+                throw new DbException("Set charset/connection collation failed: " . mysqli_error($this->connection));
+            }
+        } elseif ($this->charset) {
+            if (!mysqli_set_charset($this->connection, $this->charset)) {
+                throw new DbException("Set Charset failed: " . mysqli_error($this->connection));
+            }
         }
 
         $this->password = '';
@@ -158,7 +169,8 @@ class Mysqli extends Db
      * @param $fields
      * @return array|bool|false
      */
-    private function fetchResult($stmt, $fields) {
+    private function fetchResult($stmt, $fields)
+    {
 
         $values = array_fill(0, count($fields), null);
 
@@ -303,7 +315,8 @@ class Mysqli extends Db
         return mysqli_insert_id($this->connection);
     }
 
-    private function executeQuery($sql, $bind) {
+    private function executeQuery($sql, $bind)
+    {
 
         $stmt = mysqli_prepare($this->connection, $sql);
 

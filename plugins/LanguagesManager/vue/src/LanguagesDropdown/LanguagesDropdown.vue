@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -14,7 +15,7 @@
         class="item"
         target="_blank"
         rel="noreferrer noopener"
-        href="https://matomo.org/translations/"
+        :href="externalRawLink('https://matomo.org/translations/')"
       >
         {{ translate('LanguagesManager_AboutPiwikTranslations') }}
       </a>

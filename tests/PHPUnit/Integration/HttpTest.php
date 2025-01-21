@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration;
@@ -183,7 +184,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getMethodsToTest
      */
-    public function testHttpPost_ViaString($method)
+    public function testHttpPostViaString($method)
     {
         $result = Http::sendHttpRequestBy(
             $method,
@@ -209,7 +210,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getMethodsToTest
      */
-    public function testHttpPost_ViaArray($method)
+    public function testHttpPostViaArray($method)
     {
         $result = Http::sendHttpRequestBy(
             $method,
@@ -302,7 +303,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getMethodsToTest
      */
-    public function testHttpDownloadChunk_responseSizeLimitedToChunk($method)
+    public function testHttpDownloadChunkResponseSizeLimitedToChunk($method)
     {
         $result = Http::sendHttpRequestBy(
             $method,
@@ -327,7 +328,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getRedirectUrls
      */
-    public function test_redirects($url, $method, $isValid, $message)
+    public function testRedirects($url, $method, $isValid, $message)
     {
         if ($isValid === false) {
             $this->expectException(\Exception::class);
@@ -345,23 +346,23 @@ class HttpTest extends \PHPUnit\Framework\TestCase
     {
         return [
             // check 5 redirects are working
-            [Fixture::getRootUrl().'tests/resources/redirector.php?redirects=5', 'curl', true, Fixture::getRootUrl().'tests/resources/redirector.php?redirects=0'],
-            [Fixture::getRootUrl().'tests/resources/redirector.php?redirects=5', 'socket', true, Fixture::getRootUrl().'tests/resources/redirector.php?redirects=0'],
-            [Fixture::getRootUrl().'tests/resources/redirector.php?redirects=4', 'fopen', true, Fixture::getRootUrl().'tests/resources/redirector.php?redirects=0'],
+            [Fixture::getRootUrl() . 'tests/resources/redirector.php?redirects=5', 'curl', true, Fixture::getRootUrl() . 'tests/resources/redirector.php?redirects=0'],
+            [Fixture::getRootUrl() . 'tests/resources/redirector.php?redirects=5', 'socket', true, Fixture::getRootUrl() . 'tests/resources/redirector.php?redirects=0'],
+            [Fixture::getRootUrl() . 'tests/resources/redirector.php?redirects=4', 'fopen', true, Fixture::getRootUrl() . 'tests/resources/redirector.php?redirects=0'],
 
             // more than 5 redirects should fail
-            [Fixture::getRootUrl().'tests/resources/redirector.php?redirects=6', 'curl', false, '/curl_exec: Maximum \(5\) redirects followed./'],
-            [Fixture::getRootUrl().'tests/resources/redirector.php?redirects=6', 'socket', false, '/Too many redirects/'],
-            [Fixture::getRootUrl().'tests/resources/redirector.php?redirects=6', 'fopen', true, ''],
+            [Fixture::getRootUrl() . 'tests/resources/redirector.php?redirects=6', 'curl', false, '/curl_exec: Maximum \(5\) redirects followed./'],
+            [Fixture::getRootUrl() . 'tests/resources/redirector.php?redirects=6', 'socket', false, '/Too many redirects/'],
+            [Fixture::getRootUrl() . 'tests/resources/redirector.php?redirects=6', 'fopen', true, ''],
 
             // Redirect to disallowed protocol shouldn't be possible
-            [Fixture::getRootUrl().'tests/resources/redirector.php?target='.urlencode('ftps://my.local'), 'curl', false, '/curl_exec: Protocol "ftps" not supported or disabled in libcurl/'],
-            [Fixture::getRootUrl().'tests/resources/redirector.php?target='.urlencode('ftps://my.local'), 'socket', false, '/Protocol ftps not in list of allowed protocols/'],
+            [Fixture::getRootUrl() . 'tests/resources/redirector.php?target=' . urlencode('ftps://my.local'), 'curl', false, '/curl_exec: Protocol "ftps" not supported or disabled in libcurl/'],
+            [Fixture::getRootUrl() . 'tests/resources/redirector.php?target=' . urlencode('ftps://my.local'), 'socket', false, '/Protocol ftps not in list of allowed protocols/'],
             //[Fixture::getRootUrl().'tests/resources/redirector.php?target='.urlencode('ftps://my.local'), 'fopen', false, ''],
         ];
     }
 
-    public function test_http_postsEvent()
+    public function testHttpPostsEvent()
     {
         $params = null;
         $params2 = null;
@@ -399,7 +400,6 @@ class HttpTest extends \PHPUnit\Framework\TestCase
             'headers' => array(
                 'Range: bytes=10-20',
                 'Via: ' . Version::VERSION . '  (Matomo/' . Version::VERSION . ')',
-                'X-Forwarded-For: 127.0.0.1',
             ),
             'verifySsl' => true,
             'destinationPath' => $destinationPath
@@ -415,14 +415,13 @@ class HttpTest extends \PHPUnit\Framework\TestCase
             'headers' => array(
                 'Range: bytes=10-20',
                 'Via: ' . Version::VERSION . '  (Matomo/' . Version::VERSION . ')',
-                'X-Forwarded-For: 127.0.0.1',
             ),
             'verifySsl' => true,
             'destinationPath' => $destinationPath
         ), '{"adf2":"44","afc23":"ab12","method":"post"}', 200), $params2);
     }
 
-    public function test_http_returnsResultOfPostedEvent()
+    public function testHttpReturnsResultOfPostedEvent()
     {
         Piwik::addAction('Http.sendHttpRequest', function ($url, $args, &$response, &$status, &$headers) {
             $response = '{test: true}';
@@ -458,7 +457,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getProtocolUrls
      */
-    public function test_invalid_protocols($url, $message)
+    public function testInvalidProtocols($url, $message)
     {
         self::expectException(\Exception::class);
         self::expectExceptionMessage($message);
@@ -479,9 +478,9 @@ class HttpTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getBlockedHostUrls
      */
-    public function test_blocked_hosts($url, $isValid, $message='')
+    public function testBlockedHosts($url, $isValid, $message = '')
     {
-        EventDispatcher::getInstance()->addObserver('Http.sendHttpRequest', function($aUrl, $httpEventParams, &$response, &$status, &$headers) {
+        EventDispatcher::getInstance()->addObserver('Http.sendHttpRequest', function ($aUrl, $httpEventParams, &$response, &$status, &$headers) {
             $response = 'prevented request';
         });
 

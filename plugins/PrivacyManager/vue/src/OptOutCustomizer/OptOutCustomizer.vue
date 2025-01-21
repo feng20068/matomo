@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -213,6 +214,7 @@ import {
   debounce,
   MatomoUrl,
   AjaxHelper,
+  externalLink,
 } from 'CoreHome';
 import {
   Field,
@@ -369,10 +371,9 @@ export default defineComponent({
       return `${this.matomoUrl}index.php?${query}`;
     },
     readThisToLearnMore() {
-      const link = 'https://matomo.org/faq/how-to/faq_25918/';
       return translate(
         'General_ReadThisToLearnMore',
-        `<a rel='noreferrer noopener' target='_blank' href='${link}'>`,
+        externalLink('https://matomo.org/faq/how-to/faq_25918/'),
         '</a>',
       );
     },
@@ -387,7 +388,7 @@ export default defineComponent({
       const link = 'https://developer.matomo.org/guides/tracking-javascript-guide#optional-creating-a-custom-opt-out-form';
       return translate(
         'CoreAdminHome_OptOutCustomOptOutLink',
-        `<a href="${link}" rel="noreferrer noopener" target="_blank">`,
+        externalLink(link),
         '</a>',
       );
     },

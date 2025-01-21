@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Period;
 
 use Exception;
@@ -30,7 +31,7 @@ use Piwik\Period;
  */
 class Range extends Period
 {
-    const PERIOD_ID = 5;
+    public const PERIOD_ID = 5;
 
     protected $label = 'range';
     protected $today;
@@ -169,7 +170,7 @@ class Range extends Period
         return $out;
     }
 
-    protected function getMaxN($lastN)
+    protected function getMaxN(int $lastN): int
     {
         switch ($this->strPeriod) {
             case 'day':
@@ -244,7 +245,7 @@ class Range extends Period
                 }
             }
 
-            $lastN = $this->getMaxN($lastN);
+            $lastN = $this->getMaxN((int) $lastN);
 
             // last1 means only one result ; last2 means 2 results so we remove only 1 to the days/weeks/etc
             $lastN--;
@@ -263,7 +264,13 @@ class Range extends Period
             if (strpos($strDateEnd, '-') === false) {
                 $timezone = $this->timezone;
             }
+
             $endDate = Date::factory($strDateEnd, $timezone)->setTime("00:00:00");
+            $maxAllowedEndDate = Date::factory(self::getMaxAllowedEndTimestamp());
+
+            if ($endDate->isLater($maxAllowedEndDate)) {
+                $endDate = $maxAllowedEndDate;
+            }
         } else {
             throw new Exception($this->translator->translate('General_ExceptionInvalidDateRange', array($this->strDate, ' \'lastN\', \'previousN\', \'YYYY-MM-DD,YYYY-MM-DD\'')));
         }
@@ -324,8 +331,10 @@ class Range extends Period
      */
     protected function processOptimalSubperiods($startDate, $endDate)
     {
-        while ($startDate->isEarlier($endDate)
-            || $startDate == $endDate) {
+        while (
+            $startDate->isEarlier($endDate)
+            || $startDate == $endDate
+        ) {
             $endOfPeriod = null;
 
             $month        = new Month($startDate);
@@ -336,7 +345,8 @@ class Range extends Period
             $endOfYear   = $year->getDateEnd();
             $startOfYear = $year->getDateStart();
 
-            if ($startDate == $startOfYear
+            if (
+                $startDate == $startOfYear
                 && ($endOfYear->isEarlier($endDate)
                     || $endOfYear == $endDate
                     || $endOfYear->isLater($this->today)
@@ -349,7 +359,8 @@ class Range extends Period
             ) {
                 $this->addSubperiod($year);
                 $endOfPeriod = $endOfYear;
-            } elseif ($startDate == $startOfMonth
+            } elseif (
+                $startDate == $startOfMonth
                 && ($endOfMonth->isEarlier($endDate)
                     || $endOfMonth == $endDate
                     || $endOfMonth->isLater($this->today)
@@ -372,20 +383,23 @@ class Range extends Period
                 $firstDayNextMonth      = $startDate->addPeriod(2, 'month')->setDay(1);
                 $useMonthsNextIteration = $firstDayNextMonth->isEarlier($endDate);
 
-                if ($useMonthsNextIteration
+                if (
+                    $useMonthsNextIteration
                     && $endOfWeek->isLater($endOfMonth)
                 ) {
                     $this->fillArraySubPeriods($startDate, $endOfMonth, 'day');
                     $endOfPeriod = $endOfMonth;
-                } //   If end of this week is later than end date, we use days
-                elseif ($this->isEndOfWeekLaterThanEndDate($endDate, $endOfWeek) &&
-                    ($endOfWeek->isEarlier($this->today)
-                        || $startOfWeek->toString() != $startDate->toString()
-                        || $endDate->isEarlier($this->today))
+                } elseif (
+                    $this->isEndOfWeekLaterThanEndDate($endDate, $endOfWeek) &&
+                    ($endOfWeek->isEarlier($this->today) ||
+                        $startOfWeek->toString() != $startDate->toString() ||
+                        $endDate->isEarlier($this->today))
                 ) {
+                    // If end of this week is later than end date, we use days
                     $this->fillArraySubPeriods($startDate, $endDate, 'day');
                     break 1;
-                } elseif ($startOfWeek->isEarlier($startDate)
+                } elseif (
+                    $startOfWeek->isEarlier($startDate)
                     && $endOfWeek->isEarlier($this->today)
                 ) {
                     $this->fillArraySubPeriods($startDate, $endOfWeek, 'day');
@@ -578,5 +592,20 @@ class Range extends Period
     public function getParentPeriodLabel()
     {
         return null;
+    }
+
+    /**
+     * Returns the max allowed end timestamp for a range. If an enddate after this timestamp is provided, Matomo will
+     * automatically lower the end date to the date returned by this method.
+     * The max supported timestamp is always set to end of the current year plus 10 years.
+     *
+     * @return int
+     * @api
+     */
+    public static function getMaxAllowedEndTimestamp(): int
+    {
+        return strtotime(
+            date('Y-12-31 00:00:00', strtotime('+10 year', Date::getNowTimestamp()))
+        );
     }
 }

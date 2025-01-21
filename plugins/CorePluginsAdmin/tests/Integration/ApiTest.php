@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CorePluginsAdmin\tests\Integration;
@@ -11,20 +12,26 @@ namespace Piwik\Plugins\CorePluginsAdmin\tests\Integration;
 use Piwik\Access;
 use Piwik\Auth;
 use Piwik\Container\StaticContainer;
+use Piwik\Plugins\CorePluginsAdmin\SettingsMetadata;
 use Piwik\Plugins\CoreUpdater\SystemSettings;
 use Piwik\Plugins\UsersManager\API;
 use Piwik\Tests\Framework\Fixture;
 use Piwik\Tests\Framework\TestCase\IntegrationTestCase;
-use Piwik\Version;
 
 class ApiTest extends IntegrationTestCase
 {
-    const TEST_USER = 'atestuser';
-    const TEST_PASSWORD = 'testpassword';
+    public const TEST_USER = 'atestuser';
+    public const TEST_PASSWORD = 'testpassword';
 
     private $testSystemSettingsPayload = [
         'CoreUpdater' => [
             ['name' => 'release_channel', 'value' => 'latest_beta'],
+        ],
+    ];
+
+    private $testSystemSettingsEmptyValuePayload = [
+        'ExampleSettingsPlugin' => [
+            ['name' => 'browsers', 'value' => '__empty__'],
         ],
     ];
 
@@ -47,12 +54,8 @@ class ApiTest extends IntegrationTestCase
         Access::getInstance()->reloadAccess($auth);
     }
 
-    public function test_setSystemSettings_throwsIfNoPasswordConfirmation()
+    public function testSetSystemSettingsThrowsIfNoPasswordConfirmation()
     {
-        if (version_compare(Version::VERSION, '4.4.0-b1', '<')) {
-            $this->markTestSkipped('Skipping test since passwordConfirmation is optional until version 4.4.');
-        }
-
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('UsersManager_ConfirmWithPassword');
 
@@ -60,12 +63,8 @@ class ApiTest extends IntegrationTestCase
         \Piwik\Plugins\CorePluginsAdmin\API::getInstance()->setSystemSettings($settingValues);
     }
 
-    public function test_setSystemSettings_throwsIfPasswordConfirmationWrong()
+    public function testSetSystemSettingsThrowsIfPasswordConfirmationWrong()
     {
-        if (version_compare(Version::VERSION, '4.4.0-b1', '<')) {
-            $this->markTestSkipped('Skipping test since passwordConfirmation is optional until version 4.4.');
-        }
-
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('UsersManager_CurrentPasswordNotCorrect');
 
@@ -73,7 +72,7 @@ class ApiTest extends IntegrationTestCase
         \Piwik\Plugins\CorePluginsAdmin\API::getInstance()->setSystemSettings($settingValues, 'blahblah');
     }
 
-    public function test_setSystemSettings_correctlySetsSettings()
+    public function testSetSystemSettingsCorrectlySetsSettings()
     {
         $settingValues = $this->testSystemSettingsPayload;
         \Piwik\Plugins\CorePluginsAdmin\API::getInstance()->setSystemSettings($settingValues, self::TEST_PASSWORD);
@@ -81,6 +80,80 @@ class ApiTest extends IntegrationTestCase
         $coreUpdaterSettings = StaticContainer::get(SystemSettings::class);
         $value = $coreUpdaterSettings->releaseChannel->getValue();
         $this->assertEquals('latest_beta', $value);
+    }
+
+    public function testGetSystemSettingsRedactsPasswordValues()
+    {
+        $pluginSettings = StaticContainer::get(\Piwik\Plugins\ExampleSettingsPlugin\SystemSettings::class);
+        $settings = $this->getPluginSettings('ExampleSettingsPlugin', 'password');
+
+        self::assertEquals('password', $settings['name']);
+        self::assertEquals('', $settings['value']);
+        self::assertEquals('', $pluginSettings->getSetting('password')->getValue());
+
+        $settingValues = [
+            'ExampleSettingsPlugin' => [
+                ['name' => 'password', 'value' => 'newPassword'],
+            ],
+        ];
+        \Piwik\Plugins\CorePluginsAdmin\API::getInstance()->setSystemSettings($settingValues, self::TEST_PASSWORD);
+
+        $newSettings = $this->getPluginSettings('ExampleSettingsPlugin', 'password');
+
+        self::assertEquals('password', $newSettings['name']);
+        self::assertEquals(SettingsMetadata::PASSWORD_PLACEHOLDER, $newSettings['value']); // API returns value redacted
+        self::assertTrue(password_verify('newPassword', $pluginSettings->getSetting('password')->getValue()));
+
+        // check that sending the placeholder as value doesn't update the setting
+        $settingValues = [
+            'ExampleSettingsPlugin' => [
+                ['name' => 'password', 'value' => SettingsMetadata::PASSWORD_PLACEHOLDER],
+            ],
+        ];
+        \Piwik\Plugins\CorePluginsAdmin\API::getInstance()->setSystemSettings($settingValues, self::TEST_PASSWORD);
+
+        $newSettings = $this->getPluginSettings('ExampleSettingsPlugin', 'password');
+
+        self::assertEquals('password', $newSettings['name']);
+        self::assertEquals(SettingsMetadata::PASSWORD_PLACEHOLDER, $newSettings['value']); // API returns value redacted
+        self::assertTrue(password_verify('newPassword', $pluginSettings->getSetting('password')->getValue()));
+    }
+
+    public function testSetSystemSettingsCorrectlySetsEmptyValue()
+    {
+        $pluginSettings = StaticContainer::get(\Piwik\Plugins\ExampleSettingsPlugin\SystemSettings::class);
+        $settings = $this->getPluginSettings('ExampleSettingsPlugin', 'browsers');
+        $defaultValue = ['firefox', 'chromium', 'safari'];
+
+        self::assertEquals('browsers', $settings['name']);
+        self::assertEquals($defaultValue, $settings['value']);
+        self::assertEquals($defaultValue, $pluginSettings->getSetting('browsers')->getValue());
+
+        $settingValues = $this->testSystemSettingsEmptyValuePayload;
+        \Piwik\Plugins\CorePluginsAdmin\API::getInstance()->setSystemSettings($settingValues, self::TEST_PASSWORD);
+
+        $newSettings = $this->getPluginSettings('ExampleSettingsPlugin', 'browsers');
+
+        self::assertEquals('browsers', $newSettings['name']);
+        self::assertEquals([], $newSettings['value']);
+        self::assertEquals([], $pluginSettings->getSetting('browsers')->getValue());
+    }
+
+    private function getPluginSettings(string $pluginName, string $settingName): array
+    {
+        $settings = \Piwik\Plugins\CorePluginsAdmin\API::getInstance()->getSystemSettings();
+
+        foreach ($settings as $pluginSettings) {
+            if ($pluginSettings['pluginName'] === $pluginName) {
+                foreach ($pluginSettings['settings'] as $pSetting) {
+                    if ($pSetting['name'] === $settingName) {
+                        return $pSetting;
+                    }
+                }
+            }
+        }
+
+        return [];
     }
 
     protected static function configureFixture($fixture)

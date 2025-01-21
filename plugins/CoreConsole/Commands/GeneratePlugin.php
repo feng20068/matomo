@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreConsole\Commands;
@@ -51,9 +51,7 @@ class GeneratePlugin extends GeneratePluginBase
                 '3.0.0-b1'           => Version::VERSION
             );
             $whitelistFiles = array();
-
         } else {
-
             $exampleFolder = Plugin\Manager::getPluginDirectory('ExamplePlugin');
             $replace       = array(
                 'ExamplePlugin'      => $pluginName,
@@ -135,7 +133,8 @@ class GeneratePlugin extends GeneratePluginBase
 
             $pluginPath = $self->getPluginPath($pluginName);
 
-            if (file_exists($pluginPath)
+            if (
+                file_exists($pluginPath)
                 && !$overwrite
             ) {
                 throw new \RuntimeException('A plugin with this name already exists');
@@ -198,5 +197,4 @@ class GeneratePlugin extends GeneratePluginBase
 
         return $version;
     }
-
 }

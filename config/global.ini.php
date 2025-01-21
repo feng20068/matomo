@@ -45,9 +45,24 @@ ssl_no_verify =
 ; Matomo should work correctly without this setting but we recommend to have a charset set.
 charset = utf8
 
+; In some database setups the collation used for queries and creating tables can have unexpected
+; values, or change after a database version upgrade.
+; If you encounter "Illegal mix of collation" errors, setting this config to the value matching
+; your existing database tables can help.
+; This setting will only be used if "charset" is also set.
+; Matomo should work correctly without this setting but we recommend to have a collation set.
+collation =
+
 ; Database error codes to ignore during updates
 ;
 ;ignore_error_codes[] = 1105
+
+; Add a query hint for the order of joined tables when building segment queries in MySQL. This can be used to override
+; sub-optimal choices by the MySQL optimizer and always ensure the query plan starts with the first table in the query.
+enable_segment_first_table_join_prefix = 0
+
+; Add a query hint for the order of joined tables for all log table queries in MySQL.
+enable_first_table_join_prefix = 0
 
 ; If configured, the following queries will be executed on the reader instead of the writer.
 ; * archiving queries that hit a log table
@@ -77,6 +92,7 @@ adapter = PDO\MYSQL
 type = InnoDB
 schema = Mysql
 charset = utf8mb4
+collation = utf8mb4_general_ci
 enable_ssl = 0
 ssl_ca =
 ssl_cert =
@@ -365,6 +381,10 @@ time_before_year_archive_considered_outdated = -1
 ; Same as config setting "time_before_week_archive_considered_outdated" but it is only applied to range archives
 time_before_range_archive_considered_outdated = -1
 
+; Time in seconds after a started archiving job is considered as failed and will be retried
+; Do not configure this value lower than the maximum time it can take for the longest running archiving job to finish
+archive_failure_recovery_timeout = 86400
+
 ; This setting is overridden in the UI, under "General Settings".
 ; The default value is to allow browsers to trigger the Matomo archiving process.
 ; This setting is only used if it hasn't been overridden via the UI yet, or if enable_general_settings_admin=0
@@ -535,11 +555,11 @@ enable_framed_settings = 0
 ; information view the FAQ: https://matomo.org/faq/troubleshooting/faq_147/
 enable_framed_allow_write_admin_token_auth = 0
 
-; Set to 1 to only allow tokens to be used in POST requests. This will completely prevent using
+; Set to 1 to only allow tokens to be used in a secure way (e.g. via POST requests). This will completely prevent using
 ; token_auth as URL parameter in GET requests. When enabled all new authentication tokens
-; will be created as POST only. Previously created tokens will only be accepted in POST requests.
+; will be created for Secure use only, and previously created tokens will only be accepted in a secure way (POST requests).
 ; Recommended for best security.
-only_allow_posted_auth_tokens = 0
+only_allow_secure_auth_tokens = 0
 
 ; language cookie name for session
 language_cookie_name = matomo_lang
@@ -770,6 +790,10 @@ enable_load_data_infile = 1
 ; - links to Uninstall themes will be disabled (but user can still enable/disable themes)
 enable_plugins_admin = 1
 
+; Defines when a plugin trial request expires and a new one can be requested
+; By settings this value to -1 plugin trial requests will be disabled
+plugin_trial_request_expiration_in_days = 28
+
 ; By setting this option to 0 the users management will be disabled
 enable_users_admin = 1
 
@@ -870,6 +894,13 @@ enable_required_directories_diagnostic = 1
 ; When set to 0, the definitions will be loaded from the local definitions (updated with core).
 enable_referrer_definition_syncs = 1
 
+; If set to 1, then links to matomo.org shown in the Matomo app will not include campaign tracking parameters which
+; describe where in the application the link originated. This information is used to improve the quality and relevance
+; of inline help links on matomo.org and contains no identifying information. Presence of the campaign parameters in
+; the link url could be used by third parties monitoring network requests to identify that the Matomo app is being used,
+; so it can be disabled here if necessary.
+disable_tracking_matomo_app_links = 0
+
 [Tracker]
 
 ; When enabled and a userId is set, then the visitorId will be automatically set based on the userId. This allows to
@@ -944,7 +975,7 @@ default_time_one_page_visit = 0
 
 ; Comma separated list of URL query string variable names that will be removed from your tracked URLs
 ; By default, Matomo will remove the most common parameters which are known to change often (eg. session ID parameters)
-url_query_parameter_to_exclude_from_url = "gclid,fbclid,msclkid,yclid,fb_xd_fragment,fb_comment_id,phpsessid,jsessionid,sessionid,aspsessionid,doing_wp_cron,sid,pk_vid"
+url_query_parameter_to_exclude_from_url = "gclid,fbclid,msclkid,twclid,wbraid,gbraid,yclid,fb_xd_fragment,fb_comment_id,phpsessid,jsessionid,sessionid,aspsessionid,doing_wp_cron,sid,pk_vid"
 
 ; If set to 1, Matomo will use the default provider if no other provider is configured.
 ; In addition the default provider will be used as a fallback when the configure provider does not return any results.
@@ -1141,6 +1172,7 @@ Languages[] = eu
 Languages[] = fa
 Languages[] = fi
 Languages[] = fr
+Languages[] = gu
 Languages[] = gl
 Languages[] = he
 Languages[] = hi
@@ -1245,6 +1277,8 @@ Plugins[] = CustomJsTracker
 Plugins[] = Tour
 Plugins[] = PagePerformance
 Plugins[] = CustomDimensions
+Plugins[] = JsTrackerInstallCheck
+Plugins[] = FeatureFlags
 
 [PluginsInstalled]
 PluginsInstalled[] = Diagnostics
@@ -1255,6 +1289,34 @@ PluginsInstalled[] = SitesManager
 PluginsInstalled[] = Installation
 PluginsInstalled[] = Monolog
 PluginsInstalled[] = Intl
+PluginsInstalled[] = JsTrackerInstallCheck
+
+[PagePerformance]
+; The configuration below provides the possibility to enable capping of values used for generating 'sum/total' and 'average' metrics for page performance reports.
+; This allows to reduce the impact of single failed performance measurements.
+;
+; The recommended caps are at 100-fold an avg/high value. Thereby one wrong value in 10,000 values results in a 1% deviation:
+; (1x 100N + 9999x N) / 10000 ~= 101% N
+;
+; By default capping is disabled. To enable capping overwrite the configs below with a value higher than 0.
+
+; Cap for Network time: avg/high 100ms (recommended value: 10000)
+time_network_cap_duration_ms = 0
+
+; Cap for Server time: avg/high 500ms (recommended value: 50000)
+time_server_cap_duration_ms = 0
+
+; Cap for Transfer time: avg/high 250ms (recommended value: 25000)
+time_transfer_cap_duration_ms = 0
+
+; Cap for DOM processing time: avg/high 500ms (recommended value: 50000)
+time_dom_processing_cap_duration_ms = 0
+
+; Cap for DOM completion time: avg/high 1500ms (recommended value: 150000)
+time_dom_completion_cap_duration_ms = 0
+
+; Cap for On load time: avg/high 10ms (recommended value: 1000)
+time_on_load_cap_duration_ms = 0
 
 [APISettings]
 ; Any key/value pair can be added in this section, they will be available via the REST call
@@ -1262,5 +1324,166 @@ PluginsInstalled[] = Intl
 ; This can be used to expose values from Matomo, to control for example a Mobile app tracking
 SDK_batch_size = 10
 SDK_interval_value = 30
+
+[SitesManager]
+CommonPIIParams[] = account
+CommonPIIParams[] = accountnum
+CommonPIIParams[] = address
+CommonPIIParams[] = address1
+CommonPIIParams[] = address2
+CommonPIIParams[] = address3
+CommonPIIParams[] = addressline1
+CommonPIIParams[] = addressline2
+CommonPIIParams[] = adres
+CommonPIIParams[] = adresse
+CommonPIIParams[] = age
+CommonPIIParams[] = alter
+CommonPIIParams[] = auth
+CommonPIIParams[] = authpw
+CommonPIIParams[] = bic
+CommonPIIParams[] = billingaddress
+CommonPIIParams[] = billingaddress1
+CommonPIIParams[] = billingaddress2
+CommonPIIParams[] = calle
+CommonPIIParams[] = cardnumber
+CommonPIIParams[] = cc
+CommonPIIParams[] = ccc
+CommonPIIParams[] = cccsc
+CommonPIIParams[] = cccvc
+CommonPIIParams[] = cccvv
+CommonPIIParams[] = ccexpiry
+CommonPIIParams[] = ccexpmonth
+CommonPIIParams[] = ccexpyear
+CommonPIIParams[] = ccname
+CommonPIIParams[] = ccnumber
+CommonPIIParams[] = cctype
+CommonPIIParams[] = cell
+CommonPIIParams[] = cellphone
+CommonPIIParams[] = city
+CommonPIIParams[] = clientid
+CommonPIIParams[] = clientsecret
+CommonPIIParams[] = company
+CommonPIIParams[] = consumerkey
+CommonPIIParams[] = consumersecret
+CommonPIIParams[] = contrasenya
+CommonPIIParams[] = contraseña
+CommonPIIParams[] = creditcard
+CommonPIIParams[] = creditcardnumber
+CommonPIIParams[] = cvc
+CommonPIIParams[] = cvv
+CommonPIIParams[] = dateofbirth
+CommonPIIParams[] = debitcard
+CommonPIIParams[] = dirección
+CommonPIIParams[] = dob
+CommonPIIParams[] = domain
+CommonPIIParams[] = ebost
+CommonPIIParams[] = email
+CommonPIIParams[] = emailaddress
+CommonPIIParams[] = emailadresse
+CommonPIIParams[] = epos
+CommonPIIParams[] = epost
+CommonPIIParams[] = eposta
+CommonPIIParams[] = exp
+CommonPIIParams[] = familyname
+CommonPIIParams[] = firma
+CommonPIIParams[] = firstname
+CommonPIIParams[] = formlogin
+CommonPIIParams[] = fullname
+CommonPIIParams[] = gender
+CommonPIIParams[] = geschlecht
+CommonPIIParams[] = gst
+CommonPIIParams[] = gstnumber
+CommonPIIParams[] = handynummer
+CommonPIIParams[] = hasło
+CommonPIIParams[] = heslo
+CommonPIIParams[] = iban
+CommonPIIParams[] = ibanaccountnum
+CommonPIIParams[] = ibanaccountnumber
+CommonPIIParams[] = id
+CommonPIIParams[] = identifier
+CommonPIIParams[] = indirizzo
+CommonPIIParams[] = kartakredytowa
+CommonPIIParams[] = kennwort
+CommonPIIParams[] = keyconsumerkey
+CommonPIIParams[] = keyconsumersecret
+CommonPIIParams[] = konto
+CommonPIIParams[] = kontonr
+CommonPIIParams[] = kontonummer
+CommonPIIParams[] = kredietkaart
+CommonPIIParams[] = kreditkarte
+CommonPIIParams[] = kreditkort
+CommonPIIParams[] = lastname
+CommonPIIParams[] = login
+CommonPIIParams[] = mail
+CommonPIIParams[] = mobiili
+CommonPIIParams[] = mobile
+CommonPIIParams[] = mobilne
+CommonPIIParams[] = nachname
+CommonPIIParams[] = name
+CommonPIIParams[] = nickname
+CommonPIIParams[] = off
+CommonPIIParams[] = osoite
+CommonPIIParams[] = parole
+CommonPIIParams[] = pass
+CommonPIIParams[] = passord
+CommonPIIParams[] = password
+CommonPIIParams[] = passwort
+CommonPIIParams[] = pasword
+CommonPIIParams[] = paswort
+CommonPIIParams[] = paword
+CommonPIIParams[] = phone
+CommonPIIParams[] = pin
+CommonPIIParams[] = plz
+CommonPIIParams[] = postalcode
+CommonPIIParams[] = postcode
+CommonPIIParams[] = postleitzahl
+CommonPIIParams[] = privatekey
+CommonPIIParams[] = publickey
+CommonPIIParams[] = pw
+CommonPIIParams[] = pwd
+CommonPIIParams[] = pword
+CommonPIIParams[] = pwrd
+CommonPIIParams[] = rue
+CommonPIIParams[] = secret
+CommonPIIParams[] = secretq
+CommonPIIParams[] = secretquestion
+CommonPIIParams[] = shippingaddress
+CommonPIIParams[] = shippingaddress1
+CommonPIIParams[] = shippingaddress2
+CommonPIIParams[] = socialsec
+CommonPIIParams[] = socialsecuritynumber
+CommonPIIParams[] = socsec
+CommonPIIParams[] = sokak
+CommonPIIParams[] = ssn
+CommonPIIParams[] = steuernummer
+CommonPIIParams[] = strasse
+CommonPIIParams[] = street
+CommonPIIParams[] = surname
+CommonPIIParams[] = swift
+CommonPIIParams[] = tax
+CommonPIIParams[] = taxnumber
+CommonPIIParams[] = tel
+CommonPIIParams[] = telefon
+CommonPIIParams[] = telefonnr
+CommonPIIParams[] = telefonnummer
+CommonPIIParams[] = telefono
+CommonPIIParams[] = telephone
+CommonPIIParams[] = token
+CommonPIIParams[] = token_auth
+CommonPIIParams[] = tokenauth
+CommonPIIParams[] = téléphone
+CommonPIIParams[] = ulica
+CommonPIIParams[] = user
+CommonPIIParams[] = username
+CommonPIIParams[] = vat
+CommonPIIParams[] = vatnumber
+CommonPIIParams[] = via
+CommonPIIParams[] = vorname
+CommonPIIParams[] = wachtwoord
+CommonPIIParams[] = wagwoord
+CommonPIIParams[] = webhooksecret
+CommonPIIParams[] = website
+CommonPIIParams[] = zip
+CommonPIIParams[] = zipcode
 
 ; NOTE: do not directly edit this file! See notice at the top

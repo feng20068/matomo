@@ -1,17 +1,20 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugin;
 
 use Exception;
 use Piwik\Access;
 use Piwik\API\Proxy;
 use Piwik\API\Request;
+use Piwik\Changes\Model as ChangesModel;
+use Piwik\Changes\UserChanges;
 use Piwik\Common;
 use Piwik\Config as PiwikConfig;
 use Piwik\Config\GeneralConfig;
@@ -32,6 +35,7 @@ use Piwik\Piwik;
 use Piwik\Plugins\CoreAdminHome\CustomLogo;
 use Piwik\Plugins\CoreVisualizations\Visualizations\JqplotGraph\Evolution;
 use Piwik\Plugins\LanguagesManager\LanguagesManager;
+use Piwik\Plugins\UsersManager\Model as UsersModel;
 use Piwik\SettingsPiwik;
 use Piwik\Site;
 use Piwik\Url;
@@ -309,6 +313,11 @@ abstract class Controller
             $viewType = $this instanceof ControllerAdmin ? 'admin' : 'basic';
         }
 
+        // Set early so it is available for setGeneralVariables method calls
+        if (isset($variables['hideWhatIsNew'])) {
+            $view->hideWhatIsNew = $variables['hideWhatIsNew'];
+        }
+
         // alternatively we could check whether the templates extends either admin.twig or dashboard.twig and based on
         // that call the correct method. This will be needed once we unify Controller and ControllerAdmin see
         // https://github.com/piwik/piwik/issues/6151
@@ -397,7 +406,11 @@ abstract class Controller
     protected function getLastUnitGraph($currentModuleName, $currentControllerAction, $apiMethod)
     {
         $view = ViewDataTableFactory::build(
-            Evolution::ID, $apiMethod, $currentModuleName . '.' . $currentControllerAction, $forceDefault = true);
+            Evolution::ID,
+            $apiMethod,
+            $currentModuleName . '.' . $currentControllerAction,
+            $forceDefault = true
+        );
         $view->config->show_goals = false;
         return $view;
     }
@@ -419,10 +432,14 @@ abstract class Controller
      * @return ViewDataTable
      * @api
      */
-    protected function getLastUnitGraphAcrossPlugins($currentModuleName, $currentControllerAction, $columnsToDisplay = false,
-                                                     $selectableColumns = array(), $reportDocumentation = false,
-                                                     $apiMethod = 'API.get')
-    {
+    protected function getLastUnitGraphAcrossPlugins(
+        $currentModuleName,
+        $currentControllerAction,
+        $columnsToDisplay = false,
+        $selectableColumns = array(),
+        $reportDocumentation = false,
+        $apiMethod = 'API.get'
+    ) {
         // load translations from meta data
         $idSite = Common::getRequestVar('idSite');
         $period = Piwik::getPeriod();
@@ -714,8 +731,11 @@ abstract class Controller
         $view->hasSomeViewAccess  = Piwik::isUserHasSomeViewAccess();
         $view->isUserIsAnonymous  = Piwik::isUserIsAnonymous();
         $view->hasSuperUserAccess = Piwik::hasUserSuperUserAccess();
+        $view->disableTrackingMatomoAppLinks = PiwikConfig::getInstance()->General['disable_tracking_matomo_app_links'];
 
         if (!Piwik::isUserIsAnonymous()) {
+            $this->showWhatIsNew($view);
+
             $view->contactEmail = implode(',', Piwik::getContactEmailAddresses());
 
             // for BC only. Use contactEmail instead
@@ -756,7 +776,7 @@ abstract class Controller
         $view->relativePluginWebDirs = (object) $pluginManager->getWebRootDirectoriesForCustomPluginDirs();
         $view->pluginsToLoadOnDemand = $pluginManager->getPluginUmdsToLoadOnDemand();
         $view->isMultiSitesEnabled = $pluginManager->isPluginActivated('MultiSites');
-        $view->isSingleSite = Access::doAsSuperUser(function() {
+        $view->isSingleSite = Access::doAsSuperUser(function () {
             $allSites = Request::processRequest('SitesManager.getAllSitesId', [], []);
             return count($allSites) === 1;
         });
@@ -807,6 +827,33 @@ abstract class Controller
         $customLogo = new CustomLogo();
         $view->isCustomLogo  = $customLogo->isEnabled();
         $view->customFavicon = $customLogo->getPathUserFavicon();
+    }
+
+    /**
+     * Set the template variables to show the what's new popup if appropriate
+     *
+     * @param View $view
+     * @return void
+     */
+    protected function showWhatIsNew(View $view): void
+    {
+        $view->whatisnewShow = false;
+
+        if (isset($view->hideWhatIsNew) && $view->hideWhatIsNew) {
+            return;
+        }
+
+        $model = new UsersModel();
+        $user = $model->getUser(Piwik::getCurrentUserLogin());
+        if (!$user) {
+            return;
+        }
+        $userChanges = new UserChanges($user);
+        $newChangesStatus = $userChanges->getNewChangesStatus();
+        $shownRecently = $userChanges->shownRecently();
+        if ($newChangesStatus == ChangesModel::NEW_CHANGES_EXIST && !$shownRecently) {
+            $view->whatisnewShow = true;
+        }
     }
 
     /**
@@ -945,9 +992,14 @@ abstract class Controller
      * @param array $parameters Other query parameters to append to the URL.
      * @api
      */
-    public function redirectToIndex($moduleToRedirect, $actionToRedirect, $websiteId = null, $defaultPeriod = null,
-                                    $defaultDate = null, $parameters = array())
-    {
+    public function redirectToIndex(
+        $moduleToRedirect,
+        $actionToRedirect,
+        $websiteId = null,
+        $defaultPeriod = null,
+        $defaultDate = null,
+        $parameters = array()
+    ) {
         try {
             $this->doRedirectToUrl($moduleToRedirect, $actionToRedirect, $websiteId, $defaultPeriod, $defaultDate, $parameters);
         } catch (Exception $e) {

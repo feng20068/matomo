@@ -1,17 +1,21 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Diagnostics\Diagnostic;
 
 use Piwik\Common;
 use Piwik\Config;
 use Piwik\Db;
 use Piwik\DbHelper;
+use Piwik\SettingsPiwik;
 use Piwik\Translation\Translator;
+use Piwik\Url;
 
 /**
  * Check if Piwik can use LOAD DATA INFILE.
@@ -30,15 +34,15 @@ class DatabaseAbilitiesCheck implements Diagnostic
 
     public function execute()
     {
-        $isPiwikInstalling = !Config::getInstance()->existsLocalConfig();
-        if ($isPiwikInstalling) {
-            // Skip the diagnostic if Piwik is being installed
-            return array();
+        if (!SettingsPiwik::isMatomoInstalled()) {
+            // Skip the diagnostic if Matomo is being installed
+            return [];
         }
 
         $result = new DiagnosticResult($this->translator->translate('Installation_DatabaseAbilities'));
 
         $result->addItem($this->checkUtf8mb4Charset());
+        $result->addItem($this->checkCollation());
 
         if (Config::getInstance()->General['enable_load_data_infile']) {
             $result->addItem($this->checkLoadDataInfile());
@@ -46,6 +50,13 @@ class DatabaseAbilitiesCheck implements Diagnostic
 
         $result->addItem($this->checkTemporaryTables());
         $result->addItem($this->checkTransactionLevel());
+
+        $databaseVersion = Db::fetchOne('SELECT VERSION();');
+
+        if (strpos(strtolower($databaseVersion), 'mariadb') !== false && Config\DatabaseConfig::getConfigValue('schema') !== 'Mariadb') {
+            $comment = $this->translator->translate('Diagnostics_MariaDbNotConfigured');
+            $result->addItem(new DiagnosticResultItem(DiagnosticResult::STATUS_INFORMATIONAL, $comment));
+        }
 
         return [$result];
     }
@@ -61,21 +72,50 @@ class DatabaseAbilitiesCheck implements Diagnostic
 
         if (DbHelper::getDefaultCharset() === 'utf8mb4') {
             return new DiagnosticResultItem(
-                DiagnosticResult::STATUS_WARNING, 'UTF8mb4 charset<br/><br/>' .
+                DiagnosticResult::STATUS_WARNING,
+                'UTF8mb4 charset<br/><br/>' .
                 $this->translator->translate('Diagnostics_DatabaseUtf8mb4CharsetAvailableButNotUsed', '<code>' . PIWIK_INCLUDE_PATH . '/console core:convert-to-utf8mb4</code>') .
                 '<br/><br/>' .
-                $this->translator->translate('Diagnostics_DatabaseUtf8Requirement', ['�', '<a href="https://matomo.org/faq/how-to-update/how-to-convert-the-database-to-utf8mb4-charset/" rel="noreferrer noopener" target="_blank">', '</a>']) .
+                $this->translator->translate('Diagnostics_DatabaseUtf8Requirement', ['�',
+                    '<a href="' . Url::addCampaignParametersToMatomoLink('https://matomo.org/faq/how-to-update/how-to-convert-the-database-to-utf8mb4-charset/') . '" rel="noreferrer noopener" target="_blank">', '</a>']) .
                 '<br/>'
             );
         }
 
         return new DiagnosticResultItem(
-            DiagnosticResult::STATUS_WARNING, 'UTF8mb4 charset<br/><br/>' .
+            DiagnosticResult::STATUS_WARNING,
+            'UTF8mb4 charset<br/><br/>' .
             $this->translator->translate('Diagnostics_DatabaseUtf8mb4CharsetRecommended') .
             '<br/><br/>' .
-            $this->translator->translate('Diagnostics_DatabaseUtf8Requirement', ['�', '<a href="https://matomo.org/faq/how-to-update/how-to-convert-the-database-to-utf8mb4-charset/" rel="noreferrer noopener" target="_blank">', '</a>']) .
+            $this->translator->translate('Diagnostics_DatabaseUtf8Requirement', ['�',
+                '<a href="' . Url::addCampaignParametersToMatomoLink('https://matomo.org/faq/how-to-update/how-to-convert-the-database-to-utf8mb4-charset/') . '" rel="noreferrer noopener" target="_blank">', '</a>']) .
             '<br/>'
         );
+    }
+
+    protected function checkCollation(): DiagnosticResultItem
+    {
+        $dbSettings = new Db\Settings();
+        $collation = $dbSettings->getUsedCollation();
+
+        if ('' !== $collation) {
+            return new DiagnosticResultItem(DiagnosticResult::STATUS_OK, 'Connection collation');
+        }
+
+        $collationConnection = Db::get()->fetchOne('SELECT @@collation_connection');
+        $collationCharset = DbHelper::getDefaultCollationForCharset($dbSettings->getUsedCharset());
+
+        $message = sprintf(
+            'Connection collation<br/><br/>%s<br/><br/>%s<br/>',
+            $this->translator->translate('Diagnostics_DatabaseCollationNotConfigured'),
+            $this->translator->translate('Diagnostics_DatabaseCollationConnection', [$collationConnection])
+        );
+
+        if ('' !== $collationCharset) {
+            $message .= $this->translator->translate('Diagnostics_DatabaseCollationCharset', [$collationCharset]) . '<br/>';
+        }
+
+        return new DiagnosticResultItem(DiagnosticResult::STATUS_WARNING, $message);
     }
 
     protected function checkLoadDataInfile()
@@ -121,7 +161,7 @@ class DatabaseAbilitiesCheck implements Diagnostic
                 '<br/><strong>%s:</strong> %s<br/>%s',
                 $this->translator->translate('General_Error'),
                 $errorMessage,
-                'Troubleshooting: <a target="_blank" rel="noreferrer noopener" href="https://matomo.org/faq/troubleshooting/faq_194">FAQ on matomo.org</a>'
+                'Troubleshooting: <a target="_blank" rel="noreferrer noopener" href="' . Url::addCampaignParametersToMatomoLink('https://matomo.org/faq/troubleshooting/faq_194') . '">FAQ on matomo.org</a>'
             );
         }
 
@@ -144,7 +184,7 @@ class DatabaseAbilitiesCheck implements Diagnostic
             // insert an entry into the new temporary table
             Db::exec('INSERT INTO `piwik_test_table_temp` (`id`, `val`) VALUES ("1", "val1");');
 
-            for ($i=0; $i < 5; $i++) {
+            for ($i = 0; $i < 5; $i++) {
                 // try reading the entry a few times to ensure it doesn't fail, which might be possible when using load balanced databases
                 $result = Db::fetchRow('SELECT * FROM `piwik_test_table_temp` WHERE `id` = 1');
 
@@ -155,11 +195,10 @@ class DatabaseAbilitiesCheck implements Diagnostic
         } catch (\Exception $e) {
             $status = DiagnosticResult::STATUS_ERROR;
             $comment .= '<br/>' . $this->translator->translate('Diagnostics_MysqlTemporaryTablesWarning');
-            $comment .= '<br/>Troubleshooting: <a target="_blank" rel="noreferrer noopener" href="https://matomo.org/faq/how-to-install/faq_23484/">FAQ on matomo.org</a>';
+            $comment .= '<br/>Troubleshooting: <a target="_blank" rel="noreferrer noopener" href="' . Url::addCampaignParametersToMatomoLink('https://matomo.org/faq/how-to-install/faq_23484/') . '">FAQ on matomo.org</a>';
         }
 
         return new DiagnosticResultItem($status, $comment);
-
     }
 
     protected function checkTransactionLevel()
@@ -168,7 +207,7 @@ class DatabaseAbilitiesCheck implements Diagnostic
         $comment = 'Changing transaction isolation level';
 
         $level = new Db\TransactionLevel(Db::getReader());
-        if (!$level->setUncommitted()) {
+        if (!$level->setTransactionLevelForNonLockingReads()) {
             $status = DiagnosticResult::STATUS_WARNING;
             $comment .= '<br/>' . $this->translator->translate('Diagnostics_MysqlTransactionLevel');
         } else {
@@ -176,6 +215,5 @@ class DatabaseAbilitiesCheck implements Diagnostic
         }
 
         return new DiagnosticResultItem($status, $comment);
-
     }
 }

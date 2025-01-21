@@ -3,8 +3,8 @@
  *
  * Screenshot integration tests.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 describe("PrivacyManager", function () {
@@ -118,7 +118,9 @@ describe("PrivacyManager", function () {
 
     async function capturePage(screenshotName) {
         await page.waitForNetworkIdle();
-        expect(await page.screenshotSelector('.pageWrap,#notificationContainer,.modal.open')).to.matchImage(screenshotName);
+        const pageWrap = await page.$('.pageWrap,#notificationContainer,.modal.open');
+        const screenshot = await pageWrap.screenshot();
+        expect(screenshot).to.matchImage(screenshotName);
     }
 
     async function captureAnonymizeLogData(screenshotName) {
@@ -184,7 +186,7 @@ describe("PrivacyManager", function () {
     });
 
     it('should be able to cancel anonymization of past data', async function() {
-        await selectModalButton('No');
+        await selectModalButton('Cancel');
 
         await captureAnonymizeLogData('anonymizelogdata_anonymizeip_and_visit_column_cancelled');
     });
@@ -192,7 +194,7 @@ describe("PrivacyManager", function () {
     it('should be able to confirm anonymization of past data', async function() {
         await anonymizePastData();
         await typeUserPassword();
-        await selectModalButton('Yes');
+        await selectModalButton('Confirm');
         await setAnonymizeStartEndDate();
 
         await captureAnonymizeLogData('anonymizelogdata_anonymizeip_and_visit_column_confirmed');
@@ -212,7 +214,7 @@ describe("PrivacyManager", function () {
     it('should confirm anonymize location and action column', async function() {
         await anonymizePastData();
         await typeUserPassword();
-        await selectModalButton('Yes');
+        await selectModalButton('Confirm');
         await page.waitForTimeout(1000);
         await setAnonymizeStartEndDate();
 
@@ -240,7 +242,7 @@ describe("PrivacyManager", function () {
     it('should anonymize only one site and different date confirmed', async function() {
         await anonymizePastData();
         await typeUserPassword();
-        await selectModalButton('Yes');
+        await selectModalButton('Confirm');
         await page.waitForTimeout(1000);
         await setAnonymizeStartEndDate();
 

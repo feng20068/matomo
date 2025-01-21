@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -20,7 +21,7 @@
       <div class="comparison-type">{{ translate('General_Segment') }}</div>
       <div
         class="title"
-        :title="comparison.title + '<br/>' + decodeURIComponent(comparison.params.segment)"
+        :title="getTitleTooltip(comparison)"
       >
         <a
           target="_blank"
@@ -112,7 +113,9 @@ export default defineComponent({
   setup() {
     // accessing has to be done through a computed property so we can use the computed
     // instance directly in the template. unfortunately, vue won't register to changes.
-    const isComparing = computed(() => ComparisonsStoreInstance.isComparing());
+    const isComparing = computed(
+      () => ComparisonsStoreInstance.isComparing() && !window.broadcast.isNoDataPage(),
+    );
     const segmentComparisons = computed(() => ComparisonsStoreInstance.getSegmentComparisons());
     const periodComparisons = computed(() => ComparisonsStoreInstance.getPeriodComparisons());
     const getSeriesColor = ComparisonsStoreInstance.getSeriesColor.bind(ComparisonsStoreInstance);
@@ -163,6 +166,10 @@ export default defineComponent({
       }
 
       return (this.comparisonTooltips[periodComparison.index] || {})[segmentComparison.index];
+    },
+    getTitleTooltip(comparison: AnyComparison): string {
+      return `${this.htmlentities(comparison.title)}<br/>`
+        + `${this.htmlentities(decodeURIComponent(comparison.params.segment))}`;
     },
     getUrlToSegment(segment: string) {
       const hash = { ...MatomoUrl.hashParsed.value };
@@ -233,7 +240,7 @@ export default defineComponent({
       visitsPercent = `${visitsPercent}%`;
 
       tooltip += translate('General_ComparisonCardTooltip1', [
-        `'${comparisonRow.compareSegmentPretty}'`,
+        `'${this.htmlentities(comparisonRow.compareSegmentPretty)}'`,
         comparisonRow.comparePeriodPretty,
         visitsPercent,
         comparisonRow.nb_visits.toString(),
@@ -243,13 +250,16 @@ export default defineComponent({
         tooltip += '<br/><br/>';
         tooltip += translate('General_ComparisonCardTooltip2', [
           comparisonRow.nb_visits_change.toString(),
-          firstPeriodRow.compareSegmentPretty,
+          this.htmlentities(firstPeriodRow.compareSegmentPretty),
           firstPeriodRow.comparePeriodPretty,
         ]);
       }
 
       tooltip += '</div>';
       return tooltip;
+    },
+    htmlentities(str: string): string {
+      return Matomo.helper.htmlEntities(str);
     },
   },
   mounted() {

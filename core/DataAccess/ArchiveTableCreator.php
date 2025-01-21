@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\DataAccess;
@@ -14,8 +14,8 @@ use Piwik\Date;
 
 class ArchiveTableCreator
 {
-    const NUMERIC_TABLE = "numeric";
-    const BLOB_TABLE    = "blob";
+    public const NUMERIC_TABLE = "numeric";
+    public const BLOB_TABLE    = "blob";
 
     public static $tablesAlreadyInstalled = null;
 
@@ -76,7 +76,8 @@ class ArchiveTableCreator
      */
     public static function getTablesArchivesInstalled($type = null, $forceReload = false)
     {
-        if (is_null(self::$tablesAlreadyInstalled)
+        if (
+            is_null(self::$tablesAlreadyInstalled)
             || $forceReload
         ) {
             self::refreshTableList();
@@ -95,6 +96,31 @@ class ArchiveTableCreator
             }
         }
         return $archiveTables;
+    }
+
+    /**
+     * Returns the latest table name archive_*.
+     * If no type is specified, blob table is returned when both blob and numeric are found for the same year_month.
+     *
+     * @param string|null $type The type of archive table to return. Either `self::NUMERIC_TABLE` or `self::BLOB_TABLE`.
+     * @param bool   $forceReload
+     * @return string|null
+     */
+    public static function getLatestArchiveTableInstalled(?string $type = null, bool $forceReload = false): ?string
+    {
+        $archiveTables = static::getTablesArchivesInstalled($type, $forceReload);
+
+        // skip if there is no archive table (yet)
+        if (0 === count($archiveTables)) {
+            return null;
+        }
+
+        // sort tables so we have them in descending order of their date
+        usort($archiveTables, function ($a, $b) {
+            return static::getDateFromTableName($b) <=> static::getDateFromTableName($a);
+        });
+
+        return $archiveTables[0];
     }
 
     public static function getDateFromTableName($tableName)

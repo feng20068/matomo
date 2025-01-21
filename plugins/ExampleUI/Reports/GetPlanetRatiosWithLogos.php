@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\ExampleUI\Reports;
@@ -40,5 +41,4 @@ class GetPlanetRatiosWithLogos extends Base
         $view->config->columns_to_display = array('label', 'value');
         $view->config->addTranslation('value', 'times the diameter of Earth');
     }
-
 }

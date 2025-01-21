@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -83,8 +84,8 @@
             href=""
             class="entityCancelLink"
           >
-            <span class="icon-arrow-left-2"></span>
-            {{ translate('UsersManager_BackToUser') }}</a>
+            <span class="icon-arrow-left">&nbsp;
+            </span>{{ translate('UsersManager_BackToUser') }}</a>
         </div>
       </div>
       <div class="visibleTab col m10">
@@ -96,6 +97,7 @@
             <Field
               v-model="theUser.login"
               :disabled="isSavingUserInfo || !isAdd || isShowingPasswordConfirm"
+              autocomplete="off"
               uicontrol="text"
               name="user_login"
               :maxlength="100"
@@ -111,10 +113,11 @@
               @update:model-value="theUser.password = $event; isPasswordModified = true"
               uicontrol="password"
               name="user_password"
+              autocomplete="new-password"
               :title="translate('General_Password')"
             />
           </div>
-          <div>
+          <div class="email-input">
             <Field
               v-model="theUser.email"
               :disabled="isSavingUserInfo || (currentUserRole !== 'superuser' && !isAdd)
@@ -122,6 +125,7 @@
               v-if="currentUserRole === 'superuser' || isAdd"
               uicontrol="text"
               name="user_email"
+              autocomplete="off"
               :maxlength="100"
               :title="translate('UsersManager_Email')"
             />
@@ -160,9 +164,7 @@
             <PasswordConfirmation
               v-model="showPasswordConfirmationForInviteUser"
               @confirmed="inviteUser"
-            >
-              <p>{{ translate('UsersManager_ConfirmWithPassword') }}</p>
-            </PasswordConfirmation>
+            />
           </div>
           <div
             class="entityCancel"
@@ -173,8 +175,8 @@
               class="entityCancelLink"
               @click.prevent="onDoneEditing()"
             >
-              <span class="icon icon-arrow-left-2"></span>
-              {{ translate('UsersManager_BackToUser') }}</a>
+              <span class="icon icon-arrow-left">&nbsp;
+              </span>{{ translate('UsersManager_BackToUser') }}</a>
           </div>
         </div>
         <div
@@ -204,8 +206,23 @@
           v-if="activeTab === 'superuser' && currentUserRole === 'superuser' && !isAdd"
           class="superuser-access form-group"
         >
-          <p>{{ translate('UsersManager_SuperUserIntro1') }}</p>
+          <p v-if="isMarketplacePluginEnabled">{{ translate('UsersManager_SuperUserIntro1') }}</p>
+          <p v-else>{{ translate('UsersManager_SuperUserIntro1WithoutMarketplace') }}</p>
           <p><strong>{{ translate('UsersManager_SuperUserIntro2') }}</strong></p>
+          <p><strong>{{ translate('UsersManager_SuperUserIntro3') }}</strong></p>
+          <ul class="browser-default">
+            <li v-html="$sanitize(translateSuperUserRiskString('Data'))"></li>
+            <li v-html="$sanitize(translateSuperUserRiskString('Security'))"></li>
+            <li v-html="$sanitize(translateSuperUserRiskString('Misconfiguration'))"></li>
+            <li v-html="$sanitize(translateSuperUserRiskString('UserManagement'))"></li>
+            <li v-html="$sanitize(translateSuperUserRiskString('ServiceDisruption'))"></li>
+            <li
+              v-html="$sanitize(translateSuperUserRiskString('Marketplace'))"
+              v-if="isPluginsAdminEnabled && isMarketplacePluginEnabled"
+            ></li>
+            <li v-html="$sanitize(accountabilityRisk)"></li>
+            <li v-html="$sanitize(translateSuperUserRiskString('Compliance'))"></li>
+          </ul>
           <div>
             <Field
               v-model="superUserAccessChecked"
@@ -250,7 +267,6 @@
             @confirmed="reset2FA"
           >
             <h2>{{ translate('UsersManager_AreYouSure') }}</h2>
-            <p>{{ translate('UsersManager_ConfirmWithPassword') }}</p>
           </PasswordConfirmation>
         </div>
       </div>
@@ -260,7 +276,9 @@
       @confirmed="updateUser"
     >
       <h2 v-html="$sanitize(changePasswordTitle)"></h2>
-      <p>{{ translate('UsersManager_ConfirmWithPassword') }}</p>
+      <Notification context="info" :noclear="true" v-if="user && isPending">
+        <strong v-html="$sanitize(translate('UsersManager_InviteEmailChange'))"></strong>
+      </Notification>
     </PasswordConfirmation>
   </ContentBlock>
 </template>
@@ -273,6 +291,9 @@ import {
   translate,
   AjaxHelper,
   NotificationsStore,
+  externalLink,
+  Matomo,
+  Notification,
 } from 'CoreHome';
 import {
   PasswordConfirmation,
@@ -336,8 +357,13 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    activatedPlugins: {
+      type: Array,
+      required: true,
+    },
   },
   components: {
+    Notification,
     ContentBlock,
     Field,
     SaveButton,
@@ -475,6 +501,7 @@ export default defineComponent({
       this.isResetting2FA = true;
       return AjaxHelper.post({
         method: 'TwoFactorAuth.resetTwoFactorAuth',
+      }, {
         userLogin: this.theUser.login,
         passwordConfirmation: password,
       }).catch((e) => {
@@ -520,6 +547,13 @@ export default defineComponent({
     onDoneEditing() {
       this.$emit('done', { isUserModified: this.isUserModified });
     },
+    translateSuperUserRiskString(item: string) {
+      return translate(
+        `UsersManager_SuperUserRisk${item}`,
+        '<strong>',
+        '</strong>',
+      );
+    },
   },
   computed: {
     formTitle() {
@@ -547,6 +581,38 @@ export default defineComponent({
         'UsersManager_AreYouSureChangeDetails',
         `<strong>${this.theUser.login}</strong>`,
       );
+    },
+    isPluginsAdminEnabled() {
+      return Matomo.config.enable_plugins_admin;
+    },
+    isActivityLogPluginEnabled() {
+      return this.activatedPlugins.includes('ActivityLog');
+    },
+    isMarketplacePluginEnabled() {
+      return this.activatedPlugins.includes('Marketplace');
+    },
+    isProfessionalServicesPluginEnabled() {
+      return this.activatedPlugins.includes('ProfessionalServices');
+    },
+    accountabilityRisk() {
+      const riskInfo = this.translateSuperUserRiskString('Accountability');
+      let pluginInfo = '';
+
+      if (this.isPluginsAdminEnabled && this.isProfessionalServicesPluginEnabled) {
+        if (this.isActivityLogPluginEnabled) {
+          pluginInfo = translate(
+            'UsersManager_SuperUserRiskAccountabilityCheckActivityLog',
+            '<a href="?module=ActivityLog&action=index" rel="noreferrer noopener" target="_blank">', '</a>',
+          );
+        } else if (this.isMarketplacePluginEnabled) {
+          pluginInfo = translate(
+            'UsersManager_SuperUserRiskAccountabilityGetActivityLogPlugin',
+            externalLink('https://plugins.matomo.org/ActivityLog'), '</a>',
+          );
+        }
+      }
+
+      return pluginInfo ? `${riskInfo} ${pluginInfo}` : riskInfo;
     },
   },
 });

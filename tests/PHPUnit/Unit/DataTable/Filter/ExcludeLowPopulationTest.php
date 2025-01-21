@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Unit\DataTable\Filter;
@@ -19,7 +20,7 @@ class ExcludeLowPopulationTest extends \PHPUnit\Framework\TestCase
 {
     protected function getTestDataTable()
     {
-        $table = new DataTable;
+        $table = new DataTable();
         $table->addRowsFromArray(
             array(
                  array(Row::COLUMNS => array('label' => 'zero', 'count' => 0)),

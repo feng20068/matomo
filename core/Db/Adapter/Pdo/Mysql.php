@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Db\Adapter\Pdo;
 
 use Exception;
@@ -17,22 +18,18 @@ use Piwik\Db\AdapterInterface;
 use Piwik\Piwik;
 use Zend_Config;
 use Zend_Db_Adapter_Pdo_Mysql;
-use Zend_Db_Select;
-use Zend_Db_Statement_Interface;
 
 /**
  */
 class Mysql extends Zend_Db_Adapter_Pdo_Mysql implements AdapterInterface
 {
+    use Db\TransactionalDatabaseDynamicTrait;
+
     /**
      * Constructor
      *
      * @param array|Zend_Config $config database configuration
      */
-    
-    // this is used for indicate TransactionLevel Cache
-    public $supportsUncommitted;
-
     public function __construct($config)
     {
         // Enable LOAD DATA INFILE
@@ -55,7 +52,8 @@ class Mysql extends Zend_Db_Adapter_Pdo_Mysql implements AdapterInterface
             if (!empty($config['ssl_cipher'])) {
                 $config['driver_options'][PDO::MYSQL_ATTR_SSL_CIPHER] = $config['ssl_cipher'];
             }
-            if (!empty($config['ssl_no_verify'])
+            if (
+                !empty($config['ssl_no_verify'])
                 && defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT')
             ) {
                 $config['driver_options'][PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
@@ -91,7 +89,7 @@ class Mysql extends Zend_Db_Adapter_Pdo_Mysql implements AdapterInterface
         return $this->_connection;
     }
 
-    protected function _connect()
+    protected function _connect() // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
         if ($this->_connection) {
             return;
@@ -127,6 +125,7 @@ class Mysql extends Zend_Db_Adapter_Pdo_Mysql implements AdapterInterface
     /**
      * Return default port.
      *
+     * @deprecated Use Schema::getDefaultPortForSchema instead
      * @return int
      */
     public static function getDefaultPort()
@@ -178,7 +177,8 @@ class Mysql extends Zend_Db_Adapter_Pdo_Mysql implements AdapterInterface
         $clientVersion = $this->getClientVersion();
 
         // incompatible change to DECIMAL implementation in 5.0.3
-        if (version_compare($serverVersion, '5.0.3') >= 0
+        if (
+            version_compare($serverVersion, '5.0.3') >= 0
             && version_compare($clientVersion, '5.0.3') < 0
         ) {
             throw new Exception(Piwik::translate('General_ExceptionIncompatibleClientServerVersions', array('MySQL', $clientVersion, $serverVersion)));
@@ -294,45 +294,11 @@ class Mysql extends Zend_Db_Adapter_Pdo_Mysql implements AdapterInterface
     }
 
     /**
-     * @var \Zend_Db_Statement_Pdo[]
-     */
-    private $cachePreparedStatement = array();
-
-    /**
-     * Prepares and executes an SQL statement with bound data.
-     * Caches prepared statements to avoid preparing the same query more than once
-     *
-     * @param string|Zend_Db_Select $sql The SQL statement with placeholders.
-     * @param array $bind An array of data to bind to the placeholders.
-     * @return Zend_Db_Statement_Interface
-     */
-    public function query($sql, $bind = array())
-    {
-        if (!is_string($sql)) {
-            return parent::query($sql, $bind);
-        }
-
-        if (isset($this->cachePreparedStatement[$sql])) {
-            if (!is_array($bind)) {
-                $bind = array($bind);
-            }
-
-            $stmt = $this->cachePreparedStatement[$sql];
-            $stmt->execute($bind);
-            return $stmt;
-        }
-
-        $stmt = parent::query($sql, $bind);
-        $this->cachePreparedStatement[$sql] = $stmt;
-        return $stmt;
-    }
-
-    /**
      * Override _dsn() to ensure host and port to not be passed along
      * if unix_socket is set since setting both causes unexpected behaviour
      * @see http://php.net/manual/en/ref.pdo-mysql.connection.php
      */
-    protected function _dsn()
+    protected function _dsn() // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
         if (!empty($this->_config['unix_socket'])) {
             unset($this->_config['host']);

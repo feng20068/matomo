@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\LanguagesManager\tests\Integration;
@@ -26,7 +27,7 @@ use Piwik\Tests\Framework\Fixture;
  */
 class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
 {
-    function getTestDataForLanguageFiles()
+    public function getTestDataForLanguageFiles()
     {
         // we also test that none of the language php files outputs any character on the screen (eg. space before the <?php)
         $languages = API::getInstance()->getAvailableLanguages();
@@ -36,9 +37,7 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
         $pluginsWithTranslation = array();
 
         foreach ($plugins as $plugin) {
-
             if ('Intl' !== $plugin && API::getInstance()->getPluginTranslationsForLanguage($plugin, 'en')) {
-
                 $pluginsWithTranslation[] = $plugin;
             }
         }
@@ -49,7 +48,6 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
                 $return[] = array($language, null);
 
                 foreach ($pluginsWithTranslation as $plugin) {
-
                     $return[] = array($language, $plugin);
                 }
             }
@@ -65,7 +63,7 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
      *
      * @dataProvider getTestDataForLanguageFiles
      */
-    function testGetTranslationsForLanguages($language, $plugin)
+    public function testGetTranslationsForLanguages($language, $plugin)
     {
         $translationWriter = new Writer($language, $plugin);
 
@@ -95,11 +93,9 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($translationWriter->isValid(), $translationWriter->getValidationMessage() ?: '');
 
         if ($translationWriter->wasFiltered()) {
-
             if (!$translationWriter->hasTranslations()) {
                 $this->markTestSkipped('Translation file errors detected in ' . $language . "...\n"
-                    . "File would be empty after filtering. You may remove it manually to fix this test.\n"
-                );
+                    . "File would be empty after filtering. You may remove it manually to fix this test.\n");
                 return;
             }
 
@@ -107,8 +103,7 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
             $this->markTestSkipped(implode("\n", $translationWriter->getFilterMessages()) . "\n"
                 . 'Translation file errors detected in ' . $language . "...\n"
                 . "To synchronise the language files with the english strings, you can manually edit the language files or run the following command may work if you have access to Weblate: \n"
-                . "$ ./console translations:update [--plugin=XYZ] \n"
-            );
+                . "$ ./console translations:update [--plugin=XYZ] \n");
         }
     }
 
@@ -117,7 +112,7 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
      *
      * @group Plugins
      */
-    function testWriterInvalidPlugin()
+    public function testWriterInvalidPlugin()
     {
         $this->expectException(\Exception::class);
 
@@ -129,7 +124,7 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
      *
      * @group Plugins
      */
-    function testGetTranslationsForLanguagesNot()
+    public function testGetTranslationsForLanguagesNot()
     {
         $this->assertFalse(API::getInstance()->getTranslationsForLanguage("../no-language"));
     }
@@ -140,17 +135,20 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
      * @group Plugins
      * @group numbered
      */
-    function testTranslationsUseNumberedPlaceholders()
+    public function testTranslationsUseNumberedPlaceholders()
     {
         Cache::flushAll();
         $translator = StaticContainer::get('Piwik\Translation\Translator');
         $translator->reset();
         Fixture::loadAllTranslations();
         $translations = $translator->getAllTranslations();
-        foreach ($translations AS $plugin => $pluginTranslations) {
+        foreach ($translations as $plugin => $pluginTranslations) {
             foreach ($pluginTranslations as $key => $pluginTranslation) {
-                $this->assertLessThanOrEqual(1, substr_count($pluginTranslation, '%s'),
-                    sprintf('%s.%s must use numbered placeholders instead of multiple %%s', $plugin, $key));
+                $this->assertLessThanOrEqual(
+                    1,
+                    substr_count($pluginTranslation, '%s'),
+                    sprintf('%s.%s must use numbered placeholders instead of multiple %%s', $plugin, $key)
+                );
             }
         }
     }
@@ -161,22 +159,25 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
      * @group Plugins
      * @group numbered2
      */
-    function testTranslationsUseEscapedPercentSigns()
+    public function testTranslationsUseEscapedPercentSigns()
     {
         Cache::flushAll();
         $translator = StaticContainer::get('Piwik\Translation\Translator');
         $translator->reset();
         Fixture::loadAllTranslations();
         $translations = $translator->getAllTranslations();
-        foreach ($translations AS $plugin => $pluginTranslations) {
+        foreach ($translations as $plugin => $pluginTranslations) {
             if ($plugin == 'Intl') {
                 continue; // skip generated stuff
             }
             foreach ($pluginTranslations as $key => $pluginTranslation) {
                 $pluginTranslation = preg_replace('/(%(?:[1-9]\$)?[a-z])/', '', $pluginTranslation); // remove placeholders
                 $pluginTranslation = str_replace('%%', '', $pluginTranslation); // remove already escaped symbols
-                $this->assertEquals(0, substr_count($pluginTranslation, '%'),
-                    sprintf('%s.%s must use escaped %% symbols', $plugin, $key));
+                $this->assertEquals(
+                    0,
+                    substr_count($pluginTranslation, '%'),
+                    sprintf('%s.%s must use escaped %% symbols', $plugin, $key)
+                );
             }
         }
     }
@@ -186,7 +187,7 @@ class LanguagesManagerTest extends \PHPUnit\Framework\TestCase
      *
      * @group Plugins
      */
-    function testGetLanguageNamesInEnglish()
+    public function testGetLanguageNamesInEnglish()
     {
         $languages = API::getInstance()->getAvailableLanguages();
 

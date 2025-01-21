@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Db\Adapter;
 
 use Exception;
@@ -20,15 +21,13 @@ use Zend_Db_Adapter_Mysqli;
  */
 class Mysqli extends Zend_Db_Adapter_Mysqli implements AdapterInterface
 {
+    use Db\TransactionalDatabaseDynamicTrait;
+
     /**
      * Constructor
      *
      * @param array|Zend_Config $config database configuration
      */
-
-    // this is used for indicate TransactionLevel Cache
-    public $supportsUncommitted;
-
     public function __construct($config)
     {
         // Enable LOAD DATA INFILE
@@ -69,6 +68,7 @@ class Mysqli extends Zend_Db_Adapter_Mysqli implements AdapterInterface
     /**
      * Return default port.
      *
+     * @deprecated Use Schema::getDefaultPortForSchema instead
      * @return int
      */
     public static function getDefaultPort()
@@ -76,7 +76,7 @@ class Mysqli extends Zend_Db_Adapter_Mysqli implements AdapterInterface
         return 3306;
     }
 
-    protected function _connect()
+    protected function _connect() // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
         if ($this->_connection) {
             return;
@@ -136,7 +136,8 @@ class Mysqli extends Zend_Db_Adapter_Mysqli implements AdapterInterface
         $clientVersion = $this->getClientVersion();
 
         // incompatible change to DECIMAL implementation in 5.0.3
-        if (version_compare($serverVersion, '5.0.3') >= 0
+        if (
+            version_compare($serverVersion, '5.0.3') >= 0
             && version_compare($clientVersion, '5.0.3') < 0
         ) {
             throw new Exception(Piwik::translate('General_ExceptionIncompatibleClientServerVersions', array('MySQL', $clientVersion, $serverVersion)));

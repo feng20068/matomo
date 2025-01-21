@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\CronArchive;
@@ -13,6 +14,7 @@ use Piwik\Container\StaticContainer;
 use Piwik\Date;
 use Piwik\Period\Factory;
 use Piwik\Period\Factory as PeriodFactory;
+use Piwik\Period\Range;
 use Piwik\Piwik;
 use Piwik\Plugins\SegmentEditor\Model as SegmentEditorModel;
 use Piwik\Segment;
@@ -73,7 +75,8 @@ class ArchiveFilter
     public function filterArchive($archive)
     {
         $segment = isset($archive['segment']) ? $archive['segment'] : '';
-        if ($this->disableSegmentsArchiving
+        if (
+            $this->disableSegmentsArchiving
             && !empty($segment)
         ) {
             return 'segment archiving disabled';
@@ -87,14 +90,19 @@ class ArchiveFilter
 
         if (!empty($this->skipSegmentsForToday)) {
             $site = new Site($archive['idsite']);
-            $period = Factory::build($this->periodIdsToLabels[$archive['period']], $archive['date1']);
+            if ((int) $archive['period'] === Range::PERIOD_ID) {
+                $period = Factory::build($this->periodIdsToLabels[$archive['period']], "{$archive['date1']},{$archive['date2']}");
+            } else {
+                $period = Factory::build($this->periodIdsToLabels[$archive['period']], $archive['date1']);
+            }
             $segment = new Segment($segment, [$archive['idsite']]);
             if (Archive::shouldSkipArchiveIfSkippingSegmentArchiveForToday($site, $period, $segment)) {
                 return "skipping segment archives for today";
             }
         }
 
-        if (!empty($this->restrictToDateRange)
+        if (
+            !empty($this->restrictToDateRange)
             && ($this->restrictToDateRange[0]->isLater(Date::factory($archive['date2']))
                 || $this->restrictToDateRange[1]->isEarlier(Date::factory($archive['date1']))
             )
@@ -103,13 +111,15 @@ class ArchiveFilter
         }
 
         $periodLabel = $this->periodIdsToLabels[$archive['period']];
-        if (!empty($this->restrictToPeriods)
+        if (
+            !empty($this->restrictToPeriods)
             && !in_array($periodLabel, $this->restrictToPeriods)
         ) {
             return "period is not specified in --force-periods";
         }
 
-        if (!empty($this->forceReport)
+        if (
+            !empty($this->forceReport)
             && (empty($archive['plugin'])
                 || empty($archive['report'])
                 || $archive['plugin'] . '.' . $archive['report'] != $this->forceReport)

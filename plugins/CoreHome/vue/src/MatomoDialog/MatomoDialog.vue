@@ -1,8 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
 
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 <template>
   <div v-show="modelValue" ref="root">
@@ -21,6 +21,11 @@ export default defineComponent({
     modelValue: {
       type: Boolean,
       required: true,
+    },
+    options: {
+      type: Object,
+      required: false,
+      default: () => ({}),
     },
   },
   emits: ['yes', 'no', 'closeEnd', 'close', 'validation', 'update:modelValue'],
@@ -42,6 +47,7 @@ export default defineComponent({
             this.$emit('update:modelValue', false);
             this.$emit('closeEnd');
           },
+          ...this.options,
         });
       } else if (newValue === false && oldValue === true) {
         // the user closed the dialog, e.g. by pressing Esc or clicking away from it

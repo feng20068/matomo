@@ -9,7 +9,7 @@
         "AlwaysActivatedPluginsList": "Następujące wtyczki są zawsze aktywne i nie mogą być wyłączone: %s",
         "AreThereAnyRisks": "Czy istnieje jakieś ryzyko?",
         "AreThereAnyRisksDetails1": "Kiedy aktywujesz Tag Manager, użytkownicy z uprawnieniami administratora będą mogli tworzyć niestandardowe znaczniki HTML, wyzwalacze i zmienne, które mogą uruchamiać JavaScript w Twojej witrynie. Te niestandardowe szablony mogą zostać wykorzystane do kradzieży na przykład wrażliwych informacji od odwiedzających witrynę (znany jako %1$s XSS %2$s).",
-        "AreThereAnyRisksDetails2": "Możesz wyłączyć niestandardowe szablony pod \"Administration =&gt; General Settings\" po aktywowaniu Tag Manager. Możesz również ograniczyć korzystanie z tych szablonów tylko dla określonych użytkowników lub super użytkowników.",
+        "AreThereAnyRisksDetails2": "Możesz wyłączyć niestandardowe szablony pod \"Administration → General Settings\" po aktywowaniu Tag Manager. Możesz również ograniczyć korzystanie z tych szablonów tylko dla określonych użytkowników lub super użytkowników.",
         "AuthorHomepage": "Strona główna Matomo",
         "ChangeLookByManageThemes": "Możesz zmieniać wygląd Matomo'a korzystając z %1$sZarządzania szablonami%2$s.",
         "ChangeSettingsPossible": "Możesz zmienić %1$sustawienia%2$s dla tego plugin'u.",
@@ -47,6 +47,8 @@
         "OriginOfficial": "Oficjalne",
         "OriginThirdParty": "Osoby trzecie",
         "PluginActivated": "Wtyczka włączona",
+        "PluginFreeTrialStarted": "%1$sTwój 30-dniowy okres próbny rozpoczął się%2$s do %3$s.",
+        "PluginFreeTrialStartedAccountCreatedTitle": "Twoje konto zostało utworzone",
         "PluginHomepage": "Strona główna Wtyczki",
         "PluginNotCompatibleWith": "%1$s jest niekompatybilny z %2$s.",
         "PluginNotDownloadable": "Wtyczki nie można pobrać.",
@@ -86,6 +88,6 @@
         "WhyUsingATagManager": "Dlaczego Tag Manager?",
         "WhyUsingATagManagerDetails1": "Tag Manager uczyni Twoje życie łatwiejsze! Nie potrzebujesz już czekać na programistę, aby zmodyfikował część strony, ponieważ Tag Manager daje ci swobodę modyfikowania tych zmian i wdrażania ich na Twoją stronę.",
         "WhyUsingATagManagerDetails2": "To nie może być wygodniejsze i nie tylko pozwala szybciej wprowadzać zmiany, ale także obniża koszty.",
-        "WhyUsingATagManagerDetails3": "Dzięki temu zespoły marketingowe, cyfrowy i chłopaki z IT będą zadowoleni... To wygrana dla wszystkich!"
+        "WhyUsingATagManagerDetails3": "Dzięki temu zespoły marketingowe, cyfrowe i chłopaki z IT będą zadowoleni… To wygrana dla wszystkich!"
     }
 }

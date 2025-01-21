@@ -9,7 +9,7 @@
         "AlwaysActivatedPluginsList": "De volgende plugins zijn altijd geactiveerd en kunnen niet worden uitgeschakeld: %s",
         "AreThereAnyRisks": "Zijn er risico's?",
         "AreThereAnyRisksDetails1": "Wanneer u de Tag Manager activeert, zullen gebruikers met beheerderstoegang de mogelijkheid hebben om aangepaste HTML-tags, triggers en variabelen te maken die Javascript kunnen uitvoeren op uw website. Deze aangepaste sjablonen kunnen misbruikt worden om bijvoorbeeld gevoelige informatie te stelen van uw websitebezoekers (gekend als %1$sXSS%2$s).",
-        "AreThereAnyRisksDetails2": "U kunt deze aangepaste sjablonen uitschakelen onder \"Administratie =&gt; Algemene instellingen\" van zodra u de Tag Manager geactiveerd heeft. Als alternatief kunt u ook het gebruik van deze sjablonen beperken voor specifieke gebruikers of enkel voor Superusers.",
+        "AreThereAnyRisksDetails2": "U kunt deze aangepaste sjablonen uitschakelen onder \"Administratie → Algemene instellingen\" van zodra u de Tag Manager geactiveerd heeft. Als alternatief kunt u ook het gebruik van deze sjablonen beperken voor specifieke gebruikers of enkel voor Superusers.",
         "AuthorHomepage": "Homepagina auteur",
         "ChangeLookByManageThemes": "U kunt het uiterlijk van Matomo wijzigen via %1$sThema's beheren%2$s.",
         "ChangeSettingsPossible": "Je kunt %1$sinstellingen%2$s aanpassen voor deze plugin.",
@@ -86,6 +86,6 @@
         "WhyUsingATagManager": "Waarom een Tag Manager?",
         "WhyUsingATagManagerDetails1": "Een Tag Manager maakt het u gemakkelijk! U hoeft niet langer op een ontwikkelaar te rekenen om elke eerste of derde partij snippet te wijzigen op uw website, want de Tag Manager biedt u een stressvrije ervaring om zelf deze wijzigingen op uw website te maken en uit te rollen.",
         "WhyUsingATagManagerDetails2": "Het kan niet handiger zijn en het brengt niet alleen wijzigingen sneller op de markt, maar ook de kosten verminderen.",
-        "WhyUsingATagManagerDetails3": "Dit houdt de mensen van marketing, digitalisering en de IT'ers tevreden... Een win-win voor iedereen!"
+        "WhyUsingATagManagerDetails3": "Dit houdt de mensen van marketing, digitalisering en de IT'ers tevreden… Een win-win voor iedereen!"
     }
 }

@@ -1,14 +1,17 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Translation;
 
 use Piwik\Config;
+use Piwik\Container\StaticContainer;
+use Piwik\Log\LoggerInterface;
 use Piwik\Piwik;
 use Piwik\Translation\Loader\LoaderInterface;
 
@@ -51,7 +54,7 @@ class Translator
     private const LIST_TYPE_AND = 'And';
     private const LIST_TYPE_OR = 'Or';
 
-    public function __construct(LoaderInterface $loader, array $directories = null)
+    public function __construct(LoaderInterface $loader, ?array $directories = null)
     {
         $this->loader          = $loader;
         $this->currentLanguage = $this->getDefaultLanguage();
@@ -110,7 +113,7 @@ class Translator
      * @param string|null $language
      * @return string
      */
-    public function createAndListing(array $items, string $language = null): string
+    public function createAndListing(array $items, ?string $language = null): string
     {
         return $this->createListing(self::LIST_TYPE_AND, $items, $language);
     }
@@ -122,7 +125,7 @@ class Translator
      * @param string|null $language
      * @return string
      */
-    public function createOrListing(array $items, string $language = null): string
+    public function createOrListing(array $items, ?string $language = null): string
     {
         return $this->createListing(self::LIST_TYPE_OR, $items, $language);
     }
@@ -133,7 +136,7 @@ class Translator
      * @param string|null $language
      * @return string
      */
-    private function createListing(string $listType, array $items, string $language = null): string
+    private function createListing(string $listType, array $items, ?string $language = null): string
     {
         switch (count($items)) {
             case 0:
@@ -198,14 +201,47 @@ class Translator
     {
         $clientSideTranslations = array();
         foreach ($this->getClientSideTranslationKeys() as $id) {
+            if (strpos($id, '_') === false) {
+                StaticContainer::get(LoggerInterface::class)->warning(
+                    'Unexpected translation key found in client side translations: {translation_key}',
+                    ['translation_key' => $id]
+                );
+                continue;
+            }
             [$plugin, $key] = explode('_', $id, 2);
-            $clientSideTranslations[$id] = $this->getTranslation($id, $this->currentLanguage, $plugin, $key);
+            $clientSideTranslations[$id] = $this->decodeEntitiesSafeForHTML($this->getTranslation($id, $this->currentLanguage, $plugin, $key));
         }
 
         $js = 'var translations = ' . json_encode($clientSideTranslations) . ';';
         $js .= "\n" . 'if (typeof(piwik_translations) == \'undefined\') { var piwik_translations = new Object; }' .
             'for(var i in translations) { piwik_translations[i] = translations[i];} ';
         return $js;
+    }
+
+    /**
+     * Decodes all entities in the given string except of &gt; and &lt;
+     *
+     * @param string $text
+     * @return string
+     */
+    private function decodeEntitiesSafeForHTML(string $text): string
+    {
+        // replace encoded html tag entities, as they need to remain encoded
+        $text = str_replace(
+            ['&gt;', '&lt;'],
+            ['###gt###', '###lt###'],
+            $text
+        );
+
+        // decode all remaining entities
+        $text = html_entity_decode($text);
+
+        // recover encoded html tag entities
+        return str_replace(
+            ['###gt###', '###lt###'],
+            ['&gt;', '&lt;'],
+            $text
+        );
     }
 
     /**
@@ -304,7 +340,8 @@ class Translator
     {
         $this->loadTranslations($lang);
 
-        if (isset($this->translations[$lang][$plugin])
+        if (
+            isset($this->translations[$lang][$plugin])
             && isset($this->translations[$lang][$plugin][$key])
         ) {
             return $this->translations[$lang][$plugin][$key];
@@ -315,7 +352,8 @@ class Translator
          * @todo remove this in Piwik 3.0
          */
         if ($plugin != 'Intl') {
-            if (isset($this->translations[$lang]['Intl'])
+            if (
+                isset($this->translations[$lang]['Intl'])
                 && isset($this->translations[$lang]['Intl'][$key])
             ) {
                 return $this->translations[$lang]['Intl'][$key];

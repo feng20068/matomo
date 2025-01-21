@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -27,6 +28,8 @@
       <span v-html="$sanitize(changeLookByManageThemesText)"></span>
     </p>
   </div>
+  <InstallAllPaidPluginsButton
+  />
 </template>
 
 <script lang="ts">
@@ -37,6 +40,8 @@ import {
   translate,
   MatomoUrl,
 } from 'CoreHome';
+import InstallAllPaidPluginsButton
+  from '../InstallAllPaidPluginsButton/InstallAllPaidPluginsButton.vue';
 
 export default defineComponent({
   props: {
@@ -46,6 +51,7 @@ export default defineComponent({
   },
   components: {
     EnrichedHeadline,
+    InstallAllPaidPluginsButton,
   },
   directives: {
     ContentIntro,

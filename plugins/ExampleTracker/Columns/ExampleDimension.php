@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\ExampleTracker\Columns;
 
 use Piwik\Columns\Dimension;
@@ -17,11 +18,9 @@ use Piwik\Columns\Dimension;
  */
 class ExampleDimension extends Dimension
 {
-
     /**
      * The name of the dimension which will be visible for instance in the UI of a related report and in the mobile app.
      * @return string
      */
     protected $nameSingular = 'ExampleTracker_DimensionName';
-
 }

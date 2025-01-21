@@ -3,9 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\UsersManager;
@@ -23,12 +22,14 @@ use Piwik\Date;
 use Piwik\NoAccessException;
 use Piwik\Option;
 use Piwik\Piwik;
+use Piwik\Plugins\CoreAdminHome\Emails\AnonymousAccessEnabledEmail;
 use Piwik\Plugins\CoreAdminHome\Emails\UserDeletedEmail;
 use Piwik\Plugins\Login\PasswordVerifier;
 use Piwik\Plugins\UsersManager\Emails\UserInfoChangedEmail;
 use Piwik\Plugins\UsersManager\Repository\UserRepository;
 use Piwik\Plugins\UsersManager\Validators\AllowedEmailDomain;
 use Piwik\Plugins\UsersManager\Validators\Email;
+use Piwik\Request;
 use Piwik\SettingsPiwik;
 use Piwik\Site;
 use Piwik\Tracker\Cache;
@@ -49,7 +50,7 @@ use Piwik\Validators\BaseValidator;
  */
 class API extends \Piwik\Plugin\API
 {
-    const OPTION_NAME_PREFERENCE_SEPARATOR = '_';
+    public const OPTION_NAME_PREFERENCE_SEPARATOR = '_';
 
     public static $UPDATE_USER_REQUIRE_PASSWORD_CONFIRMATION = true;
     public static $SET_SUPERUSER_ACCESS_REQUIRE_PASSWORD_CONFIRMATION = true;
@@ -96,8 +97,8 @@ class API extends \Piwik\Plugin\API
 
     private $userRepository;
 
-    const PREFERENCE_DEFAULT_REPORT = 'defaultReport';
-    const PREFERENCE_DEFAULT_REPORT_DATE = 'defaultReportDate';
+    public const PREFERENCE_DEFAULT_REPORT = 'defaultReport';
+    public const PREFERENCE_DEFAULT_REPORT_DATE = 'defaultReportDate';
 
     private static $instance = null;
 
@@ -105,10 +106,10 @@ class API extends \Piwik\Plugin\API
         Model $model,
         UserAccessFilter $filter,
         Password $password,
-        Access $access = null,
-        Access\RolesProvider $roleProvider = null,
-        Access\CapabilitiesProvider $capabilityProvider = null,
-        PasswordVerifier $passwordVerifier = null
+        ?Access $access = null,
+        ?Access\RolesProvider $roleProvider = null,
+        ?Access\CapabilitiesProvider $capabilityProvider = null,
+        ?PasswordVerifier $passwordVerifier = null
     ) {
         $this->model = $model;
         $this->userFilter = $filter;
@@ -351,18 +352,25 @@ class API extends \Piwik\Plugin\API
      */
     public function getUsersPlusRole($idSite, $limit = null, $offset = 0, $filter_search = null, $filter_access = null, $filter_status = null)
     {
-        if (!$this->isUserHasAdminAccessTo($idSite)) {
+        if (Piwik::isUserIsAnonymous()) {
+            // anonymous user should never see any results.
+            Common::sendHeader('X-Matomo-Total-Results: 0');
+            return [];
+        } elseif (!$this->isUserHasAdminAccessTo($idSite)) {
             // if the user is not an admin to $idSite, they can only see their own user
             if ($offset > 1) {
                 Common::sendHeader('X-Matomo-Total-Results: 1');
                 return [];
             }
 
+            $users = [];
             $user = $this->model->getUser($this->access->getLogin());
-            $user['role'] = $this->access->getRoleForSite($idSite);
-            $user['capabilities'] = $this->access->getCapabilitiesForSite($idSite);
-            $users = [$user];
-            $totalResults = 1;
+            if ($user) {
+                $user['role'] = $this->access->getRoleForSite($idSite);
+                $user['capabilities'] = $this->access->getCapabilitiesForSite($idSite);
+                $users = [$user];
+            }
+            $totalResults = count($users);
         } else {
             // if the current user is not the superuser, only select users that have access to a site this user
             // has admin access to
@@ -778,9 +786,9 @@ class API extends \Piwik\Plugin\API
         UsersManager::dieIfUsersAdminIsDisabled();
 
         // check password confirmation only when using session auth
-       if (Common::getRequestVar('force_api_session', 0)) {
-           $this->confirmCurrentUserPassword($passwordConfirmation);
-       }
+        if (Common::getRequestVar('force_api_session', 0)) {
+            $this->confirmCurrentUserPassword($passwordConfirmation);
+        }
 
         if (empty($expiryInDays)) {
             $expiryInDays = Config\GeneralConfig::getConfigValue('default_invite_user_token_expiry_days');
@@ -945,7 +953,15 @@ class API extends \Piwik\Plugin\API
 
         Cache::deleteTrackerCache();
 
-        if ($hasEmailChanged && $isEmailNotificationOnInConfig) {
+        if ($hasEmailChanged && $this->model->isPendingUser($userLogin)) {
+            // If the email of a user is changed, who was invited and did not yet accept the invitation
+            // we send a new invite to the new address.
+            // this will indirectly invalidate the invitation sent to the previous address
+            $this->userRepository->reInviteUser(
+                $userLogin,
+                (int) Config\GeneralConfig::getConfigValue('default_invite_user_token_expiry_days')
+            );
+        } elseif ($hasEmailChanged && $isEmailNotificationOnInConfig) {
             $this->sendEmailChangedEmail($userInfo, $email);
         }
 
@@ -1081,11 +1097,12 @@ class API extends \Piwik\Plugin\API
      *                              May also be an array to sent additional capabilities
      * @param int|array $idSites The array of idSites on which to apply the access level for the user.
      *       If the value is "all" then we apply the access level to all the websites ID for which the current authentificated user has an 'admin' access.
+     * @param string $passwordConfirmation password confirmation. only required when setting view access for anonymous user through session auth
      * @throws Exception if the user doesn't exist
      * @throws Exception if the access parameter doesn't have a correct value
      * @throws Exception if any of the given website ID doesn't exist
      */
-    public function setUserAccess($userLogin, $access, $idSites)
+    public function setUserAccess($userLogin, $access, $idSites, $passwordConfirmation = null)
     {
         UsersManager::dieIfUsersAdminIsDisabled();
 
@@ -1094,6 +1111,11 @@ class API extends \Piwik\Plugin\API
         }
 
         $idSites = $this->getIdSitesCheckAdminAccess($idSites);
+
+        // check password confirmation only when using session auth and setting view access for anonymous user
+        if ($userLogin === 'anonymous' && Request::fromRequest()->getBoolParameter('force_api_session', false) && $access === 'view') {
+            $this->confirmCurrentUserPassword($passwordConfirmation);
+        }
 
         if (
             $userLogin === 'anonymous' &&
@@ -1145,6 +1167,27 @@ class API extends \Piwik\Plugin\API
 
         if (!empty($capabilities)) {
             $this->addCapabilities($userLogin, $capabilities, $idSites);
+        }
+
+        // Send notification to all super users if anonymous access is set for a site
+        if ($userLogin === 'anonymous' && $access === 'view') {
+            $container = StaticContainer::getContainer();
+
+            $siteNames = [];
+
+            foreach ($idSites as $idSite) {
+                $siteNames[] = Site::getNameFor($idSite);
+            }
+
+            $superUsers = Piwik::getAllSuperUserAccessEmailAddresses();
+            foreach ($superUsers as $login => $email) {
+                $email = $container->make(AnonymousAccessEnabledEmail::class, array(
+                    'login' => $login,
+                    'emailAddress' => $email,
+                    'siteName' => implode(', ', $siteNames)
+                ));
+                $email->safeSend();
+            }
         }
 
         // we reload the access list which doesn't yet take in consideration this new user access
@@ -1529,8 +1572,6 @@ class API extends \Piwik\Plugin\API
         return $description;
     }
 
-
-
     /**
      * resend the invite email to user
      *
@@ -1611,11 +1652,10 @@ class API extends \Piwik\Plugin\API
          */
         Piwik::postEvent('UsersManager.inviteUser.generateInviteLinkToken', [$userLogin, $user['email']]);
 
-        return SettingsPiwik::getPiwikUrl().'index.php?'.Url::getQueryStringFromParameters([
-                'module' => 'Login',
+        return SettingsPiwik::getPiwikUrl() . 'index.php?' . Url::getQueryStringFromParameters([
+                'module' => Piwik::getLoginPluginName(),
                 'action' => 'acceptInvitation',
                 'token'  => $token,
             ]);
     }
-
 }

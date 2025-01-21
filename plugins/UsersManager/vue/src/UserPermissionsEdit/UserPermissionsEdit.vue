@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -382,6 +383,7 @@ import {
   AjaxHelper,
   Site,
   Matomo,
+  externalLink,
 } from 'CoreHome';
 import { Field, AbortableEvent } from 'CorePluginsAdmin';
 import CapabilitiesEdit from '../CapabilitiesEdit/CapabilitiesEdit.vue';
@@ -684,9 +686,9 @@ export default defineComponent({
     rolesHelpText() {
       return translate(
         'UsersManager_RolesHelp',
-        '<a href="https://matomo.org/faq/general/faq_70/" target="_blank" rel="noreferrer noopener">',
+        externalLink('https://matomo.org/faq/general/faq_70/'),
         '</a>',
-        '<a href="https://matomo.org/faq/general/faq_69/" target="_blank" rel="noreferrer noopener">',
+        externalLink('https://matomo.org/faq/general/faq_69/'),
         '</a>',
       );
     },

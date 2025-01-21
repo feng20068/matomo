@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration\DataAccess;
@@ -25,10 +25,11 @@ use Piwik\Tests\Framework\TestCase\IntegrationTestCase;
 /**
  * @group Core
  * @group Integration
+ * @group ArchiveSelectorTest
  */
 class ArchiveSelectorTest extends IntegrationTestCase
 {
-    const TEST_SEGMENT = 'operatingSystemCode==WIN';
+    public const TEST_SEGMENT = 'operatingSystemCode==WIN';
 
     protected static function configureFixture($fixture)
     {
@@ -36,7 +37,7 @@ class ArchiveSelectorTest extends IntegrationTestCase
         $fixture->createSuperUser = true;
     }
 
-    public function test_getArchiveIds_handlesCutOffGroupConcat()
+    public function testGetArchiveIdsHandlesCutOffGroupConcat()
     {
         Db::get()->query('SET SESSION group_concat_max_len=' . 20);
 
@@ -61,24 +62,47 @@ class ArchiveSelectorTest extends IntegrationTestCase
 
         $this->insertArchiveData($archiveRows);
 
-        $archiveIds = ArchiveSelector::getArchiveIds([1], [Factory::build('day', '2020-03-01')], new Segment('', [1]), ['Funnels'],
-            true, true);
+        [$archiveIds, $archiveStates] = ArchiveSelector::getArchiveIdsAndStates(
+            [1],
+            [Factory::build('day', '2020-03-01')],
+            new Segment('', [1]),
+            ['Funnels'],
+            true,
+            true
+        );
 
-        $expected = [
+        $expectedArchiveIds = [
             'done.Funnels' => [
-                '2020-03-01,2020-03-01' => [
-                    '16',
+                '2020-03-01,2020-03-01' => ['16'],
+            ],
+        ];
+
+        $expectedArchiveStates = [
+            1 => [
+                'done.Funnels' => [
+                    '2020-03-01,2020-03-01' => [
+                        16 => 5,
+                    ],
                 ],
             ],
         ];
-        $this->assertEquals($expected, $archiveIds);
+
+        $this->assertEquals($expectedArchiveIds, $archiveIds);
+        $this->assertEquals($expectedArchiveStates, $archiveStates);
     }
 
     /**
      * @dataProvider getTestDataForGetArchiveIds
      */
-    public function test_getArchiveIds_returnsCorrectResult($archiveRows, $siteIds, $periods, $segment, $plugins, $expected)
-    {
+    public function testGetArchiveIdsReturnsCorrectResult(
+        $archiveRows,
+        $siteIds,
+        $periods,
+        $segment,
+        $plugins,
+        $expectedArchiveIds,
+        $expectedArchiveStates
+    ) {
         Fixture::createWebsite('2010-02-02 00:00:00');
         Fixture::createWebsite('2010-02-02 00:00:00');
 
@@ -88,9 +112,24 @@ class ArchiveSelectorTest extends IntegrationTestCase
 
         $this->insertArchiveData($archiveRows);
 
-        $archiveIds = ArchiveSelector::getArchiveIds($siteIds, $periods, new Segment($segment, $siteIds), $plugins);
+        [$archiveIds, $archiveStates] = ArchiveSelector::getArchiveIdsAndStates(
+            $siteIds,
+            $periods,
+            new Segment($segment, $siteIds),
+            $plugins
+        );
 
-        $this->assertEquals($expected, $archiveIds);
+        $this->assertEquals($expectedArchiveIds, $archiveIds);
+        $this->assertEquals($expectedArchiveStates, $archiveStates);
+
+        $archiveIds = ArchiveSelector::getArchiveIds(
+            $siteIds,
+            $periods,
+            new Segment($segment, $siteIds),
+            $plugins
+        );
+
+        $this->assertEquals($expectedArchiveIds, $archiveIds);
     }
 
     public function getTestDataForGetArchiveIds()
@@ -117,8 +156,56 @@ class ArchiveSelectorTest extends IntegrationTestCase
                 [],
                 [
                     'done' => [
-                        '2020-03-01,2020-03-01' => [1],
-                        '2020-03-02,2020-03-08' => [2],
+                        '2020-03-01,2020-03-01' => ['1'],
+                        '2020-03-02,2020-03-08' => ['2'],
+                    ],
+                ],
+                [
+                    1 => [
+                        'done' => [
+                            '2020-03-01,2020-03-01' => [
+                                1 => 1,
+                            ],
+                            '2020-03-02,2020-03-08' => [
+                                2 => 4,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+
+            // two sites with results
+            [
+                [
+                    ['idarchive' => 1, 'idsite' => 1, 'period' => 1, 'date1' => '2020-03-01', 'date2' => '2020-03-01', 'name' => 'done', 'value' => 1],
+                    ['idarchive' => 2, 'idsite' => 2, 'period' => 1, 'date1' => '2020-03-01', 'date2' => '2020-03-01', 'name' => 'done', 'value' => 1],
+                ],
+                [1, 2],
+                [
+                    ['day', '2020-03-01'],
+                    ['week', '2020-03-02'],
+                ],
+                '',
+                [],
+                [
+                    'done' => [
+                        '2020-03-01,2020-03-01' => ['1', '2'],
+                    ],
+                ],
+                [
+                    1 => [
+                        'done' => [
+                            '2020-03-01,2020-03-01' => [
+                                1 => 1,
+                            ],
+                        ],
+                    ],
+                    2 => [
+                        'done' => [
+                            '2020-03-01,2020-03-01' => [
+                                2 => 1,
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -147,10 +234,27 @@ class ArchiveSelectorTest extends IntegrationTestCase
                 ['Funnels'],
                 [
                     'done' => [
-                        '2020-03-01,2020-03-01' => [10,4],
+                        '2020-03-01,2020-03-01' => ['10', '4'],
                     ],
                     'done.Funnels' => [
-                        '2020-03-01,2020-03-01' => [7,6,5],
+                        '2020-03-01,2020-03-01' => ['7', '6', '5'],
+                    ],
+                ],
+                [
+                    1 => [
+                        'done' => [
+                            '2020-03-01,2020-03-01' => [
+                                10 => '5',
+                                4 => '1',
+                            ],
+                        ],
+                        'done.Funnels' => [
+                            '2020-03-01,2020-03-01' => [
+                                7 => 5,
+                                6 => 5,
+                                5 => 5,
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -167,15 +271,17 @@ class ArchiveSelectorTest extends IntegrationTestCase
             $d = Date::factory($row['date1']);
             $table = !empty($row['is_blob_data']) ? ArchiveTableCreator::getBlobTable($d) : ArchiveTableCreator::getNumericTable($d);
             $tsArchived = isset($row['ts_archived']) ? $row['ts_archived'] : Date::now()->getDatetime();
-            Db::query("INSERT INTO `$table` (idarchive, idsite, period, date1, date2, `name`, `value`, ts_archived) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                [$row['idarchive'], $row['idsite'], $row['period'], $row['date1'], $row['date2'], $row['name'], $row['value'], $tsArchived]);
+            Db::query(
+                "INSERT INTO `$table` (idarchive, idsite, period, date1, date2, `name`, `value`, ts_archived) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                [$row['idarchive'], $row['idsite'], $row['period'], $row['date1'], $row['date2'], $row['name'], $row['value'], $tsArchived]
+            );
         }
     }
 
     /**
      * @dataProvider getTestDataForGetArchiveIdAndVisits
      */
-    public function test_getArchiveIdAndVisits_returnsCorrectResult($period, $date, $archiveRows, $segment, $minDateProcessed, $includeInvalidated, $expected)
+    public function testGetArchiveIdAndVisitsReturnsCorrectResult($period, $date, $archiveRows, $segment, $minDateProcessed, $includeInvalidated, $expected)
     {
         Fixture::createWebsite('2010-02-02 00:00:00');
 
@@ -431,7 +537,7 @@ class ArchiveSelectorTest extends IntegrationTestCase
     /**
      * @dataProvider getTestDataForGetArchiveIdAndVisitsWithOnlyPartialArchives
      */
-    public function test_getArchiveIdAndVisits_whenThereAreOnlyPartialArchives($archiveRows, $requestedReports, $expected, $minDatetimeArchiveProcessedUTC = false)
+    public function testGetArchiveIdAndVisitsWhenThereAreOnlyPartialArchives($archiveRows, $requestedReports, $expected, $minDatetimeArchiveProcessedUTC = false)
     {
         Fixture::createWebsite('2010-02-02 00:00:00');
 
@@ -667,9 +773,14 @@ class ArchiveSelectorTest extends IntegrationTestCase
     /**
      * @dataProvider getTestDataForGetArchiveData
      */
-    public function test_getArchiveData_returnsCorrectData($archiveRows, $dataType, $idArchives, $recordNames, $idSubtable,
-                                                           $expectedData)
-    {
+    public function testGetArchiveDataReturnsCorrectData(
+        $archiveRows,
+        $dataType,
+        $idArchives,
+        $recordNames,
+        $idSubtable,
+        $expectedData
+    ) {
         Fixture::createWebsite('2010-02-02 00:00:00');
 
         $this->insertArchiveData($archiveRows);
@@ -878,7 +989,7 @@ class ArchiveSelectorTest extends IntegrationTestCase
     /**
      * @dataProvider getTestDataForGetExtractIdSubtableFromBlobNameSql
      */
-    public function test_getExtractIdSubtableFromBlobNameSql_correctlyExtractsStartSubtableIdFromBlobNames($archiveRows, $blobName, $expectedRows)
+    public function testGetExtractIdSubtableFromBlobNameSqlCorrectlyExtractsStartSubtableIdFromBlobNames($archiveRows, $blobName, $expectedRows)
     {
         $this->insertArchiveData($archiveRows);
 

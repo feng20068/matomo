@@ -30,7 +30,7 @@
           uicontrol="checkbox"
           name="javascript-tracking-all-subdomains"
           :model-value="trackAllSubdomains"
-          @update:model-value="trackAllSubdomains = $event; updateTrackingCode(this.site)"
+          @update:model-value="trackAllSubdomains = $event; updateTrackingCode()"
           :disabled="isLoading"
           :title="`${translate(
             'CoreAdminHome_JSTracking_MergeSubdomains',
@@ -48,7 +48,7 @@
         uicontrol="checkbox"
         name="javascript-tracking-group-by-domain"
         :model-value="groupByDomain"
-        @update:model-value="groupByDomain = $event; updateTrackingCode(this.site)"
+        @update:model-value="groupByDomain = $event; updateTrackingCode()"
         :disabled="isLoading"
         :title="translate('CoreAdminHome_JSTracking_GroupPageTitlesByDomain')"
         inline-help="#jsTrackGroupByDomainInlineHelp"
@@ -63,7 +63,7 @@
         uicontrol="checkbox"
         name="javascript-tracking-all-aliases"
         :model-value="trackAllAliases"
-        @update:model-value="trackAllAliases = $event; updateTrackingCode(this.site)"
+        @update:model-value="trackAllAliases = $event; updateTrackingCode()"
         :disabled="isLoading"
         :title="`${translate('CoreAdminHome_JSTracking_MergeAliases')} ${currentSiteName}`"
         inline-help="#jsTrackAllAliasesInlineHelp"
@@ -73,7 +73,7 @@
         uicontrol="checkbox"
         name="javascript-tracking-noscript"
         :model-value="trackNoScript"
-        @update:model-value="trackNoScript = $event; updateTrackingCode(this.site)"
+        @update:model-value="trackNoScript = $event; updateTrackingCode()"
         :disabled="isLoading"
         :title="translate('CoreAdminHome_JSTracking_TrackNoScript')"
       />
@@ -83,8 +83,9 @@
         uicontrol="checkbox"
         name="javascript-tracking-visitor-cv-check"
         :model-value="trackCustomVars"
-        @update:model-value="trackCustomVars = $event; updateTrackingCode(this.site)"
+        @update:model-value="trackCustomVars = $event; updateTrackingCode()"
         :disabled="isLoading"
+        v-show="maxCustomVariables > 0"
         :title="translate('CoreAdminHome_JSTracking_VisitorCustomVars')"
         :inline-help="translate('CoreAdminHome_JSTracking_VisitorCustomVarsDesc')"
       />
@@ -134,7 +135,7 @@
         name="javascript-tracking-cross-domain"
         :model-value="crossDomain"
         @update:model-value="crossDomain = $event;
-      updateTrackingCode(this.site); onCrossDomainToggle();"
+      updateTrackingCode(); onCrossDomainToggle();"
         :disabled="isLoading || !hasManySiteUrls"
         :title="translate('CoreAdminHome_JSTracking_EnableCrossDomainLinking')"
         inline-help="#jsCrossDomain"
@@ -153,7 +154,7 @@
         uicontrol="checkbox"
         name="javascript-tracking-do-not-track"
         :model-value="doNotTrack"
-        @update:model-value="doNotTrack = $event; updateTrackingCode(this.site)"
+        @update:model-value="doNotTrack = $event; updateTrackingCode()"
         :disabled="isLoading"
         :title="translate('CoreAdminHome_JSTracking_EnableDoNotTrack')"
         inline-help="#jsDoNotTrackInlineHelp"
@@ -164,7 +165,7 @@
         uicontrol="checkbox"
         name="javascript-tracking-disable-cookies"
         :model-value="disableCookies"
-        @update:model-value="disableCookies = $event; updateTrackingCode(this.site)"
+        @update:model-value="disableCookies = $event; updateTrackingCode()"
         :disabled="isLoading"
         :title="translate('CoreAdminHome_JSTracking_DisableCookies')"
         :inline-help="translate('CoreAdminHome_JSTracking_DisableCookiesDesc')"
@@ -180,7 +181,7 @@
         uicontrol="checkbox"
         name="custom-campaign-query-params-check"
         :model-value="useCustomCampaignParams"
-        @update:model-value="useCustomCampaignParams = $event; updateTrackingCode(this.site)"
+        @update:model-value="useCustomCampaignParams = $event; updateTrackingCode()"
         :disabled="isLoading"
         :title="translate('CoreAdminHome_JSTracking_CustomCampaignQueryParam')"
         inline-help="#jsTrackCampaignParamsInlineHelp"
@@ -193,7 +194,7 @@
               uicontrol="text"
               name="custom-campaign-name-query-param"
               :model-value="customCampaignName"
-              @update:model-value="customCampaignName = $event; updateTrackingCode(this.site)"
+              @update:model-value="customCampaignName = $event; updateTrackingCode()"
               :disabled="isLoading"
               :title="translate('CoreAdminHome_JSTracking_CampaignNameParam')"
             />
@@ -205,13 +206,24 @@
               uicontrol="text"
               name="custom-campaign-keyword-query-param"
               :model-value="customCampaignKeyword"
-              @update:model-value="customCampaignKeyword = $event; updateTrackingCode(this.site)"
+              @update:model-value="customCampaignKeyword = $event; updateTrackingCode()"
               :disabled="isLoading"
               :title="translate('CoreAdminHome_JSTracking_CampaignKwdParam')"
             />
           </div>
         </div>
       </div>
+
+      <!-- disable campaign parameters -->
+      <Field
+        uicontrol="checkbox"
+        name="require-consent-for-campaign-tracking"
+        :model-value="disableCampaignParameters"
+        @update:model-value="disableCampaignParameters = $event; updateTrackingCode()"
+        :disabled="isLoading"
+        :title="translate('CoreAdminHome_JSTracking_DisableCampaignParameters')"
+        :inline-help="translate('CoreAdminHome_JSTracking_DisableCampaignParametersDesc')"
+      />
 
     </div>
   </div>
@@ -224,6 +236,8 @@ import {
   SiteRef,
   debounce,
   Matomo,
+  externalRawLink,
+  externalLink,
 } from 'CoreHome';
 import { Field } from 'CorePluginsAdmin';
 
@@ -232,9 +246,8 @@ interface CustomVar {
   value: string;
 }
 
-interface JsTrackingCodeGeneratorState {
+interface JsTrackingCodeAdvancedOptionsState {
   showAdvanced: boolean;
-  site: SiteRef;
   trackAllSubdomains: boolean;
   isLoading: boolean;
   siteUrls: Record<string, string[]>;
@@ -253,10 +266,7 @@ interface JsTrackingCodeGeneratorState {
   customCampaignName: string;
   customCampaignKeyword: string;
   trackingCodeAbortController: AbortController | null;
-  isHighlighting: boolean;
-  consentManagerName: string;
-  consentManagerUrl: string;
-  consentManagerIsConnected: boolean;
+  disableCampaignParameters: boolean;
 }
 
 interface GetJavascriptTagResponse {
@@ -269,7 +279,7 @@ function getHostNameFromUrl(url: string) {
 }
 
 function getCustomVarArray(cvars: CustomVar[]) {
-  return cvars.map((cv) => [cv.name, cv.value]);
+  return cvars.filter((cv) => !!cv.name).map((cv) => [cv.name, cv.value]);
 }
 
 const piwikHost = window.location.host;
@@ -277,18 +287,16 @@ const piwikPath = window.location.pathname.substring(0, window.location.pathname
 
 export default defineComponent({
   props: {
-    defaultSite: {
+    site: {
       type: Object,
       required: true,
     },
     maxCustomVariables: Number,
     serverSideDoNotTrackEnabled: Boolean,
-    showBottomHR: Boolean,
   },
-  data(): JsTrackingCodeGeneratorState {
+  data(): JsTrackingCodeAdvancedOptionsState {
     return {
       showAdvanced: false,
-      site: this.defaultSite as SiteRef,
       trackAllSubdomains: false,
       isLoading: false,
       siteUrls: {},
@@ -307,10 +315,7 @@ export default defineComponent({
       customCampaignName: '',
       customCampaignKeyword: '',
       trackingCodeAbortController: null,
-      isHighlighting: false,
-      consentManagerName: '',
-      consentManagerUrl: '',
-      consentManagerIsConnected: false,
+      disableCampaignParameters: false,
     };
   },
   emits: ['updateTrackingCode'],
@@ -318,20 +323,90 @@ export default defineComponent({
     Field,
   },
   created() {
+    if (this.site && this.site.id) {
+      this.onSiteChanged(this.site as SiteRef);
+    }
+
     this.onCustomVarNameKeydown = debounce(this.onCustomVarNameKeydown, 100);
     this.onCustomVarValueKeydown = debounce(this.onCustomVarValueKeydown, 100);
 
     this.addCustomVar();
   },
+  watch: {
+    site(newValue: SiteRef) {
+      this.onSiteChanged(newValue);
+    },
+  },
   methods: {
+    onSiteChanged(newValue: SiteRef) {
+      const idSite = newValue.id;
+
+      const promises: Promise<unknown>[] = [];
+      if (!this.siteUrls[idSite]) {
+        this.isLoading = true;
+        promises.push(
+          AjaxHelper.fetch({
+            module: 'API',
+            method: 'SitesManager.getSiteUrlsFromId',
+            idSite,
+            filter_limit: '-1',
+          }).then((data) => {
+            this.siteUrls[idSite] = data || [];
+          }),
+        );
+      }
+
+      if (!this.siteExcludedQueryParams[idSite]) {
+        this.isLoading = true;
+
+        promises.push(
+          AjaxHelper.fetch({
+            module: 'API',
+            method: 'SitesManager.getExcludedQueryParameters',
+            idSite,
+            filter_limit: '-1',
+          }).then((data) => {
+            this.siteExcludedQueryParams[idSite] = data || [];
+          }),
+        );
+      }
+
+      if (!this.siteExcludedReferrers[idSite]) {
+        this.isLoading = true;
+
+        promises.push(
+          AjaxHelper.fetch({
+            module: 'API',
+            method: 'SitesManager.getExcludedReferrers',
+            idSite,
+            filter_limit: '-1',
+          }).then((data) => {
+            this.siteExcludedReferrers[idSite] = [];
+            Object.values(data || []).forEach((referrer: unknown) => {
+              this.siteExcludedReferrers[idSite].push((referrer as string).replace(/^https?:\/\//, ''));
+            });
+          }),
+        );
+      }
+
+      Promise.all(promises).then(() => {
+        this.isLoading = false;
+        this.updateCurrentSiteInfo();
+        this.updateTrackingCode();
+      });
+    },
+    updateCurrentSiteInfo() {
+      if (!this.hasManySiteUrls) {
+        // we make sure to disable cross domain if it has only one url or less
+        this.crossDomain = false;
+      }
+    },
     onCrossDomainToggle() {
       if (this.crossDomain) {
         this.trackAllAliases = true;
       }
     },
-    updateTrackingCode(newValue: SiteRef) {
-      this.site = newValue;
-
+    updateTrackingCode() {
       // get params used to generate JS code
       const params: Record<string, unknown> = {
         piwikUrl: `${piwikHost}${piwikPath}`,
@@ -346,6 +421,7 @@ export default defineComponent({
         crossDomain: this.crossDomain ? 1 : 0,
         trackNoScript: this.trackNoScript ? 1 : 0,
         forceMatomoEndpoint: 1,
+        disableCampaignParameters: this.disableCampaignParameters ? 1 : 0,
       };
 
       if (this.siteExcludedQueryParams[this.site.id]) {
@@ -381,7 +457,6 @@ export default defineComponent({
         },
       ).then((response) => {
         this.trackingCodeAbortController = null;
-
         this.$emit('updateTrackingCode', response.value);
       });
     },
@@ -396,13 +471,13 @@ export default defineComponent({
     onCustomVarNameKeydown(event: KeyboardEvent, index: number) {
       setTimeout(() => {
         this.customVars[index].name = (event.target as HTMLInputElement).value;
-        this.updateTrackingCode(this.site);
+        this.updateTrackingCode();
       });
     },
     onCustomVarValueKeydown(event: KeyboardEvent, index: number) {
       setTimeout(() => {
         this.customVars[index].value = (event.target as HTMLInputElement).value;
-        this.updateTrackingCode(this.site);
+        this.updateTrackingCode();
       });
     },
   },
@@ -435,7 +510,8 @@ export default defineComponent({
       );
     },
     learnMoreText() {
-      const subdomainsLink = 'https://developer.matomo.org/guides/tracking-javascript-guide'
+      /* eslint-disable prefer-template */
+      const subdomainsLink = externalRawLink('https://developer.matomo.org/guides/tracking-javascript-guide')
         + '#measuring-domains-andor-sub-domains';
       return translate(
         'General_LearnMore',
@@ -446,14 +522,14 @@ export default defineComponent({
     jsTrackCampaignParamsInlineHelp() {
       return translate(
         'CoreAdminHome_JSTracking_CustomCampaignQueryParamDesc',
-        '<a href="https://matomo.org/faq/general/faq_119" rel="noreferrer noopener" target="_blank">',
+        externalLink('https://matomo.org/faq/general/faq_119'),
         '</a>',
       );
     },
     trackingDocumentationHelp() {
       return translate(
         'CoreAdminHome_JSTrackingDocumentationHelp',
-        '<a rel="noreferrer noopener" target="_blank" href="https://developer.matomo.org/guides/tracking-javascript-guide">',
+        externalLink('https://developer.matomo.org/guides/tracking-javascript-guide'),
         '</a>',
       );
     },

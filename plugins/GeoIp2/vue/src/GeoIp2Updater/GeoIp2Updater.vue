@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -156,6 +157,7 @@ import {
   Progressbar,
   ContentBlock,
   NotificationsStore,
+  externalLink,
 } from 'CoreHome';
 import { Field } from 'CorePluginsAdmin';
 
@@ -456,11 +458,10 @@ export default defineComponent({
       return `${translation}<br /><br />`;
     },
     maxMindLinkExplanation() {
-      const link = 'https://matomo.org/faq/how-to/'
-        + 'how-do-i-get-the-geolocation-download-url-for-the-free-maxmind-db/';
       return translate(
         'UserCountry_MaxMindLinkExplanation',
-        `<a href="${link}" rel="noreferrer noopener" target="_blank">`,
+        externalLink('https://matomo.org/faq/how-to/'
+        + 'how-do-i-get-the-geolocation-download-url-for-the-free-maxmind-db/'),
         '</a>',
       );
     },

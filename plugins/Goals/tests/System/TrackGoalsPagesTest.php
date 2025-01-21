@@ -4,7 +4,7 @@
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Goals\tests\System;
@@ -24,6 +24,9 @@ use Piwik\Tests\Fixtures\SomePageGoalVisitsWithConversions;
  */
 class TrackGoalsPagesTest extends SystemTestCase
 {
+    /**
+     * @var SomePageGoalVisitsWithConversions
+     */
     public static $fixture = null;
 
     /**
@@ -71,6 +74,19 @@ class TrackGoalsPagesTest extends SystemTestCase
                     'apiAction' => 'getEntryPageTitles',
                 ],
             ]],
+
+            ['API.getProcessedReport', [
+                'idSite' => self::$fixture->idSite,
+                'date' => self::$fixture->dateTime,
+                'period' => 'day',
+                'testSuffix' => 'showGoalsMetricsPageReport',
+                'otherRequestParameters' => [
+                    'filter_update_columns_when_show_all_goals' => '1',
+                    'filter_show_goal_columns_process_goals' => '1',
+                    'apiModule' => 'Actions',
+                    'apiAction' => 'getPageTitles',
+                ],
+            ]],
         ];
     }
 
@@ -79,7 +95,7 @@ class TrackGoalsPagesTest extends SystemTestCase
      *
      * @dataProvider getConversionPagesBeforeExpected
      */
-    public function test_conversionPagesBeforeValues($id, $expected)
+    public function testConversionPagesBeforeValues($id, $expected)
     {
         $actual = Db::get()->fetchOne('SELECT pageviews_before FROM ' . Common::prefixTable('log_conversion') .
                                       ' WHERE idlink_va = ?', [$id]);

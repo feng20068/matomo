@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Diagnostics\Commands;
@@ -43,25 +44,24 @@ class UnexpectedFiles extends ConsoleCommand
 
         // Prevent running in development mode
         if (Development::isEnabled()) {
-           $output->writeln("Aborting - this command cannot be used in development mode as it requires a release manifest file");
-           return 1;
+            $output->writeln("Aborting - this command cannot be used in development mode as it requires a release manifest file");
+            return 1;
         }
 
         // Prevent running if there is no release manifest file
         $manifest = PIWIK_INCLUDE_PATH . '/config/manifest.inc.php';
         if (!file_exists($manifest)) {
-           $output->writeln("Release manifest file '".$manifest."' not found.");
-           $output->writeln("Aborting - this command can only be used when a release manifest file is present.");
-           return 1;
+            $output->writeln("Release manifest file '" . $manifest . "' not found.");
+            $output->writeln("Aborting - this command can only be used when a release manifest file is present.");
+            return 1;
         }
 
 
         $delete = $input->getOption('delete');
         if ($delete) {
-
             $output->writeln("<info>Preparing to delete all unexpected files from the Matomo installation directory</info>");
 
-            if(!$this->askForDeleteConfirmation()) {
+            if (!$this->askForDeleteConfirmation()) {
                 $output->writeln("Aborted - no files were deleted");
                 return 1;
             }
@@ -97,9 +97,8 @@ class UnexpectedFiles extends ConsoleCommand
         $fails = 0;
 
         foreach ($files as $f) {
-
             foreach ($excludedFiles as $ef) {
-                if(preg_match($ef, $f)) {
+                if (preg_match($ef, $f)) {
                     continue 2;
                 }
             }
@@ -108,9 +107,9 @@ class UnexpectedFiles extends ConsoleCommand
 
             if ($delete) {
                 if (Filesystem::deleteFileIfExists($fileName)) {
-                    $output->writeln("Deleted unexpected file '".$fileName);
+                    $output->writeln("Deleted unexpected file '" . $fileName);
                 } else {
-                    $output->writeln("Failed to delete unexpected file '".$fileName);
+                    $output->writeln("Failed to delete unexpected file '" . $fileName);
                     $fails++;
                 }
             } else {
@@ -118,7 +117,7 @@ class UnexpectedFiles extends ConsoleCommand
             }
         }
         if ($delete && $fails) {
-            $output->writeln("Failed to delete ".$fails." unexpected files");
+            $output->writeln("Failed to delete " . $fails . " unexpected files");
             return 1;
         }
         return 0;
@@ -140,5 +139,4 @@ class UnexpectedFiles extends ConsoleCommand
             false
         );
     }
-
 }

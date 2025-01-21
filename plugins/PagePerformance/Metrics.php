@@ -1,15 +1,16 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\PagePerformance;
 
 use Piwik\Columns\Dimension;
-use Piwik\Plugin\Dimension\ActionDimension;
+use Piwik\Plugins\PagePerformance\Columns\Base;
 use Piwik\Plugins\PagePerformance\Columns\Metrics\AveragePageLoadTime;
 use Piwik\Plugins\PagePerformance\Columns\Metrics\AverageTimeDomCompletion;
 use Piwik\Plugins\PagePerformance\Columns\Metrics\AverageTimeDomProcessing;
@@ -97,7 +98,7 @@ class Metrics
         $table = 'log_link_visit_action';
 
         /**
-         * @var ActionDimension[] $performanceDimensions
+         * @var Base[] $performanceDimensions
          */
         $performanceDimensions = [
             new TimeNetwork(),
@@ -107,19 +108,14 @@ class Metrics
             new TimeDomCompletion(),
             new TimeOnLoad()
         ];
-        foreach($performanceDimensions as $dimension) {
+        foreach ($performanceDimensions as $dimension) {
             $id = $dimension->getColumnName();
             $column = $table . '.' . $id;
-            $metricsConfig['sum_'.$id] = [
+            $metricsConfig['sum_' . $id] = [
                 'aggregation' => 'sum',
-                'query' => "sum(
-                    case when " . $column . " is null
-                        then 0
-                        else " . $column . "
-                    end
-                ) / 1000"
+                'query' => "sum(" . sprintf($dimension->getSqlCappedValue(), $column) . ") / 1000"
             ];
-            $metricsConfig['nb_hits_with_'.$id] = [
+            $metricsConfig['nb_hits_with_' . $id] = [
                 'aggregation' => 'sum',
                 'query' => "sum(
                     case when " . $column . " is null
@@ -128,11 +124,11 @@ class Metrics
                     end
                 )"
             ];
-            $metricsConfig['min_'.$id] = [
+            $metricsConfig['min_' . $id] = [
                 'aggregation' => 'min',
                 'query' => "min(" . $column . ") / 1000"
             ];
-            $metricsConfig['max_'.$id] = [
+            $metricsConfig['max_' . $id] = [
                 'aggregation' => 'max',
                 'query' => "max(" . $column . ") / 1000"
             ];
@@ -140,5 +136,4 @@ class Metrics
 
         return $metricsConfig;
     }
-
 }

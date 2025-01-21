@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration\Archive;
@@ -35,7 +36,7 @@ class PartialArchiveTest extends IntegrationTestCase
         self::trackVisit();
     }
 
-    public function test_rangeArchiving_onlyArchivesSingleRecord_whenQueryingNumerics()
+    public function testRangeArchivingOnlyArchivesSingleRecordWhenQueryingNumerics()
     {
         // first trigger all plugins archiving
         $_GET['trigger'] = 'archivephp';
@@ -59,7 +60,7 @@ class PartialArchiveTest extends IntegrationTestCase
         // check archive is all plugins archive as expected
         [$idArchives, $archiveInfo] = $this->getArchiveInfo('2020_04', 5, false);
         $this->assertEquals([
-            ['idsite' => 1, 'date1' => '2020-04-06', 'date2' => '2020-04-09', 'period' => 5, 'name' => 'done', 'value' => 1, 'blob_count' => 57],
+            ['idsite' => 1, 'date1' => '2020-04-06', 'date2' => '2020-04-09', 'period' => 5, 'name' => 'done', 'value' => 1, 'blob_count' => 58],
         ], $archiveInfo);
 
         $maxIdArchive = $this->getMaxIdArchive('2020_04');
@@ -104,7 +105,7 @@ class PartialArchiveTest extends IntegrationTestCase
         ], $archiveInfo);
     }
 
-    public function test_rangeArchiving_onlyArchivesSingleRecord_whenQueryingBlobs()
+    public function testRangeArchivingOnlyArchivesSingleRecordWhenQueryingBlobs()
     {
         // first trigger all plugins archiving
         $_GET['trigger'] = 'archivephp';
@@ -115,7 +116,7 @@ class PartialArchiveTest extends IntegrationTestCase
         // check archive is all plugins archive as expected
         [$idArchives, $archiveInfo] = $this->getArchiveInfo('2020_04', 5, false);
         $this->assertEquals([
-            ['idsite' => 1, 'date1' => '2020-04-06', 'date2' => '2020-04-09', 'period' => 5, 'name' => 'done', 'value' => 1, 'blob_count' => 57],
+            ['idsite' => 1, 'date1' => '2020-04-06', 'date2' => '2020-04-09', 'period' => 5, 'name' => 'done', 'value' => 1, 'blob_count' => 58],
         ], $archiveInfo);
 
         $maxIdArchive = $this->getMaxIdArchive('2020_04');

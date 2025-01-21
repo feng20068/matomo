@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\DataTable\Filter;
@@ -34,7 +34,6 @@ use Piwik\Piwik;
  */
 class Truncate extends BaseFilter
 {
-
     /**
      * @var int
      */
@@ -68,12 +67,13 @@ class Truncate extends BaseFilter
      * @param bool $filterRecursive If true executes this filter on all subtables descending from
      *                              `$table`.
      */
-    public function __construct($table,
-                                $truncateAfter,
-                                $labelSummaryRow = null,
-                                $columnToSortByBeforeTruncating = null,
-                                $filterRecursive = true)
-    {
+    public function __construct(
+        $table,
+        $truncateAfter,
+        $labelSummaryRow = null,
+        $columnToSortByBeforeTruncating = null,
+        $filterRecursive = true
+    ) {
         parent::__construct($table);
         $this->truncateAfter = $truncateAfter;
         if ($labelSummaryRow === null) {

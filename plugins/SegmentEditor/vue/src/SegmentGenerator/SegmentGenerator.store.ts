@@ -1,8 +1,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 import {
@@ -87,6 +87,7 @@ class SegmentGeneratorStore {
       return this.state.value.segments;
     }).finally(() => {
       this.privateState.isLoading = false;
+      delete this.loadSegmentsPromise;
     });
   }
 }

@@ -4,7 +4,7 @@
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Ecommerce\tests\System;
@@ -520,6 +520,20 @@ class EcommerceOrderWithItemsTest extends SystemTestCase
                         'date'       => $dateTime,
                         'periods'    => 'week',
                         'testSuffix' => '_productSkuSegment',
+                        'segment'    => 'productSku==' . urlencode(urlencode('SKU VERY nice indeed')),
+                    ],
+                ],
+
+                [
+                    $goalItemApi,
+                    [
+                        'idSite'     => $idSite,
+                        'date'       => $dateTime,
+                        'periods'    => 'week',
+                        'testSuffix' => '_productSkuSegmentSorted',
+                        'otherRequestParameters' => [
+                            'filter_sort_column' => 'nb_visits',
+                        ],
                         'segment'    => 'productSku==' . urlencode(urlencode('SKU VERY nice indeed')),
                     ],
                 ],

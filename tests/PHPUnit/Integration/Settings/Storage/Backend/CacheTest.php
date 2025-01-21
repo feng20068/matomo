@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration\Settings\Storage\Backend;
@@ -19,7 +20,6 @@ use Piwik\Tests\Framework\TestCase\IntegrationTestCase;
  */
 class CacheTest extends IntegrationTestCase
 {
-
     /**
      * @var FakeBackend
      */
@@ -38,18 +38,18 @@ class CacheTest extends IntegrationTestCase
         $this->cacheBackend = new Cache($this->backend);
     }
 
-    public function test_getStorageId_shouldReturnStorageOfActualPlugin()
+    public function testGetStorageIdShouldReturnStorageOfActualPlugin()
     {
         $this->assertSame('MySuperStorageKey', $this->cacheBackend->getStorageId());
     }
 
-    public function test_load_ShouldActuallyLoadDataFromBackend()
+    public function testLoadShouldActuallyLoadDataFromBackend()
     {
         $this->assertSame($this->backend->load(), $this->cacheBackend->load());
         $this->assertNotEmpty($this->cacheBackend->load());
     }
 
-    public function test_load_ShouldCacheData()
+    public function testLoadShouldCacheData()
     {
         $this->assertNotValueCached();
 
@@ -59,7 +59,7 @@ class CacheTest extends IntegrationTestCase
         $this->assertValueIsActuallyInCache();
     }
 
-    public function test_delete_ShouldClearCacheAndData()
+    public function testDeleteShouldClearCacheAndData()
     {
         $this->cacheBackend->load();
         $this->assertValueCached();
@@ -71,7 +71,7 @@ class CacheTest extends IntegrationTestCase
         $this->assertSame(array(), $this->backend->load());
     }
 
-    public function test_save_ShouldClearCacheAndUpdateData()
+    public function testSaveShouldClearCacheAndUpdateData()
     {
         $this->cacheBackend->load();
         $this->assertValueCached();
@@ -112,5 +112,4 @@ class CacheTest extends IntegrationTestCase
     {
         return Cache::buildCache();
     }
-
 }

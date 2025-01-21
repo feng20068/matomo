@@ -1,15 +1,17 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Goals\Reports;
 
 use Piwik\API\Request;
 use Piwik\Piwik;
+use Piwik\Url;
 
 abstract class Base extends \Piwik\Plugin\Report
 {
@@ -18,7 +20,7 @@ abstract class Base extends \Piwik\Plugin\Report
     protected function init()
     {
         $this->categoryId = 'Goals_Goals';
-        $this->onlineGuideUrl = 'https://matomo.org/docs/tracking-goals-web-analytics/';
+        $this->onlineGuideUrl = Url::addCampaignParametersToMatomoLink('https://matomo.org/docs/tracking-goals-web-analytics/');
     }
 
     protected function addReportMetadataForEachGoal(&$availableReports, $infos, $goalNameFormatter, $isGoalSummaryReport = false)

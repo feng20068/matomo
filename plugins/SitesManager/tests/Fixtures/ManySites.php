@@ -3,12 +3,13 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\SitesManager\tests\Fixtures;
 
+use Piwik\Plugin\Manager;
 use Piwik\Plugins\MobileAppMeasurable;
 use Piwik\Tests\Framework\Fixture;
 
@@ -21,6 +22,9 @@ class ManySites extends Fixture
 
     public function setUp(): void
     {
+        // Ensure plugin is activated, otherwise adding a site with this type will fail
+        Manager::getInstance()->activatePlugin('MobileAppMeasurable');
+
         for ($idSite = 1; $idSite < 64; $idSite++) {
             if (!self::siteCreated($idSite)) {
                 if ($idSite < 35) {

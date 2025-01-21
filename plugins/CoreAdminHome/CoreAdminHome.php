@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreAdminHome;
 
 use Piwik\API\Request;
@@ -68,7 +69,6 @@ class CoreAdminHome extends \Piwik\Plugin
     {
         $jsFiles[] = "node_modules/jquery/dist/jquery.min.js";
         $jsFiles[] = "node_modules/jquery-ui-dist/jquery-ui.min.js";
-        $jsFiles[] = "node_modules/jquery.browser/dist/jquery.browser.min.js";
         $jsFiles[] = "node_modules/sprintf-js/dist/sprintf.min.js";
         $jsFiles[] = "plugins/Morpheus/javascripts/piwikHelper.js";
         $jsFiles[] = "plugins/CoreHome/javascripts/broadcast.js";
@@ -152,6 +152,7 @@ class CoreAdminHome extends \Piwik\Plugin
         $translationKeys[] = 'General_OnlyUsedIfUserPwdIsSet';
         $translationKeys[] = 'General_SmtpUsername';
         $translationKeys[] = 'General_OnlyEnterIfRequired';
+        $translationKeys[] = 'General_Plugins';
         $translationKeys[] = 'General_SmtpPassword';
         $translationKeys[] = 'General_SmtpFromAddress';
         $translationKeys[] = 'General_SmtpFromEmailHelp';
@@ -217,5 +218,8 @@ class CoreAdminHome extends \Piwik\Plugin
         $translationKeys[] = 'CoreAdminHome_HideAdvancedOptions';
         $translationKeys[] = 'CoreAdminHome_JSTrackingDocumentationHelp';
         $translationKeys[] = 'CoreAdminHome_ReactDescription';
+        $translationKeys[] = 'CoreAdminHome_JsTrackingCodeAdvancedOptionsStep';
+        $translationKeys[] = 'CoreAdminHome_JSTracking_DisableCampaignParameters';
+        $translationKeys[] = 'CoreAdminHome_JSTracking_DisableCampaignParametersDesc';
     }
 }

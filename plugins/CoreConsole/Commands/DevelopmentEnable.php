@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreConsole\Commands;
@@ -48,7 +48,7 @@ class DevelopmentEnable extends ConsoleCommand
 
         Filesystem::deleteAllCacheOnUpdate();
 
-        $this->writeSuccessMessage(array($message));
+        $this->writeSuccessMessage($message);
 
         if ($enable && !SettingsPiwik::isGitDeployment()) {
             $comment = 'Development mode should be only enabled when installed through git. Not every development feature will be available.';
@@ -57,5 +57,4 @@ class DevelopmentEnable extends ConsoleCommand
 
         return self::SUCCESS;
     }
-
 }

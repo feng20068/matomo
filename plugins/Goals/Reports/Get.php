@@ -3,9 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Goals\Reports;
@@ -183,9 +182,8 @@ class Get extends Base
             // Add evolution values to sparklines
             [$lastPeriodDate, $ignore] = Range::getLastDate();
             if ($lastPeriodDate !== false) {
-
                 // Using a filter here ensures the additional request is only performed when the view is rendered
-                $view->config->filters[] = function($datatable) use ($view, $lastPeriodDate, $idSite) {
+                $view->config->filters[] = function ($datatable) use ($view, $lastPeriodDate, $idSite) {
                     /** @var DataTable $previousData */
                     $previousData    = Request::processRequest(
                         'Goals.get',
@@ -200,7 +198,10 @@ class Get extends Base
                     $lastPrettyDate    = ($currentPeriod instanceof Month ? $lastPeriod->getLocalizedLongString(
                     ) : $lastPeriod->getPrettyString());
 
-                    $view->config->compute_evolution = function ($columns, $metrics) use (
+                    $view->config->compute_evolution = function (
+                        $columns,
+                        $metrics
+                    ) use (
                         $currentPrettyDate,
                         $lastPrettyDate,
                         $previousDataRow,
@@ -262,7 +263,7 @@ class Get extends Base
                 };
             }
         } elseif ($view->isViewDataTableId(Evolution::ID)) {
-            if (!empty($idSite) && Piwik::isUserHasWriteAccess($idSite)) {
+            if (!empty($idSite) && Piwik::isUserHasWriteAccess($idSite) && $idGoal > GoalManager::IDGOAL_ORDER) {
                 $view->config->title_edit_entity_url = 'index.php' . Url::getCurrentQueryStringWithParametersModified([
                     'module' => 'Goals',
                     'action' => 'manage',

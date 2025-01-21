@@ -3,8 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Marketplace\tests\Integration;
@@ -16,6 +16,7 @@ use Piwik\Plugins\Marketplace\Input\Sort;
 use Piwik\Plugins\Marketplace\Plugins;
 use Piwik\Plugins\Marketplace\tests\Framework\Mock\Client;
 use Piwik\Plugins\Marketplace\tests\Framework\Mock\Service;
+use Piwik\Tests\Framework\Fixture;
 use Piwik\Tests\Framework\Mock\ProfessionalServices\Advertising;
 use Piwik\Tests\Framework\TestCase\IntegrationTestCase;
 use Piwik\Plugin;
@@ -191,6 +192,8 @@ class PluginsTest extends IntegrationTestCase
 
     public function testGetPluginInfoNotInstalledPluginShouldEnrichPluginInformation()
     {
+        Fixture::loadAllTranslations();
+
         $this->service->returnFixture('v2.0_plugins_Barometer_info.json');
         $plugin = $this->plugins->getPluginInfo('Barometer');
 
@@ -206,7 +209,7 @@ class PluginsTest extends IntegrationTestCase
             'donate' =>
                  [
                     'flattr' => 'https://flattr.com/profile/test1',
-                    'bitcoin' => NULL,
+                    'bitcoin' => null,
                 ],
             'support' =>
                  [
@@ -215,49 +218,49 @@ class PluginsTest extends IntegrationTestCase
                             'key' => 'docs',
                             'value' => 'https://barometer.org/docs/',
                             'type' => 'url',
-                        ],
+                         ],
                          [
                             'name' => 'Wiki',
                             'key' => 'wiki',
                             'value' => 'https://github.com/barometer/piwik/wiki',
                             'type' => 'url',
-                        ],
+                         ],
                          [
                             'name' => 'Forum',
                             'key' => 'forum',
                             'value' => 'https://baromter.forum.org',
                             'type' => 'url',
-                        ],
+                         ],
                          [
                             'name' => 'Email',
                             'key' => 'email',
                             'value' => 'barometer@example.com',
                             'type' => 'email',
-                        ],
+                         ],
                          [
                             'name' => 'IRC',
                             'key' => 'irc',
                             'value' => 'irc://freenode/baromter',
                             'type' => 'text',
-                        ],
+                         ],
                          [
                             'name' => 'Issues / Bugs',
                             'key' => 'issues',
                             'value' => 'https://github.com/barometer/issues',
                             'type' => 'url',
-                        ],
+                         ],
                          [
                             'name' => 'Source',
                             'key' => 'source',
                             'value' => 'https://github.com/barometer/piwik/',
                             'type' => 'url',
-                        ],
+                         ],
                          [
                             'name' => 'RSS',
                             'key' => 'rss',
                             'value' => 'https://barometer.org/feed/',
                             'type' => 'url',
-                        ],
+                         ],
                 ],
             'isTheme' => false,
             'keywords' =>  ['barometer','live',],
@@ -267,9 +270,9 @@ class PluginsTest extends IntegrationTestCase
                     'name' => 'Fabian Becker',
                     'email' => 'test8@example.com',
                     'homepage' => 'http://geekproject.eu',
-                ],],
+                 ],],
             'repositoryUrl' => 'https://github.com/halfdan/piwik-barometer-plugin',
-            'lastUpdated' => 'Intl_4or41Intl_Time_AMt_357Intl_Time_AMt_S12ort',
+            'lastUpdated' => 'Dec 23, 2014',
             'latestVersion' => '0.5.0',
             'numDownloads' => 0,
             'screenshots' =>
@@ -277,25 +280,26 @@ class PluginsTest extends IntegrationTestCase
                     'https://plugins.piwik.org/Barometer/images/0.5.0/piwik-barometer-01.png',
                     'https://plugins.piwik.org/Barometer/images/0.5.0/piwik-barometer-02.png',
                 ],
+            'coverImage' => 'https://plugins.piwik.org/img/categories/insights.png',
             'previews' =>
                  [ [
                     'type' => 'demo',
                     'provider' => 'link',
                     'url' => 'https://demo.piwik.org',
-                ],],
+                 ],],
             'activity' =>
                  [
                     'numCommits' => '31',
                     'numContributors' => '3',
-                    'lastCommitDate' => NULL,
+                    'lastCommitDate' => null,
                 ],
             'featured' => false,
             'isFree' => true,
             'isPaid' => false,
             'isCustomPlugin' => false,
-            'shop' => NULL,
+            'shop' => null,
             'isDownloadable' => true,
-            'consumer' =>  ['license' => NULL,],
+            'consumer' =>  ['license' => null,],
             'isInstalled' => false,
             'isActivated' => false,
             'isInvalid' => true,
@@ -305,7 +309,14 @@ class PluginsTest extends IntegrationTestCase
             'isMissingLicense' => false,
             'changelog' => [
                 'url' => 'http://plugins.piwik.org/Barometer/changelog'
-            ]
+            ],
+            'canBePurchased' => false,
+            'isEligibleForFreeTrial' => false,
+            'priceFrom' => null,
+            'numDownloadsPretty' => '0',
+            'hasDownloadLink' => true,
+            'licenseStatus' => '',
+            'category' => 'customisation',
         ];
         $this->assertEquals($expected, $plugin);
     }
@@ -316,7 +327,47 @@ class PluginsTest extends IntegrationTestCase
         $this->assertSame('plugins/Barometer/info', $this->service->action);
     }
 
-    public function testSearchPlugins_WithSearchAndNoPluginsFound_shouldCallCorrectApi()
+    /**
+     * @dataProvider getPluginInfoShouldSetFreeTrialEligibilityTestData
+     */
+    public function testGetPluginInfoShouldSetFreeTrialEligibility(
+        string $pluginName,
+        string $fixtureName,
+        bool $isEligibleForFreeTrial
+    ): void {
+        $this->service->returnFixture($fixtureName);
+
+        $plugin = $this->plugins->getPluginInfo($pluginName);
+
+        self::assertArrayHasKey('isEligibleForFreeTrial', $plugin);
+        self::assertSame($isEligibleForFreeTrial, $plugin['isEligibleForFreeTrial']);
+    }
+
+    /**
+     * @return iterable<string, array<string>>
+     */
+    public function getPluginInfoShouldSetFreeTrialEligibilityTestData(): iterable
+    {
+        yield 'free plugin' => [
+            'Barometer',
+            'v2.0_plugins_Barometer_info.json',
+            false,
+        ];
+
+        yield 'paid plugin, no prior license' => [
+            'PaidPlugin1',
+            'v2.0_plugins_PaidPlugin1_info.json',
+            true,
+        ];
+
+        yield 'paid plugin, with prior license' => [
+            'PaidPlugin1',
+            'v2.0_plugins_PaidPlugin1_info-access_token-consumer3_paid1_custom2.json',
+            false,
+        ];
+    }
+
+    public function testSearchPluginsWithSearchAndNoPluginsFoundShouldCallCorrectApi()
     {
         $this->service->returnFixture('v2.0_plugins-query-nomatchforthisquery.json');
         $this->plugins->setPluginsHavingUpdateCache([]);
@@ -341,7 +392,7 @@ class PluginsTest extends IntegrationTestCase
         $this->assertSame($params, $this->service->params);
     }
 
-    public function testSearchThemes_ShouldCallCorrectApi()
+    public function testSearchThemesShouldCallCorrectApi()
     {
         $this->service->returnFixture('v2.0_themes.json');
         $this->plugins->setPluginsHavingUpdateCache([]);
@@ -405,7 +456,7 @@ class PluginsTest extends IntegrationTestCase
             }
         }
     }
-    
+
     public function testGetAllPaidPluginsShouldFetchOnlyPaidPlugins()
     {
         $this->plugins->getAllPaidPlugins();

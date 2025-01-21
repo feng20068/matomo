@@ -1,8 +1,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 /* eslint-disable max-classes-per-file */
@@ -68,7 +68,7 @@ type AnyFunction = (...params:any[]) => any; // eslint-disable-line
  */
 function defaultErrorCallback(deferred: XMLHttpRequest, status: string): void {
   // do not display error message if request was aborted
-  if (status === 'abort') {
+  if (status === 'abort' || !deferred || deferred.status === 0) {
     return;
   }
 
@@ -77,13 +77,10 @@ function defaultErrorCallback(deferred: XMLHttpRequest, status: string): void {
     return;
   }
 
-  const loadingError = $('#loadingError');
   if (Piwik_Popover.isOpen() && deferred && deferred.status === 500) {
-    if (deferred && deferred.status === 500) {
-      $(document.body).html(piwikHelper.escape(deferred.responseText));
-    }
+    $(document.body).html(piwikHelper.escape(deferred.responseText));
   } else {
-    loadingError.show();
+    $('#loadingError').show();
   }
 }
 
@@ -202,6 +199,12 @@ export default class AjaxHelper<T = any> { // eslint-disable-line
     if (Array.isArray(params)) {
       helper.setBulkRequests(...(params as QueryParameters[]));
     } else {
+      Object.keys(params).forEach((key) => {
+        if (/password/i.test(key)) {
+          throw new Error(`Password parameters are not allowed to be sent as GET parameter. Please send ${key} as POST parameter instead.`);
+        }
+      });
+
       helper.addParams({
         module: 'API',
         format: options.format || 'json',
@@ -527,7 +530,7 @@ export default class AjaxHelper<T = any> { // eslint-disable-line
           return;
         }
 
-        if (xhr.statusText === 'abort') {
+        if (xhr.statusText === 'abort' || xhr.status === 0) {
           return;
         }
 

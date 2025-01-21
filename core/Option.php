@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik;
 
 use Piwik\Container\StaticContainer;
@@ -141,7 +142,7 @@ class Option
     private static function getInstance()
     {
         if (self::$instance == null) {
-            self::$instance = new self;
+            self::$instance = new self();
         }
 
         return self::$instance;
@@ -252,7 +253,7 @@ class Option
     {
         $name = str_replace('\_', '###NOREPLACE###', $name);
         $name = str_replace('_', '\_', $name);
-        $name = str_replace( '###NOREPLACE###', '\_', $name);
+        $name = str_replace('###NOREPLACE###', '\_', $name);
         return $name;
     }
 

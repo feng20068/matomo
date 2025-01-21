@@ -2,9 +2,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 use Piwik\Access;
@@ -132,6 +131,7 @@ function createWebsite($dateTime)
     // Clear the memory Website cache
     Site::clearCache();
     Cache::deleteCacheWebsiteAttributes($idSite);
+    Cache::updateGeneralCache();
 
     return $idSite;
 }
@@ -212,6 +212,8 @@ copy(PIWIK_INCLUDE_PATH . '/../tests/PHPUnit/Fixtures/LatestStableInstall/GitCom
 $settings = StaticContainer::get(CoreUpdater\SystemSettings::class);
 $settings->releaseChannel->setValue('git_commit');
 $settings->releaseChannel->save();
+
+\Piwik\UpdateCheck::check(true); // ensure new version is detected correctly
 
 print "set release channel\n";
 

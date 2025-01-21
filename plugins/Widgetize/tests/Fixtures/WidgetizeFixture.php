@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Widgetize\tests\Fixtures;
 
 use Piwik\Plugins\Goals;
@@ -51,6 +53,5 @@ class WidgetizeFixture extends Fixture
         foreach ($this->goals as $goal) {
             $api->addGoal($this->idSite, $goal['name'], $goal['match'], $goal['pattern'], $goal['patternType'], $caseSensitive = false, $goal['revenue'], $allowMultipleConversionsPerVisit = false);
         }
-
     }
 }

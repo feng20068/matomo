@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\API;
 
 use Exception;
@@ -82,7 +83,7 @@ class DocumentationGenerator
     {
         $str = '';
         $str .= "\n<a name='$moduleName' id='$moduleName'></a>";
-        if($displayTitlesAsEnrichedHeadline) {
+        if ($displayTitlesAsEnrichedHeadline) {
             $str .= "<div vue-entry=\"CoreHome.ContentBlock\" content-title='Module " . $moduleName . "'>";
         } else {
             $str .= "<h2>Module " . $moduleName . "</h2>";
@@ -105,7 +106,7 @@ class DocumentationGenerator
             $str .= "</div>\n";
         }
 
-        if($displayTitlesAsEnrichedHeadline) {
+        if ($displayTitlesAsEnrichedHeadline) {
             $str .= "</div>";
         }
 
@@ -269,15 +270,15 @@ class DocumentationGenerator
         $aParameters['labelSeries'] = false;
         $aParameters['flat'] = false;
         $aParameters['include_aggregate_rows'] = false;
-        $aParameters['filter_offset'] = false; 
-        $aParameters['filter_limit'] = false; 
-        $aParameters['filter_sort_column'] = false; 
-        $aParameters['filter_sort_order'] = false; 
-        $aParameters['filter_excludelowpop'] = false; 
-        $aParameters['filter_excludelowpop_value'] = false; 
-        $aParameters['filter_column_recursive'] = false; 
-        $aParameters['filter_pattern'] = false; 
-        $aParameters['filter_pattern_recursive'] = false; 
+        $aParameters['filter_offset'] = false;
+        $aParameters['filter_limit'] = false;
+        $aParameters['filter_sort_column'] = false;
+        $aParameters['filter_sort_order'] = false;
+        $aParameters['filter_excludelowpop'] = false;
+        $aParameters['filter_excludelowpop_value'] = false;
+        $aParameters['filter_column_recursive'] = false;
+        $aParameters['filter_pattern'] = false;
+        $aParameters['filter_pattern_recursive'] = false;
         $aParameters['filter_truncate'] = false;
         $aParameters['hideColumns'] = false;
         $aParameters['hideColumnsRecursively'] = false;
@@ -314,9 +315,9 @@ class DocumentationGenerator
         foreach ($aParameters as $nameVariable => &$defaultValue) {
             if (isset($knowExampleDefaultParametersValues[$nameVariable])) {
                 $defaultValue = $knowExampleDefaultParametersValues[$nameVariable];
-            } // if there isn't a default value for a given parameter,
-            // we need a 'know default value' or we can't generate the link
-            elseif ($defaultValue instanceof NoDefaultValue) {
+            } elseif ($defaultValue instanceof NoDefaultValue) {
+                // if there isn't a default value for a given parameter,
+                // we need a 'know default value' or we can't generate the link
                 return false;
             }
         }
@@ -343,7 +344,7 @@ class DocumentationGenerator
 
             $str = '';
 
-            if(!empty($parameter['type'])) {
+            if (!empty($parameter['type'])) {
                 $prefix = $parameter['allowsNull'] ? '?' : '';
                 $str = '<i>' . $prefix . $parameter['type'] . '</i> ';
             }

@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Goals;
 
 use Piwik\Piwik;
@@ -131,6 +132,7 @@ class Pages
         $widgets[] = $config;
 
         $container = $this->createWidgetizableWidgetContainer('EcommerceOverview', $subcategory, $widgets);
+        $container->setName(Piwik::translate('Goals_EcommerceOverview'));
         return array($container);
     }
 
@@ -275,10 +277,10 @@ class Pages
             }
 
             foreach ($reports as $report) {
-
                 $order++;
 
-                if (empty($report['viewDataTable'])
+                if (
+                    empty($report['viewDataTable'])
                     && empty($report['abandonedCarts'])
                 ) {
                     $report['viewDataTable'] = 'tableGoals';
@@ -348,5 +350,4 @@ class Pages
             return $factory->createWidget();
         }
     }
-
 }

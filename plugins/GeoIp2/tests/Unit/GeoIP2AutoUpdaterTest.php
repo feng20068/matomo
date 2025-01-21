@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\GeoIp2\tests\Unit;
@@ -23,7 +24,8 @@ class PublicGeoIP2AutoUpdater extends GeoIP2AutoUpdater
         return parent::fetchPaidDbIpUrl($url);
     }
 
-    public static function checkGeoIPUpdateUrl($url) {
+    public static function checkGeoIPUpdateUrl($url)
+    {
         return parent::checkGeoIPUpdateUrl($url);
     }
 }

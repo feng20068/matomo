@@ -3,15 +3,17 @@
  *
  * Period selector screenshot tests.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 describe("PeriodSelector", function () {
-    var generalParams = 'idSite=1&period=day&date=2012-01-01';
-    var url = '?module=CoreHome&action=index&' + generalParams + '#?' + generalParams + '&category=General_Actions&subcategory=General_Pages';
+    const parentSuite = this;
 
-    var selector = '#periodString,#periodString .dropdown';
+    const generalParams = 'idSite=1&period=day&date=2012-01-01';
+    const url = '?module=CoreHome&action=index&' + generalParams + '#?' + generalParams + '&category=General_Actions&subcategory=General_Pages';
+
+    const selector = '#periodString,#periodString .dropdown';
 
     it("should load correctly", async function() {
         await page.goto(url);
@@ -125,6 +127,94 @@ describe("PeriodSelector", function () {
         await page.waitForTimeout(250); // wait for animation
 
         expect(await page.screenshotSelector(selector)).to.matchImage('custom_comparison');
+    });
+
+    it("should close on click if previously opened", async function () {
+      await page.click('.periodSelector .title');
+      expect(await page.screenshotSelector(selector)).to.matchImage('closed');
+    });
+
+    it("should move forward two days when next period selector is clicked twice", async function () {
+        await page.goto(url);
+
+        await page.click('.periodSelector .move-period-next');
+        await page.waitForNetworkIdle();
+        await page.click('.periodSelector .move-period-next');
+
+        await page.waitForNetworkIdle();
+        await page.mouse.move(-10, -10);
+
+        expect(await page.screenshotSelector(selector)).to.matchImage('two_days_forward');
+    });
+
+    it("should move back one days when previous period selector is clicked once", async function () {
+        await page.click('.periodSelector .move-period-prev');
+
+        await page.waitForNetworkIdle();
+        await page.mouse.move(-10, -10);
+
+        expect(await page.screenshotSelector(selector)).to.matchImage('one_day_back');
+    });
+
+    it("should display disabled previous period button when at the start of site tracking", async function () {
+        const generalParams = 'idSite=1&period=day&date=2011-01-01';
+        const url = '?module=CoreHome&action=index&' + generalParams + '#?' + generalParams + '&category=General_Actions&subcategory=General_Pages';
+
+        await page.goto(url);
+
+        expect(await page.screenshotSelector(selector)).to.matchImage('disabled_previous_period');
+    });
+
+    it("should hide prev/next buttons when dates range selection", async function () {
+        const generalParams = 'idSite=1&period=range&date=2011-01-01,2011-02-01';
+        const url = '?module=CoreHome&action=index&' + generalParams + '#?' + generalParams + '&category=General_Actions&subcategory=General_Pages';
+
+        await page.goto(url);
+
+        await page.evaluate(function () {
+          // disable page propagation again for further tests
+          broadcast.propagateNewPage = function () {};
+        });
+
+        expect(await page.screenshotSelector(selector)).to.matchImage('hide_prevnext_for_range');
+    });
+
+    describe('match selected compare settings with URL', async function() {
+        this.title = parentSuite.title; // to make sure the screenshot prefix is the same
+
+        const getSelectedPeriodType = async function () {
+          const compareToTypeInput = await page.$('#comparePeriodToDropdown input');
+          const compareToTypeValue = await compareToTypeInput.getProperty('value');
+
+          return await compareToTypeValue.jsonValue();
+        };
+
+        it('should select "previous period" from URL', async function () {
+          await page.goto(url + '&comparePeriods[]=day&comparePeriodType=previousPeriod&compareDates[]=2011-12-31');
+          await page.waitForNetworkIdle();
+
+          expect(await getSelectedPeriodType()).to.match(/Period/);
+        });
+
+        it('should select "previous year" from URL', async function () {
+          await page.goto(url + '&comparePeriods[]=day&comparePeriodType=previousYear&compareDates[]=2011-01-01');
+          await page.waitForNetworkIdle();
+
+          expect(await getSelectedPeriodType()).to.match(/Year/);
+        });
+
+        it ('should select "custom" from URL', async function() {
+          await page.goto(url + '&comparePeriods[]=range&comparePeriodType=custom&compareDates[]=2013-01-01,2013-01-02');
+          await page.waitForNetworkIdle();
+
+          expect(await getSelectedPeriodType()).to.match(/Custom/);
+
+          // ensure inputs are properly filled
+          await page.click('.periodSelector .title');
+          await page.waitForSelector('#calendarApply', {visible: true, timeout: 250});
+
+          expect(await page.screenshotSelector(selector)).to.matchImage('custom_comparison_url');
+        });
     });
 
     it('should show an error when invalid date/period combination is given', async function () {

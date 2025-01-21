@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\ScheduledReports\tests\Fixtures;
 
 use Piwik\Common;
@@ -38,6 +40,5 @@ class ReportSubscription extends Fixture
         API::getInstance()->addReport($this->idSite, 'description', 'day', 3, $reportType, $reportFormat, $reports, $parameters);
 
         Db::query("INSERT INTO " . Common::prefixTable('report_subscriptions') . "(idreport, token, email) VALUES (1, 'mycustomtoken', 'any@matomo.org')");
-
     }
 }

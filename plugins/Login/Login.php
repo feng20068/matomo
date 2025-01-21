@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Login;
 
 use Exception;
@@ -18,6 +19,7 @@ use Piwik\IP;
 use Piwik\NoAccessException;
 use Piwik\Piwik;
 use Piwik\Plugins\Login\Security\BruteForceDetection;
+use Piwik\Plugins\Login\Security\LoginFromDifferentCountryDetection;
 use Piwik\Session;
 use Piwik\SettingsServer;
 
@@ -59,23 +61,26 @@ class Login extends \Piwik\Plugin
             'Controller.Login.acceptInvitation' => 'beforeLoginCheckBruteForce',
             'Controller.Login.declineInvitation' => 'beforeLoginCheckBruteForce',
             'Login.authenticate.successful'    => 'beforeLoginCheckBruteForce',
-            'Login.beforeLoginCheckAllowed'  => 'beforeLoginCheckBruteForce',
-            'Login.recordFailedLoginAttempt'  => 'onFailedLoginRecordAttempt', // record any failed attempt in UI
+            'Login.beforeLoginCheckAllowed'    => 'beforeLoginCheckBruteForce',
+            'Login.recordFailedLoginAttempt'   => 'onFailedLoginRecordAttempt', // record any failed attempt in UI
             'Login.authenticate.failed'        => 'onFailedLoginRecordAttempt', // record any failed attempt in UI
-            'API.Request.authenticate.failed' => 'onFailedAPILogin', // record any failed attempt in Reporting API
+            'API.Request.authenticate.failed'  => 'onFailedAPILogin', // record any failed attempt in Reporting API
             'Tracker.Request.authenticate.failed' => 'onFailedLoginRecordAttempt', // record any failed attempt in Tracker API
+
+            // for 'Login from a different country' notification
+            'Login.authenticate.processSuccessfulSession.end' => 'checkLoginFromAnotherCountry',
         );
 
         $loginPlugin = Piwik::getLoginPluginName();
 
         if ($loginPlugin && $loginPlugin !== 'Login') {
-            $hooks['Controller.'.$loginPlugin.'.logme']           = 'beforeLoginCheckBruteForce';
-            $hooks['Controller.'.$loginPlugin. '.']               = 'beforeLoginCheckBruteForce';
-            $hooks['Controller.'.$loginPlugin.'.index']           = 'beforeLoginCheckBruteForce';
-            $hooks['Controller.'.$loginPlugin.'.confirmResetPassword'] = 'beforeLoginCheckBruteForce';
-            $hooks['Controller.'.$loginPlugin.'.confirmPassword'] = 'beforeLoginCheckBruteForce';
-            $hooks['Controller.'.$loginPlugin.'.resetPassword']   = 'beforeLoginCheckBruteForce';
-            $hooks['Controller.'.$loginPlugin.'.login']           = 'beforeLoginCheckBruteForce';
+            $hooks['Controller.' . $loginPlugin . '.logme']           = 'beforeLoginCheckBruteForce';
+            $hooks['Controller.' . $loginPlugin . '.']                = 'beforeLoginCheckBruteForce';
+            $hooks['Controller.' . $loginPlugin . '.index']           = 'beforeLoginCheckBruteForce';
+            $hooks['Controller.' . $loginPlugin . '.confirmResetPassword'] = 'beforeLoginCheckBruteForce';
+            $hooks['Controller.' . $loginPlugin . '.confirmPassword'] = 'beforeLoginCheckBruteForce';
+            $hooks['Controller.' . $loginPlugin . '.resetPassword']   = 'beforeLoginCheckBruteForce';
+            $hooks['Controller.' . $loginPlugin . '.login']           = 'beforeLoginCheckBruteForce';
         }
 
         return $hooks;
@@ -125,7 +130,6 @@ class Login extends \Piwik\Plugin
             // if eg API is called etc.
             $this->hasAddedFailedAttempt = true;
         }
-
     }
 
     public function onFailedAPILogin()
@@ -134,15 +138,26 @@ class Login extends \Piwik\Plugin
 
         // Only throw an exception if this is an API request
         if ($this->isModuleIsAPI()) {
-
             // Throw an exception if a token was provided but it was invalid
-            if (Request::isTokenAuthPosted()) {
+            if (Request::isTokenAuthProvidedSecurely()) {
                 throw new NoAccessException('Unable to authenticate with the provided token. It is either invalid or expired.');
             } else {
                 throw new NoAccessException('Unable to authenticate with the provided token. It is either invalid, expired or is required to be sent as a POST parameter.');
             }
         }
+    }
 
+    public function checkLoginFromAnotherCountry($login)
+    {
+        if ('anonymous' === $login) {
+            // do not send notification to "anonymous"
+            return;
+        }
+
+        $loginFromDifferentCountryDetection = StaticContainer::get(LoginFromDifferentCountryDetection::class);
+        if ($loginFromDifferentCountryDetection->isEnabled()) {
+            $loginFromDifferentCountryDetection->check($login);
+        }
     }
 
     public function beforeLoginCheckBruteForce()
@@ -157,7 +172,8 @@ class Login extends \Piwik\Plugin
 
         // now check that user login (from any ip) is not blocked
         $login = $this->getUsernameUsedInPasswordLogin();
-        if (empty($login)
+        if (
+            empty($login)
             || $login == 'anonymous'
         ) {
             return; // can't do the check if we don't know the login
@@ -179,7 +195,7 @@ class Login extends \Piwik\Plugin
         $jsFiles[] = "plugins/Login/javascripts/bruteforcelog.js";
     }
 
-   public function getStylesheetFiles(&$stylesheetFiles)
+    public function getStylesheetFiles(&$stylesheetFiles)
     {
         $stylesheetFiles[] = "plugins/Login/stylesheets/login.less";
         $stylesheetFiles[] = "plugins/Login/stylesheets/variables.less";
@@ -253,6 +269,4 @@ class Login extends \Piwik\Plugin
 
         return $login;
     }
-
-
 }

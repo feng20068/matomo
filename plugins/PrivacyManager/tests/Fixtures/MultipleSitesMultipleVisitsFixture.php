@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\PrivacyManager\tests\Fixtures;
 
 use Piwik\Common;
@@ -29,7 +31,7 @@ require_once PIWIK_INCLUDE_PATH . '/tests/PHPUnit/Framework/Mock/LocationProvide
 
 class TestLogFooBarBaz extends LogTable
 {
-    const TABLE = 'log_foo_bar_baz';
+    public const TABLE = 'log_foo_bar_baz';
 
     public function install()
     {
@@ -66,7 +68,7 @@ class TestLogFooBarBaz extends LogTable
 
 class TestLogFooBar extends LogTable
 {
-    const TABLE = 'log_foo_bar';
+    public const TABLE = 'log_foo_bar';
 
     public function install()
     {
@@ -103,7 +105,7 @@ class TestLogFooBar extends LogTable
 
 class TestLogFoo extends LogTable
 {
-    const TABLE = 'log_foo';
+    public const TABLE = 'log_foo';
 
     public function install()
     {
@@ -137,13 +139,11 @@ class TestLogFoo extends LogTable
     {
         return 'idlogfoo';
     }
-
 }
 
 
 class MultipleSitesMultipleVisitsFixture extends Fixture
 {
-
     private static $countryCode = array(
         'CA', 'CN', 'DE', 'ES', 'FR', 'IE', 'IN', 'IT', 'MX', 'PT', 'RU', 'GB', 'US'
     );
@@ -381,10 +381,14 @@ class MultipleSitesMultipleVisitsFixture extends Fixture
         for ($day = 0; $day < $numIterations; $day++) {
             // we track over several days to make sure we have some data to aggregate in week reports
             // NOTE: some action times are out of order in visits on purpose
+            //       the first iteration always uses the tracking time of the previous site
 
             if ($day > 0) {
                 $this->trackingTime = Date::factory($this->dateTime)->addDay($day * 3)->getDatetime();
             }
+
+            // track visits for each site without overlapping times
+            $this->trackingTime = Date::factory($this->trackingTime)->subSeconds($idSite)->getDateTime();
 
             $this->tracker = self::getTracker($idSite, $this->trackingTime, $defaultInit = true);
             $this->tracker->enableBulkTracking();
@@ -493,7 +497,7 @@ class MultipleSitesMultipleVisitsFixture extends Fixture
             $this->tracker->setUrl('http://www.helloworld.com/hello/world' . $userId . '/' . $j);
 
             $numPerformanceTimes = count(self::$performanceTimes);
-            call_user_func_array([$this->tracker, 'setPerformanceTimings'], self::$performanceTimes[($userId+$j) % $numPerformanceTimes]);
+            call_user_func_array([$this->tracker, 'setPerformanceTimings'], self::$performanceTimes[($userId + $j) % $numPerformanceTimes]);
 
             $this->tracker->doTrackPageView('Hello World ' . $j);
         }
@@ -520,7 +524,7 @@ class MultipleSitesMultipleVisitsFixture extends Fixture
         if ($userId % 4 === 0) {
             $this->tracker->doTrackContentImpression('Product 1', '/path/product1.jpg', 'http://product1.example.com');
             $this->tracker->doTrackContentImpression('Product 1', 'Buy Product 1 Now!', 'http://product1.example.com');
-            $this->tracker->doTrackContentImpression('Product 2', '/path/product2.jpg',  'http://product' . $userId . '.example.com');
+            $this->tracker->doTrackContentImpression('Product 2', '/path/product2.jpg', 'http://product' . $userId . '.example.com');
             $this->tracker->doTrackContentImpression('Product 3', 'Product 3 on sale', 'http://product3.example.com');
             $this->tracker->doTrackContentImpression('Product 4');
             $this->tracker->doTrackContentInteraction('click', 'Product 3', 'Product 3 on sale', 'http://product3.example.com');
@@ -551,7 +555,7 @@ class MultipleSitesMultipleVisitsFixture extends Fixture
         }
     }
 
-    public static function  cleanResult($result)
+    public static function cleanResult($result)
     {
         if (!empty($result) && is_array($result)) {
             foreach ($result as $key => $value) {
@@ -567,6 +571,4 @@ class MultipleSitesMultipleVisitsFixture extends Fixture
 
         return $result;
     }
-
-
 }

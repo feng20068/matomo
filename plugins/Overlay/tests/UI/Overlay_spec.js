@@ -3,8 +3,8 @@
  *
  * Overlay screenshot tests.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 describe("Overlay", function () {
     this.timeout(0);
@@ -58,6 +58,8 @@ describe("Overlay", function () {
 
             it("should load correctly" + descAppendix, async function () {
                 await page.goto(getUrl(useTokenAuth));
+                // wait for sidebar to be finished loading
+                await page.waitForSelector('#overlaySidebar', {visible: true});
 
                 await removeOptOutIframe(page);
                 expect(await page.screenshot({fullPage: true})).to.matchImage('loaded');
@@ -82,6 +84,8 @@ describe("Overlay", function () {
 
             it("should show stats for new links when dropdown opened" + descAppendix, async function () {
                 await page.reload();
+                // wait for sidebar to be finished loading
+                await page.waitForSelector('#overlaySidebar', {visible: true});
                 const frame = page.frames().find(f => f.name() === 'overlayIframe');
                 await (await frame.$('.dropdown-toggle')).click();
 
@@ -159,7 +163,8 @@ describe("Overlay", function () {
 
             it("should load an overlay with segment" + descAppendix, async function () {
                 await page.goto(getUrl(useTokenAuth, true));
-                await page.waitForNetworkIdle();
+                // wait for sidebar to be finished loading
+                await page.waitForSelector('#overlaySidebar', {visible: true});
 
                 await page.waitForTimeout(2000);
 
@@ -194,6 +199,16 @@ describe("Overlay", function () {
         await popup.waitForTimeout(2500);
 
         await removeOptOutIframe(popup);
+
+        await popup.waitForSelector('#overlayLoading', {hidden: true});
+        await popup.click('#overlayDateRangeSelection');
+
+        // Select yesterday
+        await popup.waitForSelector('#overlayDateRangeSelection .select-dropdown li:nth-child(2)', {visible: true});
+        await popup.click('#overlayDateRangeSelection .select-dropdown li:nth-child(2)');
+        await page.waitForNetworkIdle();
+        await popup.waitForSelector('#overlayLoading', {hidden: true});
+
         expect(await popup.screenshot({fullPage: true})).to.matchImage('loaded_from_actions');
     });
 

@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tests\Fixtures;
 
 use Piwik\Date;
@@ -25,7 +27,7 @@ class TwoSitesManyVisitsOverSeveralDaysWithSearchEngineReferrers extends Fixture
         'peace "," not war', // testing a keyword containing ,
         'justice )(&^#%$ NOT \'" corruption!',
     );
-    CONST EXCLUDED_REFERRER_URL = 'https://excludedreferrer123.com';
+    public const EXCLUDED_REFERRER_URL = 'https://excludedreferrer123.com';
 
     public function setUp(): void
     {
@@ -43,9 +45,20 @@ class TwoSitesManyVisitsOverSeveralDaysWithSearchEngineReferrers extends Fixture
         $siteCreated = $this->dateTime;
 
         if (!self::siteCreated($idSite = 1)) {
-            self::createWebsite($siteCreated, 0, false, false, 1, null,
-                null, null, null, 0, null,
-                self::EXCLUDED_REFERRER_URL);
+            self::createWebsite(
+                $siteCreated,
+                0,
+                false,
+                false,
+                1,
+                null,
+                null,
+                null,
+                null,
+                0,
+                null,
+                self::EXCLUDED_REFERRER_URL
+            );
         }
 
         if (!self::goalExists($idSite = 1, $idGoal = 1)) {
@@ -54,7 +67,15 @@ class TwoSitesManyVisitsOverSeveralDaysWithSearchEngineReferrers extends Fixture
 
         if (!self::goalExists($idSite = 1, $idGoal = 2)) {
             API::getInstance()->addGoal(
-                $this->idSite, 'another triggered php', 'manually', '', '', false, false, true);
+                $this->idSite,
+                'another triggered php',
+                'manually',
+                '',
+                '',
+                false,
+                false,
+                true
+            );
         }
 
         if (!self::siteCreated($idSite = 2)) {
@@ -85,7 +106,7 @@ class TwoSitesManyVisitsOverSeveralDaysWithSearchEngineReferrers extends Fixture
             $t->setUrlReferrer('http://www.referrer' . ($daysIntoPast % 5) . '.com/theReferrerPage' . ($daysIntoPast % 2) . '.html');
             $t->setUrl('http://example.org/my/dir/page' . ($daysIntoPast % 4) . '?foo=bar&baz=bar');
             $t->setForceVisitDateTime($visitDateTime);
-            $t->setPerformanceTimings(35+$daysIntoPast, 125+$daysIntoPast, 356+$daysIntoPast, 255+$daysIntoPast, 351+$daysIntoPast, 66+$daysIntoPast);
+            $t->setPerformanceTimings(35 + $daysIntoPast, 125 + $daysIntoPast, 356 + $daysIntoPast, 255 + $daysIntoPast, 351 + $daysIntoPast, 66 + $daysIntoPast);
             self::assertTrue($t->doTrackPageView('incredible title ' . ($daysIntoPast % 3)));
 
             // Trigger goal n°1 once
@@ -99,7 +120,7 @@ class TwoSitesManyVisitsOverSeveralDaysWithSearchEngineReferrers extends Fixture
             // VISIT 2: search engine
             $t->setForceVisitDateTime(Date::factory($visitDateTime)->addHour(3)->getDatetime());
             $t->setUrlReferrer('http://google.com/search?q=' . urlencode($this->keywords[$daysIntoPast % 3]));
-            $t->setPerformanceTimings(28+$daysIntoPast, 215+$daysIntoPast, 288+$daysIntoPast, 155+$daysIntoPast, 236+$daysIntoPast, 50+$daysIntoPast);
+            $t->setPerformanceTimings(28 + $daysIntoPast, 215 + $daysIntoPast, 288 + $daysIntoPast, 155 + $daysIntoPast, 236 + $daysIntoPast, 50 + $daysIntoPast);
             self::assertTrue($t->doTrackPageView('not an incredible title '));
 
             // VISIT 1 for idSite = 2
@@ -109,7 +130,7 @@ class TwoSitesManyVisitsOverSeveralDaysWithSearchEngineReferrers extends Fixture
 
             $t->setForceVisitDateTime($visitDateTime);
             $t->setUrl('http://example.org/');
-            $t->setPerformanceTimings(0, 157+$daysIntoPast, 215+$daysIntoPast, 322+$daysIntoPast, 199+$daysIntoPast, 99+$daysIntoPast);
+            $t->setPerformanceTimings(0, 157 + $daysIntoPast, 215 + $daysIntoPast, 322 + $daysIntoPast, 199 + $daysIntoPast, 99 + $daysIntoPast);
             self::assertTrue($t->doTrackPageView('so-so page title'));
         }
         self::checkBulkTrackingResponse($t->doBulkTrack());

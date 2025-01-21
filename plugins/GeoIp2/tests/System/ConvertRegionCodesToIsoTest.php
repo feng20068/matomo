@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\GeoIp2\tests\System;
 
 use Piwik\Option;
@@ -48,7 +49,7 @@ class ConvertRegionCodesToIsoTest extends IntegrationTestCase
         $t->setVisitorId('fed33392d3a48ab2');
         $t->setForceVisitDateTime('2017-05-10 12:36:00');
         $t->setTokenAuth(Fixture::getTokenAuth());
-        $t->setIp(rand(1, 256).'.'.rand(1, 256).'.'.rand(1, 256).'.'.rand(1, 256));
+        $t->setIp(rand(1, 256) . '.' . rand(1, 256) . '.' . rand(1, 256) . '.' . rand(1, 256));
         $t->setUserId('userid.email@example.org');
         $t->setCountry($country);
         $t->setRegion($region);
@@ -68,7 +69,7 @@ class ConvertRegionCodesToIsoTest extends IntegrationTestCase
         $t->setVisitorId('fed33392d3a48ab2');
         $t->setForceVisitDateTime('2017-05-15 12:36:00');
         $t->setTokenAuth(Fixture::getTokenAuth());
-        $t->setIp(rand(1, 256).'.'.rand(1, 256).'.'.rand(1, 256).'.'.rand(1, 256));
+        $t->setIp(rand(1, 256) . '.' . rand(1, 256) . '.' . rand(1, 256) . '.' . rand(1, 256));
         $t->setUserId('userid.email@example.org');
         $t->setCountry($country);
         $t->setRegion($region);
@@ -87,7 +88,7 @@ class ConvertRegionCodesToIsoTest extends IntegrationTestCase
         Option::delete(ConvertRegionCodesToIso::OPTION_NAME);
     }
 
-    public function testExecute_AlreadyConverted()
+    public function testExecuteAlreadyConverted()
     {
         Option::set(ConvertRegionCodesToIso::OPTION_NAME, true);
 
@@ -96,9 +97,9 @@ class ConvertRegionCodesToIsoTest extends IntegrationTestCase
         $this->assertRegExp('/Converting region codes already done/', $result);
     }
 
-    public function testExecute_ShouldConvertRegionCodes()
+    public function testExecuteShouldConvertRegionCodes()
     {
-        Option::set(GeoIp2::SWITCH_TO_ISO_REGIONS_OPTION_NAME, mktime(0,0,0,5,12,2017));
+        Option::set(GeoIp2::SWITCH_TO_ISO_REGIONS_OPTION_NAME, mktime(0, 0, 0, 5, 12, 2017));
 
         self::trackVisit('gr', '14'); // should become A
         self::trackVisit('ir', '03'); // should become 08

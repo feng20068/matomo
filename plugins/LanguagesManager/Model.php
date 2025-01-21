@@ -1,12 +1,14 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  *
  *
  */
+
 namespace Piwik\Plugins\LanguagesManager;
 
 use Piwik\Common;
@@ -58,7 +60,7 @@ class Model
     }
 
     /**
-     * Returns whether the given user has chosen to use 12 hour clock
+     * Returns whether the given user has chosen to use 12-hour clock
      *
      * @param $userLogin
      * @return bool
@@ -71,7 +73,7 @@ class Model
     }
 
     /**
-     * Sets whether the given user wants to use 12 hout clock
+     * Sets whether the given user wants to use 12-hour clock
      *
      * @param string $login
      * @param string $use12HourClock

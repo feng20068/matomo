@@ -3,8 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreAdminHome\Commands;
@@ -17,7 +17,6 @@ use Spyc;
 
 class ConfigGet extends ConsoleCommand
 {
-
     //SystemConfigSetting throws an error if the setting name is empty, so use a fake one that is unlikely to actually exist, which we will check for later.
     private const NO_SETTING_NAME_FOUND_PLACEHOLDER = 'ConfigGet_FAKE_SETTING_NAME';
     // Valid output formats.

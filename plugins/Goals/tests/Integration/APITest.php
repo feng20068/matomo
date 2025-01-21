@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Goals\tests\Integration;
@@ -26,21 +27,29 @@ class APITest extends IntegrationTestCase
      */
     private $api;
 
-    private $idSite = 1;
+    /**
+     * @var int
+     */
+    private $idSite;
+
+    /**
+     * @var int
+     */
+    private $idSiteTwo;
 
     public function setUp(): void
     {
         parent::setUp();
         $this->api = API::getInstance();
 
-        Fixture::createWebsite('2014-01-01 00:00:00');
-        Fixture::createWebsite('2014-01-01 00:00:00');
+        $this->idSite = Fixture::createWebsite('2014-01-01 00:00:00');
+        $this->idSiteTwo = Fixture::createWebsite('2014-01-01 00:00:00');
     }
 
     /**
      * @dataProvider getTestDataForNumericMatchAttribute
      */
-    public function test_addGoal_handlesAppropriatePatternTypesForNumericAttributes($matchAttribute, $patternType, $pattern, $expectException)
+    public function testAddGoalHandlesAppropriatePatternTypesForNumericAttributes($matchAttribute, $patternType, $pattern, $expectException)
     {
         if ($expectException) {
             $this->expectException(\Exception::class);
@@ -60,42 +69,42 @@ class APITest extends IntegrationTestCase
         ];
     }
 
-    public function test_addGoal_shouldReturnGoalId_IfCreationIsSuccessful()
+    public function testAddGoalShouldReturnGoalIdIfCreationIsSuccessful()
     {
         $idGoal = $this->createAnyGoal();
 
         $this->assertSame(1, $idGoal);
     }
 
-    public function test_addGoal_shouldSucceed_IfOnlyMinimumFieldsGiven()
+    public function testAddGoalShouldSucceedIfOnlyMinimumFieldsGiven()
     {
         $idGoal = $this->api->addGoal($this->idSite, 'MyName', 'url', 'http://www.test.de/?pk_campaign=1', 'exact', false, false, false, 'test description');
 
         $this->assertGoal($idGoal, 'MyName', 'test description', 'url', 'http://www.test.de/?pk_campaign=1', 'exact', 0, 0, 0);
     }
 
-    public function test_addGoal_ShouldSucceed_IfAllFieldsGiven()
+    public function testAddGoalShouldSucceedIfAllFieldsGiven()
     {
         $idGoal = $this->api->addGoal($this->idSite, 'MyName', 'url', 'http://www.test.de', 'exact', true, 50, true, 'desc', true);
 
         $this->assertGoal($idGoal, 'MyName', 'desc', 'url', 'http://www.test.de', 'exact', 1, 50, 1, 1);
     }
 
-    public function test_addGoal_ShouldSucceed_IfExactPageTitle()
+    public function testAddGoalShouldSucceedIfExactPageTitle()
     {
         $idGoal = $this->api->addGoal($this->idSite, 'MyName', 'title', 'normal title', 'exact', true, 50, true);
 
         $this->assertGoal($idGoal, 'MyName', '', 'title', 'normal title', 'exact', 1, 50, 1);
     }
 
-    public function test_addGoal_ShouldSucceed_IfRegexPageTitle()
+    public function testAddGoalShouldSucceedIfRegexPageTitle()
     {
         $idGoal = $this->api->addGoal($this->idSite, 'MyName', 'title', 'rere(.*)', 'regex', true, 50, true);
 
         $this->assertGoal($idGoal, 'MyName', '', 'title', 'rere(.*)', 'regex', 1, 50, 1);
     }
 
-    public function test_addGoal_shouldThrowException_IfPatternTypeIsInvalid()
+    public function testAddGoalShouldThrowExceptionIfPatternTypeIsInvalid()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('General_ValidatorErrorXNotWhitelisted');
@@ -103,7 +112,7 @@ class APITest extends IntegrationTestCase
         $this->api->addGoal($this->idSite, 'MyName', 'external_website', 'www.test.de', 'invalid');
     }
 
-    public function test_addGoal_shouldThrowException_IfPatternRegexIsInvalid()
+    public function testAddGoalShouldThrowExceptionIfPatternRegexIsInvalid()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('General_ValidatorErrorNoValidRegex');
@@ -111,7 +120,7 @@ class APITest extends IntegrationTestCase
         $this->api->addGoal($this->idSite, 'MyName', 'url', '/(%$f', 'regex');
     }
 
-    public function test_addGoal_shouldThrowException_IfPatternTypeIsExactAndMatchAttributeNotEvent()
+    public function testAddGoalShouldThrowExceptionIfPatternTypeIsExactAndMatchAttributeNotEvent()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Goals_ExceptionInvalidMatchingString');
@@ -119,7 +128,7 @@ class APITest extends IntegrationTestCase
         $this->api->addGoal($this->idSite, 'MyName', 'url', 'www.test.de', 'exact');
     }
 
-    public function test_addGoal_shouldThrowException_IfPatternTypeIsExactAndMatchAttributeNotEvent2()
+    public function testAddGoalShouldThrowExceptionIfPatternTypeIsExactAndMatchAttributeNotEvent2()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Goals_ExceptionInvalidMatchingString');
@@ -127,7 +136,7 @@ class APITest extends IntegrationTestCase
         $this->api->addGoal($this->idSite, 'MyName', 'external_website', 'www.test.de', 'exact');
     }
 
-    public function test_addGoal_shouldNotThrowException_IfPatternTypeIsExactAndMatchAttributeIsEvent()
+    public function testAddGoalShouldNotThrowExceptionIfPatternTypeIsExactAndMatchAttributeIsEvent()
     {
         $this->api->addGoal($this->idSite, 'MyName1', 'event_action', 'test', 'exact');
         $this->api->addGoal($this->idSite, 'MyName2', 'event_name', 'test', 'exact');
@@ -136,7 +145,7 @@ class APITest extends IntegrationTestCase
         $this->assertSame('3', (string)$idGoal);
     }
 
-    public function test_addGoal_shouldThrowException_IfNotEnoughPermission()
+    public function testAddGoalShouldThrowExceptionIfNotEnoughPermission()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('checkUserHasWriteAccess Fake exception');
@@ -145,7 +154,7 @@ class APITest extends IntegrationTestCase
         $this->createAnyGoal();
     }
 
-    public function test_updateGoal_shouldThrowException_IfNotEnoughPermission()
+    public function testUpdateGoalShouldThrowExceptionIfNotEnoughPermission()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('checkUserHasWriteAccess Fake exception');
@@ -156,7 +165,7 @@ class APITest extends IntegrationTestCase
         $this->api->updateGoal($this->idSite, $idGoal, 'MyName', 'url', 'www.test.de', 'exact');
     }
 
-    public function test_updateGoal_shouldThrowException_IfPatternTypeIsExactAndMatchAttributeNotEvent()
+    public function testUpdateGoalShouldThrowExceptionIfPatternTypeIsExactAndMatchAttributeNotEvent()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Goals_ExceptionInvalidMatchingString');
@@ -165,7 +174,7 @@ class APITest extends IntegrationTestCase
         $this->api->updateGoal($this->idSite, $idGoal, 'MyName', 'url', 'www.test.de', 'exact');
     }
 
-    public function test_updateGoal_shouldNotThrowException_IfPatternTypeIsExactAndMatchAttributeIsEvent()
+    public function testUpdateGoalShouldNotThrowExceptionIfPatternTypeIsExactAndMatchAttributeIsEvent()
     {
         $idGoal = $this->createAnyGoal();
         $this->api->updateGoal($this->idSite, $idGoal, 'MyName', 'event_action', 'www.test.de', 'exact');
@@ -175,7 +184,7 @@ class APITest extends IntegrationTestCase
         $this->assertSame(1, $idGoal);
     }
 
-    public function test_updateGoal_shouldUpdateAllGivenFields()
+    public function testUpdateGoalShouldUpdateAllGivenFields()
     {
         $idGoal = $this->createAnyGoal();
         $this->api->updateGoal($this->idSite, $idGoal, 'UpdatedName', 'file', 'http://www.updatetest.de', 'contains', true, 999, true);
@@ -183,7 +192,7 @@ class APITest extends IntegrationTestCase
         $this->assertGoal($idGoal, 'UpdatedName', '', 'file', 'http://www.updatetest.de', 'contains', 1, 999, 1);
     }
 
-    public function test_updateGoal_shouldUpdateMinimalFields_ShouldLeaveOtherFieldsUntouched()
+    public function testUpdateGoalShouldUpdateMinimalFieldsShouldLeaveOtherFieldsUntouched()
     {
         $idGoal = $this->createAnyGoal();
         $this->api->updateGoal($this->idSite, $idGoal, 'UpdatedName', 'file', 'http://www.updatetest.de', 'contains');
@@ -191,7 +200,7 @@ class APITest extends IntegrationTestCase
         $this->assertGoal($idGoal, 'UpdatedName', '', 'file', 'http://www.updatetest.de', 'contains', 0, 0, 0);
     }
 
-    public function test_deleteGoal_shouldNotDeleteAGoal_IfGoalIdDoesNotExist()
+    public function testDeleteGoalShouldNotDeleteAGoalIfGoalIdDoesNotExist()
     {
         $this->assertHasNoGoals();
 
@@ -202,7 +211,7 @@ class APITest extends IntegrationTestCase
         $this->assertHasGoals();
     }
 
-    public function test_deleteGoal_shouldNotDeleteAGoal_IfSiteDoesNotMatchGoalId()
+    public function testDeleteGoalShouldNotDeleteAGoalIfSiteDoesNotMatchGoalId()
     {
         $this->assertHasNoGoals();
 
@@ -213,7 +222,7 @@ class APITest extends IntegrationTestCase
         $this->assertHasGoals();
     }
 
-    public function test_deleteGoal_shouldDeleteAGoal_IfGoalAndSiteMatches()
+    public function testDeleteGoalShouldDeleteAGoalIfGoalAndSiteMatches()
     {
         $this->assertHasNoGoals();
 
@@ -224,7 +233,7 @@ class APITest extends IntegrationTestCase
         $this->assertHasNoGoals();
     }
 
-    public function test_getGoal_shouldThrowException_IfNotEnoughPermission()
+    public function testGetGoalShouldThrowExceptionIfNotEnoughPermission()
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('heckUserHasViewAccess Fake exception');
@@ -235,12 +244,12 @@ class APITest extends IntegrationTestCase
         $this->api->getGoal($this->idSite, $idGoal);
     }
 
-    public function test_getGoal_shouldReturnNullIfItDoesNotExist()
+    public function testGetGoalShouldReturnNullIfItDoesNotExist()
     {
         $this->assertNull($this->api->getGoal($this->idSite, $idGoal = 99));
     }
 
-    public function test_getGoal_shouldReturnExistingGoal()
+    public function testGetGoalShouldReturnExistingGoal()
     {
         $idGoal = $this->createAnyGoal();
         $this->assertSame(1, $idGoal);
@@ -261,6 +270,32 @@ class APITest extends IntegrationTestCase
         ), $goal);
     }
 
+    /**
+     * @param string|array $idSite
+     *
+     * @dataProvider getTestDataForMultipleSites
+     */
+    public function testGetGoalsShouldReturnGoalsForMultipleSites($idSite): void
+    {
+        $idGoal = $this->api->addGoal($this->idSite, 'Goal Site One', 'url', 'http://site.one', 'exact');
+        $idGoalTwo = $this->api->addGoal($this->idSiteTwo, 'Goal Site Two', 'url', 'http://site.two', 'exact');
+        $goals = $this->api->getGoals($idSite);
+
+        $this->assertEqualsCanonicalizing(
+            [
+                $this->api->getGoal($this->idSite, $idGoal),
+                $this->api->getGoal($this->idSiteTwo, $idGoalTwo)
+            ],
+            $goals
+        );
+    }
+
+    public function getTestDataForMultipleSites(): iterable
+    {
+        yield 'comma separated string' => ['1,2'];
+        yield 'array' => [[1, 2]];
+    }
+
     private function assertHasGoals()
     {
         $goals = $this->getGoals();
@@ -273,9 +308,18 @@ class APITest extends IntegrationTestCase
         $this->assertEmpty($goals);
     }
 
-    private function assertGoal($idGoal, $name, $description, $url, $pattern, $patternType, $caseSenstive = 0, $revenue = 0, $allowMultiple = 0,
-                                $eventAsRevenue = 0)
-    {
+    private function assertGoal(
+        $idGoal,
+        $name,
+        $description,
+        $url,
+        $pattern,
+        $patternType,
+        $caseSenstive = 0,
+        $revenue = 0,
+        $allowMultiple = 0,
+        $eventAsRevenue = 0
+    ) {
         $expected = array($idGoal => array(
             'idsite' => $this->idSite,
             'idgoal' => $idGoal,

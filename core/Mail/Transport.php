@@ -1,15 +1,15 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Mail;
 
-use PHPMailer\PHPMailer\Exception AS PHPMailerException;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use Piwik\Config;
@@ -123,7 +123,8 @@ class Transport
     {
         $mailConfig = Config::getInstance()->mail;
 
-        if (empty($mailConfig['host'])
+        if (
+            empty($mailConfig['host'])
             || $mailConfig['transport'] != 'smtp'
         ) {
             return;

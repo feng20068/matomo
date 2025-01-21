@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tests\Fixtures;
 
 use Piwik\Date;
@@ -214,7 +216,7 @@ class SomeVisitsCustomVariablesCampaignsNotHeuristics extends Fixture
     {
         $host = \Piwik\Url::getHost();
         $cookiePath = MatomoTracker::DEFAULT_COOKIE_PATH;
-        return substr(sha1( $host . $cookiePath), 0, 4);
+        return substr(sha1($host . $cookiePath), 0, 4);
     }
 
     /**

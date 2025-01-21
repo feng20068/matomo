@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Unit\DataTable\Filter;
@@ -19,7 +20,6 @@ use Piwik\DataTable\Row;
  */
 class SortTest extends \PHPUnit\Framework\TestCase
 {
-
     public function testNormalSortDescending()
     {
         $table = new DataTable();
@@ -162,7 +162,7 @@ class SortTest extends \PHPUnit\Framework\TestCase
     /**
      * Test to sort by visit
      */
-    public function testFilterSortNumeric_withSecondaryColumnSortLabel()
+    public function testFilterSortNumericWithSecondaryColumnSortLabel()
     {
         $rows = array(
             array('label' => 'google', 'nb_visits' => array()),
@@ -200,7 +200,7 @@ class SortTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(DataTable::isEqual($table, $expectedtableReverse));
     }
 
-    public function test_sortingArrayValues_doesNotError()
+    public function testSortingArrayValuesDoesNotError()
     {
         $table = new DataTable();
         $table->addRowsFromArray(array(
@@ -220,7 +220,7 @@ class SortTest extends \PHPUnit\Framework\TestCase
     /**
      * Test to sort by label
      */
-    public function testFilter_shouldPickStringSearchEvenIfFirstLabelIsNumeric()
+    public function testFilterShouldPickStringSearchEvenIfFirstLabelIsNumeric()
     {
         $table = $this->createDataTable(array(
             array('label' => '238975247578949'),
@@ -262,7 +262,9 @@ class SortTest extends \PHPUnit\Framework\TestCase
             array(Row::COLUMNS => array('label' => 'nintendo', 'count' => 10, 'count2' => 5)),
             array(Row::COLUMNS => array('label' => 'yahoo', 'count' => 10, 'count2' => 100)
             )));
-        $filter = new Sort($table, 'count', 'desc', true, true, function(){return 'count2';});
+        $filter = new Sort($table, 'count', 'desc', true, true, function () {
+            return 'count2';
+        });
         $filter->filter($table);
         $expectedOrder = array('yahoo', 'ask', 'nintendo');
         $this->assertEquals($expectedOrder, $table->getColumn('label'));
@@ -276,7 +278,9 @@ class SortTest extends \PHPUnit\Framework\TestCase
             array(Row::COLUMNS => array('label' => 'nintendo', 'count' => 10, 'count2' => 5)),
             array(Row::COLUMNS => array('label' => 'yahoo', 'count' => 10, 'count2' => 100)
             )));
-        $filter = new Sort($table, 'count', 'desc', true, true, function(){return 'count2';});
+        $filter = new Sort($table, 'count', 'desc', true, true, function () {
+            return 'count2';
+        });
         $filter->filter($table);
         $expectedOrder = array('yahoo', 'nintendo', 'ask');
         $this->assertEquals($expectedOrder, $table->getColumn('label'));

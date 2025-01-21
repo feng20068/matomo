@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreConsole\Commands;
@@ -44,9 +44,7 @@ class GenerateCommand extends GeneratePluginBase
 
         $this->copyTemplateToPlugin($exampleFolder, $pluginName, $replace, $whitelistFiles);
 
-        $this->writeSuccessMessage(array(
-            sprintf('Command %s for plugin %s generated', $commandName, $pluginName)
-        ));
+        $this->writeSuccessMessage(sprintf('Command %s for plugin %s generated', $commandName, $pluginName));
 
         return self::SUCCESS;
     }

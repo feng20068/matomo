@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\ExampleReport;
 
 use Piwik\DataTable;
@@ -18,7 +19,6 @@ use Piwik\DataTable\Row;
  */
 class API extends \Piwik\Plugin\API
 {
-
     /**
      * Another example method that returns a data table.
      * @param int    $idSite

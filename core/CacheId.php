@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik;
 
 use Piwik\Container\StaticContainer;
@@ -28,7 +29,7 @@ class CacheId
         return $cacheId;
     }
 
-    public static function siteAware($cacheId, array $idSites = null)
+    public static function siteAware($cacheId, ?array $idSites = null)
     {
         if ($idSites === null) {
             $idSites = self::getIdSiteList('idSite');
@@ -48,7 +49,8 @@ class CacheId
 
     private static function getIdSiteList($queryParamName)
     {
-        if (empty($_GET[$queryParamName])
+        if (
+            empty($_GET[$queryParamName])
             && empty($_POST[$queryParamName])
         ) {
             return [];

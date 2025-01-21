@@ -1,15 +1,16 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Marketplace\tests\Framework\Mock;
 
-class Environment extends \Piwik\Plugins\Marketplace\Environment {
-
+class Environment extends \Piwik\Plugins\Marketplace\Environment
+{
     public function __construct()
     {
     }
@@ -48,6 +49,4 @@ class Environment extends \Piwik\Plugins\Marketplace\Environment {
     {
         return '5.7.1';
     }
-
-
 }

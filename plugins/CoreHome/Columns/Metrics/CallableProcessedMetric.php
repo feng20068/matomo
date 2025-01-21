@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreHome\Columns\Metrics;
 
 use Piwik\DataTable\Row;
@@ -17,7 +19,7 @@ class CallableProcessedMetric extends ProcessedMetric
     private $dependentMetrics;
     private $semanticType;
 
-    public function __construct($name, $callback, $dependentMetrics = array(), string $semanticType = null)
+    public function __construct($name, $callback, $dependentMetrics = array(), ?string $semanticType = null)
     {
         $this->name = $name;
         $this->callback = $callback;

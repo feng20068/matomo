@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -412,10 +413,11 @@ export default defineComponent({
       const category = translate('CoreHome_Menu');
 
       const topMenuItems: SubMenuItem[] = [];
-      document.querySelectorAll('nav .sidenav li > a').forEach((element) => {
+      document.querySelectorAll('nav .sidenav li > a, nav .sidenav li > div > a').forEach((element) => {
         let text = element.textContent?.trim();
 
-        if (!text) {
+        if (!text || (element.parentElement != null && element.parentElement.tagName != null
+          && element.parentElement.tagName === 'DIV')) {
           text = element.getAttribute('title')?.trim(); // possibly a icon, use title instead
         }
 

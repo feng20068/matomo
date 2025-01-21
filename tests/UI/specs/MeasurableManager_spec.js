@@ -3,8 +3,8 @@
  *
  * Site selector screenshot tests.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 describe("MeasurableManager", function () {
@@ -28,7 +28,7 @@ describe("MeasurableManager", function () {
     });
 
     it("should use measurable wording in menu", async function () {
-        const element = await page.jQuery('#secondNavBar li:contains(Manage):first');
+        const element = await page.jQuery('#secondNavBar li:contains(Tracking Code):first');
         expect(await element.screenshot()).to.matchImage('measurable_menu_item');
     });
 

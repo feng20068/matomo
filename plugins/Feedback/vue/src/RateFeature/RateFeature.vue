@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -148,8 +149,7 @@
                     :class="{'has-error':errorMessage}"
                     v-model="feedbackMessage"/>
           <p v-if="likeReason || dislikeReason"
-            v-html="$sanitize(translate('Feedback_Policy',`
-            <a rel='nofollow' href='https://matomo.org/privacy-policy/' target='_blank'>`,'</a>'))">
+            v-html="$sanitize(translate('Feedback_Policy', externalLink('https://matomo.org/privacy-policy/'),'</a>'))">
           </p>
         </div>
 

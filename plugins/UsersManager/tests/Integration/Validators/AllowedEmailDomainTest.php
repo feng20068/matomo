@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\UsersManager\tests\Integration\Validators;
@@ -21,7 +22,6 @@ use Piwik\Tests\Framework\TestCase\IntegrationTestCase;
  */
 class AllowedEmailDomainTest extends IntegrationTestCase
 {
-
     /**
      * @var AllowedEmailDomain
      */
@@ -52,7 +52,7 @@ class AllowedEmailDomainTest extends IntegrationTestCase
     /**
      * @dataProvider  getDataDomainFromEmail
      */
-    public function test_getDomainFromEmail($expected, $email)
+    public function testGetDomainFromEmail($expected, $email)
     {
         $this->assertSame($expected, $this->validator->getDomainFromEmail($email));
     }
@@ -73,7 +73,7 @@ class AllowedEmailDomainTest extends IntegrationTestCase
     /**
      * @dataProvider  getDataDoesEmailEndWithAValidDomain
      */
-    public function test_doesEmailEndWithAValidDomain($expected, $email, $domains)
+    public function testDoesEmailEndWithAValidDomain($expected, $email, $domains)
     {
         $this->assertSame($expected, $this->validator->doesEmailEndWithAValidDomain($email, $domains));
     }
@@ -90,46 +90,45 @@ class AllowedEmailDomainTest extends IntegrationTestCase
         ];
     }
 
-    public function test_getEmailDomainsInUse_noUsersConfigured()
+    public function testGetEmailDomainsInUseNoUsersConfigured()
     {
         $this->assertSame([], $this->validator->getEmailDomainsInUse());
     }
 
-    public function test_getEmailDomainsInUse_usersAddedAndInvited()
+    public function testGetEmailDomainsInUseUsersAddedAndInvited()
     {
         $userApi = API::getInstance();
-        $userApi->addUser('foo1','foo' . time(), 'foobar@matomo.org');
-        $userApi->addUser('foo2','foo' . time(), 'foobar2@matomo.org');
+        $userApi->addUser('foo1', 'foo' . time(), 'foobar@matomo.org');
+        $userApi->addUser('foo2', 'foo' . time(), 'foobar2@matomo.org');
         $userApi->inviteUser('foo3', 'foobar@matomo.com', 1);
         $userApi->inviteUser('foo4', 'foobar3@matomo.org', 1);
         $userApi->inviteUser('foo5', 'foobar@example.com', 1);
-        $userApi->addUser('foo6','foo' . time(), 'foobar2@example.org');
+        $userApi->addUser('foo6', 'foo' . time(), 'foobar2@example.org');
 
         $this->assertEquals([
-            'matomo.org', 'matomo.com', 'example.com', 'example.org'
+            'example.com', 'example.org', 'matomo.com', 'matomo.org',
         ], $this->validator->getEmailDomainsInUse());
     }
 
-    public function test_validate_noDomainsConfigured_meansAllDomainsAllowed()
+    public function testValidateNoDomainsConfiguredMeansAllDomainsAllowed()
     {
         $this->assertNull($this->validator->validate('foobar@matomo.org'));
         $this->assertNull($this->validator->validate('foobar@mAtomo.org'));
         $this->assertNull($this->validator->validate('foobar@eXaMPle.com'));
     }
 
-    public function test_validate_emailsAllowed()
+    public function testValidateEmailsAllowed()
     {
         $this->settings->allowedEmailDomains->setValue(['MaToMo.Org', 'example.COM']);
         $this->assertNull($this->validator->validate('foobar@mAtomo.org'));
         $this->assertNull($this->validator->validate('foobar@eXaMPle.com'));
     }
 
-    public function test_validate_noEmailsAllowed_DomainsAreConfigured()
+    public function testValidateNoEmailsAllowedDomainsAreConfigured()
     {
         Fixture::loadAllTranslations();
         $this->expectExceptionMessage('The email "foobar@matomo.com" cannot be used, as only emails with the domains "matomo.org, example.com" are allowed.');
         $this->settings->allowedEmailDomains->setValue(['matomo.org', 'example.com']);
         $this->validator->validate('foobar@matomo.com');
     }
-
 }

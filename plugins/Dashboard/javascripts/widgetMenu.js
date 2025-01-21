@@ -1,8 +1,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 function widgetsHelper() {
@@ -113,6 +113,14 @@ widgetsHelper.getAvailableWidgets = function (callback) {
         callback(widgetsHelper.availableWidgets);
       }
     });
+};
+
+/**
+ * Clear the current collection of availableWidgets so that getAvailableWidgets() will load a fresh
+ * collection from the API. This is useful when we added/deleted a report and need a refresh.
+ */
+widgetsHelper.clearAvailableWidgets = function () {
+    delete widgetsHelper.availableWidgets;
 };
 
 /**

@@ -3,9 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\ScheduledReports;
@@ -50,21 +49,21 @@ use Piwik\Log\LoggerInterface;
  */
 class API extends \Piwik\Plugin\API
 {
-    const VALIDATE_PARAMETERS_EVENT = 'ScheduledReports.validateReportParameters';
-    const GET_REPORT_PARAMETERS_EVENT = 'ScheduledReports.getReportParameters';
-    const GET_REPORT_METADATA_EVENT = 'ScheduledReports.getReportMetadata';
-    const GET_REPORT_TYPES_EVENT = 'ScheduledReports.getReportTypes';
-    const GET_REPORT_FORMATS_EVENT = 'ScheduledReports.getReportFormats';
-    const GET_RENDERER_INSTANCE_EVENT = 'ScheduledReports.getRendererInstance';
-    const PROCESS_REPORTS_EVENT = 'ScheduledReports.processReports';
-    const GET_REPORT_RECIPIENTS_EVENT = 'ScheduledReports.getReportRecipients';
-    const ALLOW_MULTIPLE_REPORTS_EVENT = 'ScheduledReports.allowMultipleReports';
-    const SEND_REPORT_EVENT = 'ScheduledReports.sendReport';
+    public const VALIDATE_PARAMETERS_EVENT = 'ScheduledReports.validateReportParameters';
+    public const GET_REPORT_PARAMETERS_EVENT = 'ScheduledReports.getReportParameters';
+    public const GET_REPORT_METADATA_EVENT = 'ScheduledReports.getReportMetadata';
+    public const GET_REPORT_TYPES_EVENT = 'ScheduledReports.getReportTypes';
+    public const GET_REPORT_FORMATS_EVENT = 'ScheduledReports.getReportFormats';
+    public const GET_RENDERER_INSTANCE_EVENT = 'ScheduledReports.getRendererInstance';
+    public const PROCESS_REPORTS_EVENT = 'ScheduledReports.processReports';
+    public const GET_REPORT_RECIPIENTS_EVENT = 'ScheduledReports.getReportRecipients';
+    public const ALLOW_MULTIPLE_REPORTS_EVENT = 'ScheduledReports.allowMultipleReports';
+    public const SEND_REPORT_EVENT = 'ScheduledReports.sendReport';
 
-    const OUTPUT_DOWNLOAD = 1;
-    const OUTPUT_SAVE_ON_DISK = 2;
-    const OUTPUT_INLINE = 3;
-    const OUTPUT_RETURN = 4;
+    public const OUTPUT_DOWNLOAD = 1;
+    public const OUTPUT_SAVE_ON_DISK = 2;
+    public const OUTPUT_INLINE = 3;
+    public const OUTPUT_RETURN = 4;
 
     private $enableSaveReportOnDisk = false;
 
@@ -121,6 +120,10 @@ class API extends \Piwik\Plugin\API
         self::ensureLanguageSetForUser($currentUser);
 
         self::validateCommonReportAttributes($period, $hour, $description, $idSegment, $reportType, $reportFormat, $evolutionPeriodFor, $evolutionPeriodN);
+
+        if (null !== $periodParam) {
+            self::validatePeriodParam($periodParam);
+        }
 
         // report parameters validations
         $parameters = self::validateReportParameters($reportType, $parameters);
@@ -194,6 +197,10 @@ class API extends \Piwik\Plugin\API
         self::ensureLanguageSetForUser($currentUser);
 
         self::validateCommonReportAttributes($period, $hour, $description, $idSegment, $reportType, $reportFormat, $evolutionPeriodFor, $evolutionPeriodN);
+
+        if (null !== $periodParam) {
+            self::validatePeriodParam($periodParam);
+        }
 
         // report parameters validations
         $parameters = self::validateReportParameters($reportType, $parameters);
@@ -293,7 +300,7 @@ class API extends \Piwik\Plugin\API
 									JOIN " . Common::prefixTable('site') . "
 									USING (idsite)
 								WHERE deleted = 0
-									$sqlWhere", $bind);
+									$sqlWhere ORDER BY description", $bind);
         // When a specific report was requested and not found, throw an error
         if (
             $idReport !== false
@@ -373,6 +380,7 @@ class API extends \Piwik\Plugin\API
         $reports = $this->getReports($idSite = false, $_period = false, $idReport);
         $report = reset($reports);
 
+        $idReport = $report['idreport'];
         $idSite = $report['idsite'];
         $login  = $report['login'];
         $reportType = $report['type'];
@@ -384,7 +392,7 @@ class API extends \Piwik\Plugin\API
             $period = $report['period_param'];
         }
 
-        $this->checkSinglePeriod($period, $date);
+        $this->checkDateAndPeriodCombination($date, $period);
 
         // override report format
         if (!empty($reportFormat)) {
@@ -621,6 +629,7 @@ class API extends \Piwik\Plugin\API
         $report = reset($reports);
 
         if (!empty($period)) {
+            self::validatePeriodParam($period);
             $report['period_param'] = $period;
         }
 
@@ -667,54 +676,56 @@ class API extends \Piwik\Plugin\API
 
             $reportType = $report['type'];
 
-            /**
-             * Triggered when sending scheduled reports.
-             *
-             * Plugins that provide new scheduled report transport mediums should use this event to
-             * send the scheduled report.
-             *
-             * @param string $reportType A string ID describing how the report is sent, eg,
-             *                           `'sms'` or `'email'`.
-             * @param array $report An array describing the scheduled report that is being
-             *                      generated.
-             * @param string $contents The contents of the scheduled report that was generated
-             *                         and now should be sent.
-             * @param string $filename The path to the file where the scheduled report has
-             *                         been saved.
-             * @param string $prettyDate A prettified date string for the data within the
-             *                           scheduled report.
-             * @param string $reportSubject A string describing what's in the scheduled
-             *                              report.
-             * @param string $reportTitle The scheduled report's given title (given by a Matomo user).
-             * @param array $additionalFiles The list of additional files that should be
-             *                               sent with this report.
-             * @param \Piwik\Period $period The period for which the report has been generated.
-             * @param boolean $force A report can only be sent once per period. Setting this to true
-             *                       will force to send the report even if it has already been sent.
-             */
-            Piwik::postEvent(
-                self::SEND_REPORT_EVENT,
-                [
-                    &$reportType,
-                    $report,
-                    $contents,
-                    $filename = basename($outputFilename),
-                    $prettyDate,
-                    $reportSubject,
-                    $reportTitle,
-                    $additionalFiles,
-                    \Piwik\Period\Factory::build($report['period_param'], $date),
-                    $force
-                ]
-            );
+            try {
+                /**
+                 * Triggered when sending scheduled reports.
+                 *
+                 * Plugins that provide new scheduled report transport mediums should use this event to
+                 * send the scheduled report.
+                 *
+                 * @param string $reportType A string ID describing how the report is sent, eg,
+                 *                           `'sms'` or `'email'`.
+                 * @param array $report An array describing the scheduled report that is being
+                 *                      generated.
+                 * @param string $contents The contents of the scheduled report that was generated
+                 *                         and now should be sent.
+                 * @param string $filename The path to the file where the scheduled report has
+                 *                         been saved.
+                 * @param string $prettyDate A prettified date string for the data within the
+                 *                           scheduled report.
+                 * @param string $reportSubject A string describing what's in the scheduled
+                 *                              report.
+                 * @param string $reportTitle The scheduled report's given title (given by a Matomo user).
+                 * @param array $additionalFiles The list of additional files that should be
+                 *                               sent with this report.
+                 * @param \Piwik\Period $period The period for which the report has been generated.
+                 * @param boolean $force A report can only be sent once per period. Setting this to true
+                 *                       will force to send the report even if it has already been sent.
+                 */
+                Piwik::postEvent(
+                    self::SEND_REPORT_EVENT,
+                    [
+                        &$reportType,
+                        $report,
+                        $contents,
+                        $filename = basename($outputFilename),
+                        $prettyDate,
+                        $reportSubject,
+                        $reportTitle,
+                        $additionalFiles,
+                        \Piwik\Period\Factory::build($report['period_param'], $date),
+                        $force
+                    ]
+                );
 
-            // Update flag in DB
-            $now = Date::now()->getDatetime();
-            $this->getModel()->updateReport($report['idreport'], ['ts_last_sent' => $now]);
-
-            if (!Development::isEnabled()) {
-                @chmod($outputFilename, 0600);
-                Filesystem::deleteFileIfExists($outputFilename);
+                // Update flag in DB
+                $now = Date::now()->getDatetime();
+                $this->getModel()->updateReport($report['idreport'], ['ts_last_sent' => $now]);
+            } finally {
+                if (!Development::isEnabled()) {
+                    @chmod($outputFilename, 0600);
+                    Filesystem::deleteFileIfExists($outputFilename);
+                }
             }
         });
     }
@@ -842,6 +853,17 @@ class API extends \Piwik\Plugin\API
         $availablePeriods = ['day', 'week', 'month', 'never'];
         if (!in_array($period, $availablePeriods)) {
             throw new Exception('Period schedule must be one of the following: ' . implode(', ', $availablePeriods) . ' (got ' . $period . ')');
+        }
+    }
+
+    private static function validatePeriodParam($period)
+    {
+        $periodValidator = new Period\PeriodValidator();
+        $allowedPeriods = array_flip($periodValidator->getPeriodsAllowedForAPI());
+        unset($allowedPeriods['range']);
+
+        if (!array_key_exists($period, $allowedPeriods)) {
+            throw new Exception('Report period must be one of the following: ' . implode(', ', array_keys($allowedPeriods)) . ' (got ' . $period . ')');
         }
     }
 
@@ -1083,10 +1105,18 @@ class API extends \Piwik\Plugin\API
         }
     }
 
-    private function checkSinglePeriod($period, $date)
+    private function checkDateAndPeriodCombination($date, $period): void
     {
+        if ('range' === $period) {
+            Period::checkDateFormat($date);
+
+            return;
+        }
+
         if (Period::isMultiplePeriod($date, $period)) {
             throw new Http\BadRequestException("This API method does not support multiple periods.");
         }
+
+        Date::factory($date);
     }
 }

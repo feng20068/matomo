@@ -3,6 +3,7 @@
 use Piwik\Container\Container;
 use Piwik\Piwik;
 use Piwik\Tests\Framework\Mock\FakeAccess;
+use Piwik\Tests\Framework\Mock\FakeChangesModel;
 use Piwik\Tests\Framework\Mock\TestConfig;
 
 return array(
@@ -66,6 +67,7 @@ return array(
             $idSitesView = $c->get('test.vars.idSitesViewAccess');
             $idSitesWrite = $c->get('test.vars.idSitesWriteAccess');
             $idSitesCapabilities = $c->get('test.vars.idSitesCapabilities');
+            $fakeIdentity = $c->get('test.vars.fakeIdentity');
             $access = new FakeAccess();
 
             if (!empty($idSitesView)) {
@@ -73,24 +75,35 @@ return array(
                 FakeAccess::$idSitesView = $idSitesView;
                 FakeAccess::$idSitesWrite = !empty($idSitesWrite) ? $idSitesWrite : array();
                 FakeAccess::$idSitesAdmin = !empty($idSitesAdmin) ? $idSitesAdmin : array();
-                FakeAccess::$identity = 'viewUserLogin';
+                FakeAccess::$identity = $fakeIdentity ?: 'viewUserLogin';
             } elseif (!empty($idSitesWrite)) {
                 FakeAccess::$superUser = false;
                 FakeAccess::$idSitesWrite = !empty($idSitesWrite) ? $idSitesWrite : array();
                 FakeAccess::$idSitesAdmin = !empty($idSitesAdmin) ? $idSitesAdmin : array();
-                FakeAccess::$identity = 'writeUserLogin';
+                FakeAccess::$identity = $fakeIdentity ?: 'writeUserLogin';
             } elseif (!empty($idSitesAdmin)) {
                 FakeAccess::$superUser = false;
                 FakeAccess::$idSitesAdmin = $idSitesAdmin;
-                FakeAccess::$identity = 'adminUserLogin';
+                FakeAccess::$identity = $fakeIdentity ?: 'adminUserLogin';
             } else {
                 FakeAccess::$superUser = true;
-                FakeAccess::$superUserLogin = 'superUserLogin';
+                FakeAccess::$superUserLogin = $fakeIdentity ?: 'superUserLogin';
+                FakeAccess::$identity = $fakeIdentity ?: 'superUserLogin';
             }
             if (!empty($idSitesCapabilities)) {
                 FakeAccess::$idSitesCapabilities = (array) $idSitesCapabilities;
             }
             return $access;
+        } else {
+            return $previous;
+        }
+    }),
+
+    // Prevent loading plugin changes, so the What's New popup isn't shown
+    'Piwik\Changes\Model' => \Piwik\DI::decorate(function ($previous, Container $c) {
+        $loadChanges = $c->get('test.vars.loadChanges');
+        if (!$loadChanges) {
+            return new FakeChangesModel();
         } else {
             return $previous;
         }

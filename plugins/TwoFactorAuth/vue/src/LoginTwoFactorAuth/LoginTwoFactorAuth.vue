@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -75,7 +76,7 @@
       <br /><br />
       <strong>{{ translate('TwoFactorAuth_DontHaveYourMobileDevice') }}</strong>
       <br />
-      <a href="https://matomo.org/faq/how-to/faq_27248" rel="noreferrer noopener" target="_blank">
+      <a :href="externalRawLink('https://matomo.org/faq/how-to/faq_27248')" rel="noreferrer noopener" target="_blank">
         {{ translate('TwoFactorAuth_EnterRecoveryCodeInstead') }}
       </a>
       <br />
@@ -96,6 +97,8 @@ import {
   translate,
   MatomoUrl,
   Matomo,
+  externalLink,
+  externalRawLink,
 } from 'CoreHome';
 import { FormErrors } from 'Login';
 
@@ -135,10 +138,9 @@ export default defineComponent({
   },
   computed: {
     learnMoreText() {
-      const link = 'https://matomo.org/faq/general/faq_27245';
       return translate(
         'General_LearnMore',
-        `<a href="${link}" rel="noreferrer noopener" target="_blank">`,
+        externalLink('https://matomo.org/faq/general/faq_27245'),
         '</a>',
       );
     },
@@ -152,7 +154,7 @@ export default defineComponent({
           this.piwikUrl || '',
           '\n\n',
           this.userLogin,
-          'https://matomo.org/faq/how-to/faq_27248',
+          externalRawLink('https://matomo.org/faq/how-to/faq_27248'),
         ),
       })}`;
     },

@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\DataTable\Renderer;
 
 use Piwik\Common;
@@ -67,7 +68,7 @@ class Csv extends Renderer
     /**
      * This string is also hardcoded in archive,sh
      */
-    const NO_DATA_AVAILABLE = 'No data available';
+    public const NO_DATA_AVAILABLE = 'No data available';
 
     private $unsupportedColumns = array();
 
@@ -229,7 +230,8 @@ class Csv extends Renderer
      */
     public function formatValue($value)
     {
-        if (is_string($value)
+        if (
+            is_string($value)
             && !is_numeric($value)
         ) {
             $value = html_entity_decode($value, ENT_QUOTES, 'UTF-8');
@@ -242,7 +244,13 @@ class Csv extends Renderer
         if (is_string($value)) {
             $value = str_replace(["\t"], ' ', $value);
 
-            if (strpos($value, '"') !== false || strpos($value, $this->separator) !== false) {
+            // surround value with double quotes if it contains a double quote or a commonly used separator
+            if (
+                strpos($value, '"') !== false
+                || strpos($value, $this->separator) !== false
+                || strpos($value, ',') !== false
+                || strpos($value, ';') !== false
+            ) {
                 $value = '"' . str_replace('"', '""', $value) . '"';
             }
         }
@@ -265,15 +273,17 @@ class Csv extends Renderer
         // remove first % sign and if string is still a number, return it as is
         $valueWithoutFirstPercentSign = $this->removeFirstPercentSign($value);
 
-        if (empty($valueWithoutFirstPercentSign)
+        if (
+            empty($valueWithoutFirstPercentSign)
             || !is_string($value)
-            || is_numeric($valueWithoutFirstPercentSign)) {
+            || is_numeric($valueWithoutFirstPercentSign)
+        ) {
             return $value;
         }
 
         $firstCharCellValue = $valueWithoutFirstPercentSign[0];
         $isFormula = in_array($firstCharCellValue, $formulaStartsWith);
-        if($isFormula) {
+        if ($isFormula) {
             return "'" . $value;
         }
 
@@ -328,7 +338,8 @@ class Csv extends Renderer
                 // format becomes a bit more complicated. also in this case, we assume $value is not
                 // nested beyond 2 levels (ie, array(0 => array(0 => 1, 1 => 2)), but not array(
                 // 0 => array(0 => array(), 1 => array())) )
-                if ($this->translateColumnNames
+                if (
+                    $this->translateColumnNames
                     && is_array(reset($value))
                 ) {
                     foreach ($value as $level1Key => $level1Value) {
@@ -368,7 +379,8 @@ class Csv extends Renderer
 
         // specific case, we have only one column and this column wasn't named properly (indexed by a number)
         // we don't print anything in the CSV file => an empty line
-        if (sizeof($allColumns) === 1
+        if (
+            sizeof($allColumns) === 1
             && reset($allColumns)
             && !is_string(key($allColumns))
         ) {
@@ -416,7 +428,8 @@ class Csv extends Renderer
                         $name = 'metadata_' . $name;
                     }
 
-                    if (is_array($value)
+                    if (
+                        is_array($value)
                         || is_object($value)
                     ) {
                         if (!in_array($name, $this->unsupportedColumns)) {
@@ -425,7 +438,6 @@ class Csv extends Renderer
                     } else {
                         $csvRow[$name] = $value;
                     }
-
                 }
             }
 
@@ -439,7 +451,8 @@ class Csv extends Renderer
 
             if ($this->exportIdSubtable) {
                 $idsubdatatable = $row->getIdSubDataTable();
-                if ($idsubdatatable !== false
+                if (
+                    $idsubdatatable !== false
                     && $this->hideIdSubDatatable === false
                 ) {
                     $csvRow['idsubdatatable'] = $idsubdatatable;
@@ -466,7 +479,8 @@ class Csv extends Renderer
      */
     private function convertToUnicode($str)
     {
-        if ($this->convertToUnicode
+        if (
+            $this->convertToUnicode
             && function_exists('mb_convert_encoding')
         ) {
             $str = chr(255) . chr(254) . mb_convert_encoding($str, 'UTF-16LE', 'UTF-8');
@@ -480,10 +494,16 @@ class Csv extends Renderer
      */
     protected function removeFirstPercentSign($value)
     {
-        $needle = '%';
-        $posPercent = strpos($value ?? '', $needle);
+        // remove all null byte chars from the beginning
+        $value = ltrim($value, "\0");
+
+        while (0 === strpos($value, '%00')) {
+            $value = ltrim(substr($value, 3), "\0");
+        }
+
+        $posPercent = strpos($value ?? '', '%');
         if ($posPercent !== false) {
-            return substr_replace($value, '', $posPercent, strlen($needle));
+            return substr_replace($value, '', $posPercent, 1);
         }
         return $value;
     }

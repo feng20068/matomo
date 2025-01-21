@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\VisitsSummary\Reports;
 
 use Piwik\API\Request;
@@ -98,10 +99,12 @@ class Get extends \Piwik\Plugin\Report
                     $view->config->removeSparklineMetric(array('avg_time_generation'));
                 }
 
-                if (($firstRow->getColumn('nb_pageviews')
+                if (
+                    ($firstRow->getColumn('nb_pageviews')
                     + $firstRow->getColumn('nb_downloads')
                     + $firstRow->getColumn('nb_outlinks')) == 0
-                    && $firstRow->getColumn('nb_actions') > 0) {
+                    && $firstRow->getColumn('nb_actions') > 0
+                ) {
                     $view->config->removeSparklineMetric(array('nb_downloads', 'nb_uniq_downloads'));
                     $view->config->removeSparklineMetric(array('nb_outlinks', 'nb_uniq_outlinks'));
                     $view->config->removeSparklineMetric(array('nb_pageviews', 'nb_uniq_pageviews'));
@@ -119,7 +122,6 @@ class Get extends \Piwik\Plugin\Report
             // Add evolution values to sparklines
             list($lastPeriodDate, $ignore) = Range::getLastDate();
             if ($lastPeriodDate !== false) {
-
                 $currentPeriod = Period\Factory::build(Piwik::getPeriod(), Common::getRequestVar('date'));
                 $currentPrettyDate = ($currentPeriod instanceof Month ? $currentPeriod->getLocalizedLongString() : $currentPeriod->getPrettyString());
                 $lastPeriod = Period\Factory::build(Piwik::getPeriod(), $lastPeriodDate);
@@ -157,9 +159,9 @@ class Get extends \Piwik\Plugin\Report
                         'pastValue' => $pastValue,
                         'isLowerValueBetter' => Metrics::isLowerValueBetter($columnName),
                         'tooltip' => Piwik::translate('General_EvolutionSummaryGeneric', [
-                            $currentValueFormatted.' '.$columnTranslation,
+                            $currentValueFormatted . ' ' . $columnTranslation,
                             $currentPrettyDate,
-                            $pastValueFormatted.' '.$columnTranslation,
+                            $pastValueFormatted . ' ' . $columnTranslation,
                             $lastPrettyDate,
                             CalculateEvolutionFilter::calculate($value, $pastValue, $precision = 1)])
                     ];
@@ -208,7 +210,6 @@ class Get extends \Piwik\Plugin\Report
             'nb_uniq_pageviews' => 'NbUniquePageviewsDescription',
             'bounce_rate' => 'NbVisitsBounced',
         );
-
     }
 
     private function getSparklineTranslations()
@@ -263,7 +264,7 @@ class Get extends \Piwik\Plugin\Report
             $view->config->addSparklineMetric(array('nb_actions_per_visit'), 71);
             $view->config->addSparklineMetric(array('nb_outlinks', 'nb_uniq_outlinks'), 72);
 
-            if (version_compare(DbHelper::getInstallVersion(),'4.0.0-b1', '<')) {
+            if (version_compare(DbHelper::getInstallVersion(), '4.0.0-b1', '<')) {
                 $view->config->addSparklineMetric(array('avg_time_generation'), 73);
             }
 
@@ -308,5 +309,4 @@ class Get extends \Piwik\Plugin\Report
             $dataTable->deleteColumn($this->usersColumn, true);
         }
     }
-
 }

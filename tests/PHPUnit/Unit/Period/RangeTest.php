@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Unit\Period;
@@ -179,7 +180,7 @@ class RangeTest extends BasePeriodTest
 
     // test range date1,date2
     // see https://github.com/piwik/piwik/issues/6194
-    public function testRangeComma3_EndDateIncludesToday()
+    public function testRangeComma3EndDateIncludesToday()
     {
         $range = new Range('day', '2008-01-01,today');
         $subPeriods = $range->getSubperiods();
@@ -189,7 +190,7 @@ class RangeTest extends BasePeriodTest
     }
 
     // test range date1,date2
-    public function testRangeComma4_EndDateIncludesTodayWithTimezone()
+    public function testRangeComma4EndDateIncludesTodayWithTimezone()
     {
         Date::$now = strtotime('2020-08-01 03:00:00');
         $range = new Range('day', '2008-01-01,today', 'Europe/Berlin');
@@ -201,7 +202,7 @@ class RangeTest extends BasePeriodTest
     }
 
     // test range date1,date2
-    public function testRangeComma5_EndDateIncludesTodayWithTimezoneAfterCurrentUTCDate()
+    public function testRangeComma5EndDateIncludesTodayWithTimezoneAfterCurrentUTCDate()
     {
         Date::$now = strtotime('2020-08-01 03:00:00');
         $range = new Range('day', '2008-01-01,today', 'Pacific/Auckland');
@@ -213,7 +214,7 @@ class RangeTest extends BasePeriodTest
     }
 
     // test range date1,date2
-    public function testRangeComma6_EndDateIncludesTodayWithTimezoneBeforeCurrentUTCDate()
+    public function testRangeComma6EndDateIncludesTodayWithTimezoneBeforeCurrentUTCDate()
     {
         Date::$now = strtotime('2020-08-01 03:00:00');
         $range = new Range('day', '2008-01-01,today', 'America/New_York');
@@ -265,7 +266,7 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals(count($correct), $range2->getNumberOfSubperiods());
         $this->assertEquals($correct, $range->toString());
         $this->assertEquals($correct, $range2->toString());
-        $this->assertEquals('2007-12-17,2008-01-06' , $range2->getRangeString());
+        $this->assertEquals('2007-12-17,2008-01-06', $range2->getRangeString());
     }
 
     // test range date1,date2
@@ -273,37 +274,36 @@ class RangeTest extends BasePeriodTest
     {
         $range = new Range('year', '2006-12-22,2007-01-03');
 
-        $correct = array(
-            implode(',', array(
-                0  => '2006-01-01',
-                1  => '2006-02-01',
-                2  => '2006-03-01',
-                3  => '2006-04-01',
-                4  => '2006-05-01',
-                5  => '2006-06-01',
-                6  => '2006-07-01',
-                7  => '2006-08-01',
-                8  => '2006-09-01',
-                9  => '2006-10-01',
+        $correct = [
+            implode(',', [
+                0 => '2006-01-01',
+                1 => '2006-02-01',
+                2 => '2006-03-01',
+                3 => '2006-04-01',
+                4 => '2006-05-01',
+                5 => '2006-06-01',
+                6 => '2006-07-01',
+                7 => '2006-08-01',
+                8 => '2006-09-01',
+                9 => '2006-10-01',
                 10 => '2006-11-01',
                 11 => '2006-12-01',
-            )),
-            1 =>
-                implode(',', array(
-                0  => '2007-01-01',
-                1  => '2007-02-01',
-                2  => '2007-03-01',
-                3  => '2007-04-01',
-                4  => '2007-05-01',
-                5  => '2007-06-01',
-                6  => '2007-07-01',
-                7  => '2007-08-01',
-                8  => '2007-09-01',
-                9  => '2007-10-01',
+            ]),
+            1 => implode(',', [
+                0 => '2007-01-01',
+                1 => '2007-02-01',
+                2 => '2007-03-01',
+                3 => '2007-04-01',
+                4 => '2007-05-01',
+                5 => '2007-06-01',
+                6 => '2007-07-01',
+                7 => '2007-08-01',
+                8 => '2007-09-01',
+                9 => '2007-10-01',
                 10 => '2007-11-01',
                 11 => '2007-12-01',
-            )),
-        );
+            ]),
+        ];
         $this->assertEquals(count($correct), $range->getNumberOfSubperiods());
         $this->assertEquals($correct, $range->toString());
         $this->assertEquals('2006-01-01,2007-12-31', $range->getRangeString());
@@ -404,6 +404,17 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals('2006-12-01,2007-01-31', $range->getRangeString());
     }
 
+    // test range date1,date2
+    public function testRangeMonthcommaAfterMaxAllowedDate()
+    {
+        Date::$now = strtotime('2024-07-09');
+        $range = new Range('month', '2024-01-01,2100-01-03');
+
+        // range should be limited to 2034, so includes 11 years
+        $this->assertEquals(11 * 12, $range->getNumberOfSubperiods());
+        $this->assertEquals('2024-01-01,2034-12-31', $range->getRangeString());
+    }
+
     // test range WEEK
     public function testRangeWeek()
     {
@@ -480,7 +491,7 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function testRangePreviousmonth_onLastDayOfMonth()
+    public function testRangePreviousmonthOnLastDayOfMonth()
     {
         $end = Date::factory('2013-10-31');
         $range = new Range('month', 'previous10', 'UTC', $end);
@@ -499,7 +510,7 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function testRangePreviousweek_onLastDayOfWeek()
+    public function testRangePreviousweekOnLastDayOfWeek()
     {
         $end = Date::factory('2013-11-03');
         $range = new Range('week', 'previous2', 'UTC', $end);
@@ -515,7 +526,7 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function testRangePreviousweek_onFirstDayOfWeek()
+    public function testRangePreviousweekOnFirstDayOfWeek()
     {
         $end = Date::factory('2013-11-04');
         $range = new Range('week', 'previous2', 'UTC', $end);
@@ -532,7 +543,7 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function testRangeLastweek_onFirstDayOfWeek()
+    public function testRangeLastweekOnFirstDayOfWeek()
     {
         $end = Date::factory('2013-11-04');
         $range = new Range('week', 'last2', 'UTC', $end);
@@ -548,17 +559,17 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function testRangeLastmonth_onLastDayOfMonth()
+    public function testRangeLastmonthOnLastDayOfMonth()
     {
         $end = Date::factory('2013-10-31');
         $range = new Range('month', 'last10', 'UTC', $end);
 
-        $correct = array();
+        $correct = [];
         for ($i = 0; $i < 10; $i++) {
             $date = $end->subMonth($i);
-            $week = new Month($date);
+            $month = new Month($date);
 
-            $correct[] = implode(',', $week->toString());
+            $correct[] = implode(',', $month->toString());
         }
         $correct = array_reverse($correct);
 
@@ -566,18 +577,18 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function _testRangePreviousmonth_onFirstOfMonth()
+    public function testRangePreviousmonthOnFirstOfMonth()
     {
         $end = Date::factory('2013-11-01');
         $range = new Range('month', 'previous10', 'UTC', $end);
         $end = $end->subMonth(1);
 
-        $correct = array();
+        $correct = [];
         for ($i = 0; $i < 10; $i++) {
             $date = $end->subMonth($i);
-            $week = new Month($date);
+            $month = new Month($date);
 
-            $correct[] = $week->toString();
+            $correct[] = implode(',', $month->toString());
         }
         $correct = array_reverse($correct);
 
@@ -585,17 +596,17 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function _testRangeLastmonth_onFirstOfMonth()
+    public function testRangeLastmonthOnFirstOfMonth()
     {
         $end = Date::factory('2013-11-01');
         $range = new Range('month', 'last10', 'UTC', $end);
 
-        $correct = array();
+        $correct = [];
         for ($i = 0; $i < 10; $i++) {
             $date = $end->subMonth($i);
-            $week = new Month($date);
+            $month = new Month($date);
 
-            $correct[] = $week->toString();
+            $correct[] = implode(',', $month->toString());
         }
         $correct = array_reverse($correct);
 
@@ -665,7 +676,7 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function testCustomRangeIsYear_UsesFullYear()
+    public function testCustomRangeIsYearUsesFullYear()
     {
         $range = new Range('range', '2011-01-01,2011-12-31', 'UTC', Date::factory('2012-01-03'));
         $year2011 = new Year(Date::factory('2011-02-02'));
@@ -678,7 +689,7 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function testCustomRangeYear_UsesCurrentYear()
+    public function testCustomRangeYearUsesCurrentYear()
     {
         $rangeString = '2013-01-01,2013-11-01';
         $range = new Range('range', $rangeString, 'UTC', Date::factory('2013-11-01'));
@@ -694,7 +705,7 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($rangeString, $range->getRangeString());
     }
 
-    public function testCustomRangeYearUsesCurrentYear_onLastDayOfYear()
+    public function testCustomRangeYearUsesCurrentYearOnLastDayOfYear()
     {
         $range = new Range('range', '2013-01-01,2013-12-31', 'UTC', Date::factory('2013-12-31'));
         $year2013 = new Year(Date::factory('2013-01-01'));
@@ -1143,7 +1154,7 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals($correct, $range->toString());
     }
 
-    public function test_CustomRange_startsWithWeek_EndsWithMonth()
+    public function testCustomRangeStartsWithWeekEndsWithMonth()
     {
         $range = new Range('range', '2011-07-25,2011-08-31');
 
@@ -1213,6 +1224,28 @@ class RangeTest extends BasePeriodTest
         $this->assertEquals(array(), $range->toString());
 
         $range->getPrettyString();
+    }
+
+    /**
+     * @dataProvider getAbnormalDateRanges
+     */
+    public function testCustomRangeWithOutOfRangeDate($dateStr)
+    {
+        self::expectException(Exception::class);
+
+        $range = new Range('range', $dateStr);
+        $range->getDateStart();
+    }
+
+    public function getAbnormalDateRanges(): iterable
+    {
+        yield 'range starts before first website creation' => [
+            '1900-01-01,2021-01-01',
+        ];
+
+        yield 'range starts after it ends' => [
+            '2024-01-01,2020-12-16',
+        ];
     }
 
     public function testCustomRangeLastN()
@@ -1306,7 +1339,7 @@ class RangeTest extends BasePeriodTest
     /**
      * @link https://github.com/piwik/piwik/pull/7057
      */
-    public function testLastWithoutNumber_shouldBehaveLikeLast1()
+    public function testLastWithoutNumberShouldBehaveLikeLast1()
     {
         $range = new Range('day', 'last');
         $expected = new Range('day', 'last1');
@@ -1318,7 +1351,7 @@ class RangeTest extends BasePeriodTest
     /**
      * @link https://github.com/piwik/piwik/pull/7057
      */
-    public function testPreviousWithoutNumber_shouldBehaveLikePrevious1()
+    public function testPreviousWithoutNumberShouldBehaveLikePrevious1()
     {
         $range = new Range('day', 'previous');
         $expected = new Range('day', 'previous1');
@@ -1330,7 +1363,7 @@ class RangeTest extends BasePeriodTest
     /**
      * @link https://github.com/piwik/piwik/pull/7057
      */
-    public function testLast0_shouldBehaveLikeLast1()
+    public function testLast0ShouldBehaveLikeLast1()
     {
         $range = new Range('day', 'last0');
         $expected = new Range('day', 'last1');
@@ -1342,7 +1375,7 @@ class RangeTest extends BasePeriodTest
     /**
      * @link https://github.com/piwik/piwik/pull/7057
      */
-    public function testPrevious0_shouldBehaveLikePrevious1()
+    public function testPrevious0ShouldBehaveLikePrevious1()
     {
         $range = new Range('day', 'previous0');
         $expected = new Range('day', 'previous1');

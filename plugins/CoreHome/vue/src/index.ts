@@ -1,8 +1,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 import './noAdblockFlag';
@@ -12,6 +12,7 @@ import './Periods/Month';
 import './Periods/Year';
 import './Periods/Range';
 import './AjaxHelper/AjaxHelper.adapter';
+import './NumberFormatter/NumberFormatter.adapter';
 import './PopoverHandler/PopoverHandler';
 import './zenMode';
 import Matomo from './Matomo/Matomo';
@@ -21,17 +22,19 @@ export { default as importPluginUmd } from './importPluginUmd';
 export { default as useExternalPluginComponent } from './useExternalPluginComponent';
 export { default as DirectiveUtilities } from './directiveUtilities';
 export { default as debounce } from './debounce';
-export { default as getFormattedEvolution } from './getFormattedEvolution';
 export { default as clone } from './clone';
 export { default as VueEntryContainer } from './VueEntryContainer/VueEntryContainer.vue';
 export { default as ActivityIndicator } from './ActivityIndicator/ActivityIndicator.vue';
+export { default as MatomoLoader } from './MatomoLoader/MatomoLoader.vue';
 export * from './translate';
+export * from './externalLink';
 export { default as Alert } from './Alert/Alert.vue';
 export { default as AjaxHelper, AjaxOptions } from './AjaxHelper/AjaxHelper';
 export { setCookie, getCookie, deleteCookie } from './CookieHelper/CookieHelper';
 export { default as MatomoUrl } from './MatomoUrl/MatomoUrl';
 export { Matomo };
 export * from './Periods';
+export * from './NumberFormatter';
 export { default as DropdownMenu } from './DropdownMenu/DropdownMenu';
 export { default as FocusAnywhereButHere } from './FocusAnywhereButHere/FocusAnywhereButHere';
 export { default as FocusIf } from './FocusIf/FocusIf';

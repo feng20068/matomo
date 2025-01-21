@@ -1,15 +1,17 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreAdminHome;
 
 use Exception;
 use Monolog\Handler\StreamHandler;
+use Piwik\Changes\UserChanges;
 use Piwik\Log\Logger;
 use Piwik\Access;
 use Piwik\ArchiveProcessor\Rules;
@@ -28,6 +30,7 @@ use Piwik\SettingsServer;
 use Piwik\Site;
 use Piwik\Tracker\Failures;
 use Piwik\Url;
+use Piwik\Plugins\UsersManager\Model as UsersModel;
 
 /**
  * @method static \Piwik\Plugins\CoreAdminHome\API getInstance()
@@ -54,9 +57,12 @@ class API extends \Piwik\Plugin\API
      */
     private $optOutManager;
 
-    public function __construct(Scheduler $scheduler, ArchiveInvalidator $invalidator, Failures $trackingFailures,
-                                OptOutManager $optOutManager)
-    {
+    public function __construct(
+        Scheduler $scheduler,
+        ArchiveInvalidator $invalidator,
+        Failures $trackingFailures,
+        OptOutManager $optOutManager
+    ) {
         $this->scheduler = $scheduler;
         $this->invalidator = $invalidator;
         $this->trackingFailures = $trackingFailures;
@@ -151,9 +157,14 @@ class API extends \Piwik\Plugin\API
      * @return array
      * @hideExceptForSuperUser
      */
-    public function invalidateArchivedReports($idSites, $dates, $period = false, $segment = false, $cascadeDown = false,
-                                              $_forceInvalidateNonexistent = false)
-    {
+    public function invalidateArchivedReports(
+        $idSites,
+        $dates,
+        $period = false,
+        $segment = false,
+        $cascadeDown = false,
+        $_forceInvalidateNonexistent = false
+    ) {
         $idSites = Site::getIdSitesFromIdSitesString($idSites);
         if (empty($idSites)) {
             throw new Exception("Specify a value for &idSites= as a comma separated list of website IDs, for which your token_auth has 'admin' permission");
@@ -376,13 +387,27 @@ class API extends \Piwik\Plugin\API
      *
      * @internal
      */
-    public function getOptOutJSEmbedCode(string $backgroundColor, string $fontColor,
-                                         string $fontSize, string $fontFamily, bool $applyStyling, bool $showIntro,
-                                         string $matomoUrl, string $language): string
-    {
+    public function getOptOutJSEmbedCode(
+        string $backgroundColor,
+        string $fontColor,
+        string $fontSize,
+        string $fontFamily,
+        bool $applyStyling,
+        bool $showIntro,
+        string $matomoUrl,
+        string $language
+    ): string {
 
-        return $this->optOutManager->getOptOutJSEmbedCode($matomoUrl, $language, $backgroundColor, $fontColor, $fontSize,
-                                                          $fontFamily, $applyStyling, $showIntro);
+        return $this->optOutManager->getOptOutJSEmbedCode(
+            $matomoUrl,
+            $language,
+            $backgroundColor,
+            $fontColor,
+            $fontSize,
+            $fontFamily,
+            $applyStyling,
+            $showIntro
+        );
     }
 
     /**
@@ -399,12 +424,35 @@ class API extends \Piwik\Plugin\API
      *
      * @internal
      */
-    public function getOptOutSelfContainedEmbedCode(string $backgroundColor,
-                                                    string $fontColor, string $fontSize, string $fontFamily,
-                                                    bool $applyStyling = false, bool $showIntro = true): string
-    {
+    public function getOptOutSelfContainedEmbedCode(
+        string $backgroundColor,
+        string $fontColor,
+        string $fontSize,
+        string $fontFamily,
+        bool $applyStyling = false,
+        bool $showIntro = true
+    ): string {
         return $this->optOutManager->getOptOutSelfContainedEmbedCode($backgroundColor, $fontColor, $fontSize, $fontFamily, $applyStyling, $showIntro);
     }
 
 
+    /**
+     * Mark all "what's new" changes as having been read by the user
+     *
+     * @internal
+     */
+    public function whatIsNewMarkAllChangesReadForCurrentUser()
+    {
+        Piwik::checkUserHasSomeViewAccess();
+        Piwik::checkUserIsNotAnonymous();
+
+        $model = new UsersModel();
+        $user = $model->getUser(Piwik::getCurrentUserLogin());
+        if (is_array($user)) {
+            $userChanges = new UserChanges($user);
+            $userChanges->markChangesAsRead();
+            return true;
+        }
+        return false;
+    }
 }

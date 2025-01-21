@@ -1,14 +1,15 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Monolog\Formatter;
 
-use Symfony\Bridge\Monolog\Formatter\ConsoleFormatter AS SymfonyConsoleFormatter;
+use Symfony\Bridge\Monolog\Formatter\ConsoleFormatter as SymfonyConsoleFormatter;
 
 class ConsoleFormatter extends SymfonyConsoleFormatter
 {

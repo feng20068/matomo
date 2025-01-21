@@ -1,14 +1,18 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 <template>
   <div
     v-expand-on-hover="{expander: 'expander'}"
     id="header_message"
     class="piwikSelector"
-    :class="{header_info: !latestVersionAvailable, update_available: latestVersionAvailable}"
+    :class="{
+      header_info: !latestVersionAvailable || lastUpdateCheckFailed,
+      update_available: latestVersionAvailable
+    }"
   >
     <Passthrough v-if="latestVersionAvailable && !isPiwikDemo">
       <span
@@ -25,22 +29,23 @@
         class="title"
         href="?module=CoreUpdater&action=newVersionAvailable"
         style="cursor:pointer;"
+        ref="expander"
       >
         {{ translate('General_NewUpdatePiwikX', latestVersionAvailable) }}
         <span class="icon-warning"></span>
       </a>
     </Passthrough>
-    <Passthrough v-else-if="isSuperUser && isAdminArea">
+    <Passthrough v-else-if="isSuperUser && (isAdminArea || lastUpdateCheckFailed)">
       <a v-if="isInternetEnabled" class="title" v-html="$sanitize(updateCheck)"></a>
       <a
         v-else
         class="title"
-        href="https://matomo.org/changelog/"
+        :href="externalRawLink('https://matomo.org/changelog/')"
         target="_blank"
         rel="noreferrer noopener"
       >
         <span id="updateCheckLinkContainer">
-            {{ translate('CoreHome_SeeAvailableVersions') }}
+          {{ translate('CoreHome_SeeAvailableVersions') }}
         </span>
       </a>
     </Passthrough>
@@ -62,10 +67,12 @@ import { defineComponent } from 'vue';
 import { translate } from '../translate';
 import ExpandOnHover from '../ExpandOnHover/ExpandOnHover';
 import Passthrough from '../Passthrough/Passthrough.vue';
+import { externalLink, externalRawLink } from '../externalLink';
 
 export default defineComponent({
   props: {
     isMultiServerEnvironment: Boolean,
+    lastUpdateCheckFailed: Boolean,
     latestVersionAvailable: String,
     isPiwikDemo: Boolean,
     isSuperUser: Boolean,
@@ -88,7 +95,7 @@ export default defineComponent({
       let text = '';
 
       if (this.isMultiServerEnvironment) {
-        const link = `https://builds.matomo.org/piwik-${this.latestVersionAvailable}.zip`;
+        const link = externalRawLink(`https://builds.matomo.org/matomo-${this.latestVersionAvailable}.zip`);
         text = translate(
           'CoreHome_OneClickUpdateNotPossibleAsMultiServerEnvironment',
           `<a rel="noreferrer noopener" href="${link}">builds.matomo.org</a>`,
@@ -99,7 +106,7 @@ export default defineComponent({
           this.latestVersionAvailable || '',
           '<br /><a href="index.php?module=CoreUpdater&amp;action=newVersionAvailable">',
           '</a>',
-          '<a target="_blank" rel="noreferrer noopener" href="https://matomo.org/changelog/">',
+          externalLink('https://matomo.org/changelog/'),
           '</a>',
         );
       }
@@ -111,8 +118,9 @@ export default defineComponent({
         'General_NewUpdatePiwikX',
         this.latestVersionAvailable || '',
       );
-      const matomoLink = '<a target="_blank" rel="noreferrer noopener" href="https://matomo.org/">Matomo</a>';
-      const changelogLinkStart = '<a target="_blank" rel="noreferrer noopener" href="https://matomo.org/changelog/">';
+      /* eslint-disable prefer-template */
+      const matomoLink = externalLink('https://matomo.org/') + 'Matomo</a>';
+      const changelogLinkStart = externalLink('https://matomo.org/changelog/');
 
       const text = translate(
         'General_PiwikXIsAvailablePleaseNotifyPiwikAdmin',

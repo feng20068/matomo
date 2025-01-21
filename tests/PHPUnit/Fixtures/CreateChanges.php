@@ -1,47 +1,45 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tests\Fixtures;
 
 use Piwik\Changes\Model as ChangesModel;
+use Piwik\Common;
+use Piwik\Date;
+use Piwik\Db;
 use Piwik\Tests\Framework\Fixture;
 
 class CreateChanges extends Fixture
 {
-
-    private $file;
+    private $idSite = 1;
 
     public function setUp(): void
     {
         parent::setUp();
         Fixture::createSuperUser();
-        if (!self::siteCreated($idSite = 1)) {
+        if (!self::siteCreated($idSite = $this->idSite)) {
             self::createWebsite('2021-01-01');
         }
-
-        $this->file = PIWIK_DOCUMENT_ROOT . '/plugins/CoreAdminHome/changes.json';
+        $this->trackVisits();
         $this->createChanges();
-    }
-
-    public function tearDown(): void
-    {
-        parent::tearDown();
-        self::cleanup();
-    }
-
-    protected function cleanup(): void
-    {
-        if (file_exists($this->file)) {
-            unlink($this->file);
-        }
     }
 
     private function createChanges()
     {
+        // Manually insert a change that is older than 6 months
+        Db::query(
+            "INSERT INTO `" . Common::prefixTable('changes') . "`
+                   (`idchange`, `created_time`, `plugin_name`, `version`, `title`, `description`, `link_name`, `link`)
+               VALUES
+                   (1, '2021-12-17 12:46:04', 'ExamplePlugin', '4.0.1', 'New feature y added', 'Now you can do c with d like this.', NULL, NULL);"
+        );
+
 
         $changes = [
             [
@@ -66,10 +64,18 @@ class CreateChanges extends Fixture
         ];
 
         $changes = array_reverse($changes);
-        $changesModel = new ChangesModel();
+        $changesModel = new ChangesModel(); // Intentionally not using the FakeChangesModel, we want these changes added
         foreach ($changes as $change) {
             $changesModel->addChange('CoreHome', $change);
         }
+    }
 
+    private function trackVisits()
+    {
+        $dateTime = Date::today()->toString();
+        $t = self::getTracker($this->idSite, $dateTime, $defaultInit = true);
+
+        $t->setUrl('http://example.org/index.htm');
+        self::checkResponse($t->doTrackPageView('0'));
     }
 }

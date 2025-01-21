@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -18,7 +19,7 @@
       tabindex="4"
       ref="expander"
     >
-      <span class="icon icon-arrow-bottom"></span>{{ translate('Dashboard_Dashboard') }}
+      <span class="icon icon-chevron-down"></span>{{ translate('Dashboard_Dashboard') }}
     </a>
     <div class="dropdown positionInViewport">
       <ul class="submenu">
@@ -124,10 +125,7 @@ export default defineComponent({
 
     const root = ref<HTMLElement|null>(null);
 
-    onMounted(() => {
-      Matomo.postEvent('Dashboard.DashboardSettings.mounted', root.value);
-
-      rootJQuery.value = $(root.value!);
+    const createWidgetPreview = () => {
       rootJQuery.value.widgetPreview({
         isWidgetAvailable,
         onSelect: (widgetUniqueId: string) => {
@@ -138,6 +136,18 @@ export default defineComponent({
           });
         },
         resetOnSelect: true,
+      });
+    };
+
+    onMounted(() => {
+      Matomo.postEvent('Dashboard.DashboardSettings.mounted', root.value);
+
+      rootJQuery.value = $(root.value!);
+      createWidgetPreview();
+
+      // When the available widgets list is reloaded, re-create the widget preview to include update
+      Matomo.on('WidgetsStore.reloaded', () => {
+        createWidgetPreview();
       });
 
       rootJQuery.value.hide(); // hide dashboard-manager initially (shown manually by Dashboard.ts)

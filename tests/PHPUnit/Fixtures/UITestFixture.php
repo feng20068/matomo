@@ -3,8 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Fixtures;
@@ -52,7 +52,7 @@ use Piwik\CronArchive\SegmentArchiving;
  */
 class UITestFixture extends SqlDump
 {
-    const FIXTURE_LOCATION = '/tests/resources/OmniFixture-dump.sql';
+    public const FIXTURE_LOCATION = '/tests/resources/OmniFixture-dump.sql';
 
     /**
      * @var XssTesting
@@ -309,7 +309,17 @@ class UITestFixture extends SqlDump
             Filesystem::unlinkRecursive($realDir, true);
         }
 
-        $files = ['index.html', 'page-1.html', 'page-2.html', 'page-3.html', 'page-4.html', 'page-5.html', 'page-6.html'];
+        $files = [
+            'index.html',
+            'opt-out.php',
+            'user-id-visitor-id.php',
+            'page-1.html',
+            'page-2.html',
+            'page-3.html',
+            'page-4.html',
+            'page-5.html',
+            'page-6.html'
+        ];
 
         // copy templates to overlay-test-site-real
         mkdir($realDir);
@@ -368,6 +378,33 @@ class UITestFixture extends SqlDump
     /** Creates two dashboards that split the widgets up into different groups. */
     public function setupDashboards()
     {
+        $oldGet = $_GET;
+
+        $_GET['idSite'] = 1;
+        $_GET['token_auth'] = \Piwik\Piwik::getCurrentUserTokenAuth();
+
+        // create almost empty dashboard first, as this will be loaded as default quite often
+        $dashboard = [
+            [
+                [
+                    'uniqueId' => "widgetVisitsSummarygetEvolutionGraphforceView1viewDataTablegraphEvolution",
+                    'parameters' => [
+                        'module' => 'VisitsSummary',
+                        'action' => 'getEvolutionGraph',
+                        'forceView' => '1',
+                        'viewDataTable' => 'graphEvolution'
+                    ]
+                ]
+            ],
+            [],
+            []
+        ];
+
+        $_GET['name'] = 'D4';
+        $_GET['layout'] = json_encode($dashboard);
+        $_GET['idDashboard'] = 1;
+        FrontController::getInstance()->fetchDispatch('Dashboard', 'saveLayout');
+
         $dashboardColumnCount = 3;
         $dashboardCount = 4;
 
@@ -380,10 +417,6 @@ class UITestFixture extends SqlDump
         for ($i = 0; $i != $dashboardCount; ++$i) {
             $dashboards[] = $layout;
         }
-
-        $oldGet = $_GET;
-        $_GET['idSite'] = 1;
-        $_GET['token_auth'] = \Piwik\Piwik::getCurrentUserTokenAuth();
 
         // collect widgets & sort them so widget order is not important
         $allWidgets = Request::processRequest('API.getWidgetMetadata', [
@@ -459,32 +492,9 @@ class UITestFixture extends SqlDump
                 $_GET['name'] = 'dashboard name' . $id;
             }
             $_GET['layout'] = json_encode($layout);
-            $_GET['idDashboard'] = $id + 1;
+            $_GET['idDashboard'] = $id + 2;
             FrontController::getInstance()->fetchDispatch('Dashboard', 'saveLayout');
         }
-
-        // create empty dashboard
-        $dashboard = [
-            [
-                [
-                    'uniqueId' => "widgetVisitsSummarygetEvolutionGraphforceView1viewDataTablegraphEvolution",
-                    'parameters' => [
-                        'module' => 'VisitsSummary',
-                        'action' => 'getEvolutionGraph',
-                        'forceView' => '1',
-                        'viewDataTable' => 'graphEvolution'
-                    ]
-                ]
-            ],
-            [],
-            []
-        ];
-
-        $_GET['name'] = 'D4';
-        $_GET['layout'] = json_encode($dashboard);
-        $_GET['idDashboard'] = 5;
-        $_GET['idSite'] = 2;
-        FrontController::getInstance()->fetchDispatch('Dashboard', 'saveLayout');
 
         $_GET = $oldGet;
     }
@@ -620,7 +630,6 @@ class XssReport extends Report
         $this->processedMetrics = [new XssProcessedMetric($type)];
         $this->module = 'ExampleAPI';
         $this->action = 'xssReport' . $type;
-        $this->id = 'ExampleAPI.xssReport' . $type;
     }
 }
 

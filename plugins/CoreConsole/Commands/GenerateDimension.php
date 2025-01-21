@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreConsole\Commands;
@@ -52,7 +52,7 @@ class GenerateDimension extends GeneratePluginBase
         $replace       = array('example_action_dimension'  => strtolower($columnName),
                                'example_visit_dimension'   => strtolower($columnName),
                                'example_conversion_dimension'   => strtolower($columnName),
-                               'INTEGER(11) DEFAULT 0 NOT NULL' => strtoupper($columType),
+                               'INTEGER(11) DEFAULT 0 NULL' => strtoupper($columType),
                                'VARCHAR(255) DEFAULT NULL'      => strtoupper($columType),
                                'ExampleDimension'       => $dimensionClassName,
                                'ExampleVisitDimension'  => $dimensionClassName,
@@ -262,5 +262,4 @@ class GenerateDimension extends GeneratePluginBase
 
         return $this->askPluginNameAndValidate($pluginNames, $invalidName);
     }
-
 }

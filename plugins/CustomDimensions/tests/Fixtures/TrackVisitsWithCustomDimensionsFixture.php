@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CustomDimensions\tests\Fixtures;
 
 use Piwik\Context;
@@ -63,18 +65,18 @@ class TrackVisitsWithCustomDimensionsFixture extends Fixture
     private function configureSomeDimensions()
     {
         $configuration = new Configuration();
-        $configuration->configureNewDimension($this->idSite,  'MyName1', CustomDimensions::SCOPE_VISIT, 1, $active = true, $extractions = array(), $caseSensitive = true);
+        $configuration->configureNewDimension($this->idSite, 'MyName1', CustomDimensions::SCOPE_VISIT, 1, $active = true, $extractions = array(), $caseSensitive = true);
 
-        $configuration->configureNewDimension($this->idSite,  'MyName2', CustomDimensions::SCOPE_VISIT, 2, $active = true, $extractions = array(), $caseSensitive = true);
+        $configuration->configureNewDimension($this->idSite, 'MyName2', CustomDimensions::SCOPE_VISIT, 2, $active = true, $extractions = array(), $caseSensitive = true);
         $configuration->configureNewDimension($this->idSite2, 'MyName1', CustomDimensions::SCOPE_VISIT, 1, $active = true, $extractions = array(), $caseSensitive = true);
 
         $extraction1 = new Extraction('urlparam', 'test');
         $extraction2 = new Extraction('urlparam', 'param');
         $extraction3 = new Extraction('url', '/sub_(.{2})/page');
-        $configuration->configureNewDimension($this->idSite,  'MyName3', CustomDimensions::SCOPE_ACTION, 1, $active = true, $extractions = array($extraction3->toArray()), $caseSensitive = true);
-        $configuration->configureNewDimension($this->idSite,  'MyName4', CustomDimensions::SCOPE_ACTION, 2, $active = false, $extractions = array(), $caseSensitive = true);
-        $configuration->configureNewDimension($this->idSite,  'MyName5', CustomDimensions::SCOPE_ACTION, 3, $active = true, $extractions = array($extraction1->toArray(), $extraction2->toArray()), $caseSensitive = true);
-        $configuration->configureNewDimension($this->idSite,  'MyName6', CustomDimensions::SCOPE_VISIT, 4, $active = true, $extractions = array(), $caseSensitive = true);
+        $configuration->configureNewDimension($this->idSite, 'MyName3', CustomDimensions::SCOPE_ACTION, 1, $active = true, $extractions = array($extraction3->toArray()), $caseSensitive = true);
+        $configuration->configureNewDimension($this->idSite, 'MyName4', CustomDimensions::SCOPE_ACTION, 2, $active = false, $extractions = array(), $caseSensitive = true);
+        $configuration->configureNewDimension($this->idSite, 'MyName5', CustomDimensions::SCOPE_ACTION, 3, $active = true, $extractions = array($extraction1->toArray(), $extraction2->toArray()), $caseSensitive = true);
+        $configuration->configureNewDimension($this->idSite, 'MyName6', CustomDimensions::SCOPE_VISIT, 4, $active = true, $extractions = array(), $caseSensitive = true);
 
         Cache::deleteCacheWebsiteAttributes(1);
         Cache::deleteCacheWebsiteAttributes(2);
@@ -84,7 +86,7 @@ class TrackVisitsWithCustomDimensionsFixture extends Fixture
     protected function configureScheduledReport()
     {
         // Context change is needed, as adding the custom dimensions reports looks for the idSite in the request params
-        Context::changeIdSite(1, function() {
+        Context::changeIdSite(1, function () {
             APIScheduledReports::getInstance()->addReport(
                 $idSite = 1,
                 'ScheduledReport',

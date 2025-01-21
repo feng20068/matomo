@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\ArchiveProcessor;
@@ -49,10 +50,13 @@ abstract class RecordBuilder
      * @param string|null $columnToSortByBeforeTruncation
      * @param array|null $columnAggregationOps
      */
-    public function __construct(?int $maxRowsInTable = null, ?int $maxRowsInSubtable = null,
-                                ?string $columnToSortByBeforeTruncation = null, ?array $columnAggregationOps = null,
-                                ?array $columnToRenameAfterAggregation = null)
-    {
+    public function __construct(
+        ?int $maxRowsInTable = null,
+        ?int $maxRowsInSubtable = null,
+        ?string $columnToSortByBeforeTruncation = null,
+        ?array $columnAggregationOps = null,
+        ?array $columnToRenameAfterAggregation = null
+    ) {
         $this->maxRowsInTable = $maxRowsInTable;
         $this->maxRowsInSubtable = $maxRowsInSubtable;
         $this->columnToSortByBeforeTruncation = $columnToSortByBeforeTruncation;
@@ -140,14 +144,19 @@ abstract class RecordBuilder
 
         $recordsBuilt = $this->getRecordMetadata($archiveProcessor);
 
-        $numericRecords = array_filter($recordsBuilt, function (Record $r) { return $r->getType() == Record::TYPE_NUMERIC; });
-        $blobRecords = array_filter($recordsBuilt, function (Record $r) { return $r->getType() == Record::TYPE_BLOB; });
+        $numericRecords = array_filter($recordsBuilt, function (Record $r) {
+            return $r->getType() == Record::TYPE_NUMERIC;
+        });
+        $blobRecords = array_filter($recordsBuilt, function (Record $r) {
+            return $r->getType() == Record::TYPE_BLOB;
+        });
 
         $aggregatedCounts = [];
 
         // make sure if there are requested numeric records that depend on blob records, that the blob records will be archived first
         foreach ($numericRecords as $record) {
-            if (empty($record->getCountOfRecordName())
+            if (
+                empty($record->getCountOfRecordName())
                 || !in_array($record->getName(), $requestedReports)
             ) {
                 continue;
@@ -167,7 +176,8 @@ abstract class RecordBuilder
         }
 
         foreach ($blobRecords as $record) {
-            if (!empty($requestedReports)
+            if (
+                !empty($requestedReports)
                 && (!in_array($record->getName(), $requestedReports)
                     || in_array($record->getName(), $foundRequestedReports))
             ) {
@@ -183,7 +193,8 @@ abstract class RecordBuilder
             // only do recursive row count if there is a numeric record that depends on it
             $countRecursiveRows = false;
             foreach ($numericRecords as $numeric) {
-                if ($numeric->getCountOfRecordName() == $record->getName()
+                if (
+                    $numeric->getCountOfRecordName() == $record->getName()
                     && $numeric->getCountOfRecordNameIsRecursive()
                 ) {
                     $countRecursiveRows = true;
@@ -206,8 +217,12 @@ abstract class RecordBuilder
 
         if (!empty($numericRecords)) {
             // handle metrics that are aggregated using metric values from child periods
-            $autoAggregateMetrics = array_filter($numericRecords, function (Record $r) { return empty($r->getCountOfRecordName()); });
-            $autoAggregateMetrics = array_map(function (Record $r) { return $r->getName(); }, $autoAggregateMetrics);
+            $autoAggregateMetrics = array_filter($numericRecords, function (Record $r) {
+                return empty($r->getCountOfRecordName());
+            });
+            $autoAggregateMetrics = array_map(function (Record $r) {
+                return $r->getName();
+            }, $autoAggregateMetrics);
 
             if (!empty($requestedReports)) {
                 $autoAggregateMetrics = array_filter($autoAggregateMetrics, function ($name) use ($requestedReports, $foundRequestedReports) {
@@ -224,17 +239,26 @@ abstract class RecordBuilder
             // handle metrics that are set to counts of blob records
             $recordCountMetricValues = [];
 
-            $recordCountMetrics = array_filter($numericRecords, function (Record $r) { return !empty($r->getCountOfRecordName()); });
+            $recordCountMetrics = array_filter($numericRecords, function (Record $r) {
+                return !empty($r->getCountOfRecordName());
+            });
             foreach ($recordCountMetrics as $record) {
                 $dependentRecordName = $record->getCountOfRecordName();
                 if (empty($aggregatedCounts[$dependentRecordName])) {
                     continue; // dependent record not archived, so skip this metric
                 }
 
+                $count = $aggregatedCounts[$dependentRecordName];
+
                 if ($record->getCountOfRecordNameIsRecursive()) {
-                    $recordCountMetricValues[$record->getName()] = $aggregatedCounts[$dependentRecordName]['recursive'];
+                    $recordCountMetricValues[$record->getName()] = $count['recursive'];
                 } else {
-                    $recordCountMetricValues[$record->getName()] = $aggregatedCounts[$dependentRecordName]['level0'];
+                    $recordCountMetricValues[$record->getName()] = $count['level0'];
+                }
+
+                $transform = $record->getMultiplePeriodTransform();
+                if (!empty($transform)) {
+                    $recordCountMetricValues[$record->getName()] = $transform($recordCountMetricValues[$record->getName()], $count);
                 }
             }
 
@@ -250,7 +274,7 @@ abstract class RecordBuilder
      *
      * @return Record[]
      */
-    public abstract function getRecordMetadata(ArchiveProcessor $archiveProcessor): array;
+    abstract public function getRecordMetadata(ArchiveProcessor $archiveProcessor): array;
 
     /**
      * Derived classes should define this method to aggregate log data for a single day and return the records
@@ -258,11 +282,16 @@ abstract class RecordBuilder
      *
      * @return (DataTable|int|float|string)[] Record values indexed by their record name, eg, `['MyPlugin_MyRecord' => new DataTable()]`
      */
-    protected abstract function aggregate(ArchiveProcessor $archiveProcessor): array;
+    abstract protected function aggregate(ArchiveProcessor $archiveProcessor): array;
 
-    protected function insertBlobRecord(ArchiveProcessor $archiveProcessor, string $recordName, DataTable $record,
-                                        ?int $maxRowsInTable, ?int $maxRowsInSubtable, ?string $columnToSortByBeforeTruncation): void
-    {
+    protected function insertBlobRecord(
+        ArchiveProcessor $archiveProcessor,
+        string $recordName,
+        DataTable $record,
+        ?int $maxRowsInTable,
+        ?int $maxRowsInSubtable,
+        ?string $columnToSortByBeforeTruncation
+    ): void {
         $serialized = $record->getSerialized(
             $maxRowsInTable ?: $this->maxRowsInTable,
             $maxRowsInSubtable ?: $this->maxRowsInSubtable,

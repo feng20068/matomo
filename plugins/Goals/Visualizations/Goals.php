@@ -3,8 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Goals\Visualizations;
@@ -16,6 +16,7 @@ use Piwik\DataTable\Filter\AddColumnsProcessedMetricsGoal;
 use Piwik\Piwik;
 use Piwik\Plugins\CoreVisualizations\Visualizations\HtmlTable;
 use Piwik\Site;
+use Piwik\Url;
 
 require_once PIWIK_INCLUDE_PATH . '/core/Twig.php';
 
@@ -24,13 +25,13 @@ require_once PIWIK_INCLUDE_PATH . '/core/Twig.php';
  */
 class Goals extends HtmlTable
 {
-    const ID = 'tableGoals';
-    const FOOTER_ICON       = 'icon-goal';
-    const FOOTER_ICON_TITLE = 'General_DisplayTableWithGoalMetrics';
+    public const ID = 'tableGoals';
+    public const FOOTER_ICON       = 'icon-goal';
+    public const FOOTER_ICON_TITLE = 'General_DisplayTableWithGoalMetrics';
 
-    const GOALS_DISPLAY_NORMAL = 0;
-    const GOALS_DISPLAY_PAGES = 1;
-    const GOALS_DISPLAY_ENTRY_PAGES = 2;
+    public const GOALS_DISPLAY_NORMAL = 0;
+    public const GOALS_DISPLAY_PAGES = 1;
+    public const GOALS_DISPLAY_ENTRY_PAGES = 2;
 
     private $displayType = self::GOALS_DISPLAY_NORMAL;
 
@@ -39,23 +40,17 @@ class Goals extends HtmlTable
         $request = $this->getRequestArray();
         $idGoal = $request['idGoal'] ?? null;
 
-        // Check if one of the pages display types should be used
         $requestMethod = $this->requestConfig->getApiModuleToRequest() . '.' . $this->requestConfig->getApiMethodToRequest();
-        if (in_array($requestMethod, ['Actions.getPageUrls', 'Actions.getPageTitles'])) {
-            $this->displayType = self::GOALS_DISPLAY_PAGES;
+        $idGoal = AddColumnsProcessedMetricsGoal::getProcessOnlyIdGoalToUseForReport($idGoal, $requestMethod);
+
+        if (!empty($idGoal)) {
             $this->config->filters[] = ['Piwik\Plugins\Goals\DataTable\Filter\RemoveUnusedGoalRevenueColumns'];
-            if ($idGoal === Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_ORDER || $idGoal === Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_CART) {
-                $this->requestConfig->request_parameters_to_modify['idGoal'] = AddColumnsProcessedMetricsGoal::GOALS_ENTRY_PAGES_ECOMMERCE;
-            } else {
-                $this->requestConfig->request_parameters_to_modify['idGoal'] = AddColumnsProcessedMetricsGoal::GOALS_PAGES;
-            }
-        } elseif (in_array($requestMethod, ['Actions.getEntryPageUrls', 'Actions.getEntryPageTitles'])) {
-            $this->displayType = self::GOALS_DISPLAY_ENTRY_PAGES;
-            $this->config->filters[] = ['Piwik\Plugins\Goals\DataTable\Filter\RemoveUnusedGoalRevenueColumns'];
-            if ($idGoal === Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_ORDER || $idGoal === Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_CART) {
-                $this->requestConfig->request_parameters_to_modify['idGoal'] = AddColumnsProcessedMetricsGoal::GOALS_ENTRY_PAGES_ECOMMERCE;
-            } else {
-                $this->requestConfig->request_parameters_to_modify['idGoal'] = AddColumnsProcessedMetricsGoal::GOALS_ENTRY_PAGES;
+            $this->requestConfig->request_parameters_to_modify['idGoal'] = $idGoal;
+
+            if ($idGoal == AddColumnsProcessedMetricsGoal::GOALS_PAGES || $idGoal == AddColumnsProcessedMetricsGoal::GOALS_PAGES_ECOMMERCE) {
+                $this->displayType = self::GOALS_DISPLAY_PAGES;
+            } elseif ($idGoal == AddColumnsProcessedMetricsGoal::GOALS_ENTRY_PAGES || $idGoal == AddColumnsProcessedMetricsGoal::GOALS_ENTRY_PAGES_ECOMMERCE) {
+                $this->displayType = self::GOALS_DISPLAY_ENTRY_PAGES;
             }
         }
 
@@ -83,7 +78,7 @@ class Goals extends HtmlTable
             // TODO: should not use query parameter
             $this->config->documentation = Piwik::translate(
                 'Goals_ConversionByTypeReportDocumentation',
-                ['<br />', '<br />', '<a href="https://matomo.org/docs/tracking-goals-web-analytics/" rel="noreferrer noopener" target="_blank">', '</a>']
+                ['<br />', '<br />', '<a href="' . Url::addCampaignParametersToMatomoLink('https://matomo.org/docs/tracking-goals-web-analytics/') . '" rel="noreferrer noopener" target="_blank">', '</a>']
             );
         }
 
@@ -332,7 +327,7 @@ class Goals extends HtmlTable
             }
 
             // add the site's goals (and escape all goal names)
-            $siteGoals = Request::processRequest('Goals.getGoals', ['idSite' => $idSite, 'filter_limit' => '-1'], $default = []);
+            $siteGoals = Request::processRequest('Goals.getGoals', ['idSite' => $idSite, 'filter_limit' => '-1', 'orderByName' => true], $default = []);
 
             foreach ($siteGoals as &$goal) {
                 $goal['quoted_name'] = '"' . $goal['name'] . '"';

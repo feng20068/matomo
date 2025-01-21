@@ -3,8 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\SitesManager\tests\Integration;
@@ -312,9 +312,9 @@ class SiteUrlsTest extends IntegrationTestCase
         $this->assertEquals($expectedUrls, $urls);
     }
 
-    private function addSite($urls)
+    private function addSite(...$urls)
     {
-        $this->api->addSite('siteName', func_get_args());
+        $this->api->addSite('siteName', $urls);
     }
 
     private function assertValueInCache($value)

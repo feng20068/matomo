@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\IntranetMeasurable\tests\Fixtures;
 
 use Piwik\Date;
@@ -38,9 +40,15 @@ class IntranetSitesWithVisits extends Fixture
     {
         if (!self::siteCreated($this->idSite)) {
             Fixture::createWebsite(
-                '2014-01-02 03:04:05', $ecommerce = 0, $siteName = false, $siteUrl = false,
-                $siteSearch = 1, $searchKeywordParameters = null,
-                $searchCategoryParameters = null, $timezone = null, Type::ID
+                '2014-01-02 03:04:05',
+                $ecommerce = 0,
+                $siteName = false,
+                $siteUrl = false,
+                $siteSearch = 1,
+                $searchKeywordParameters = null,
+                $searchCategoryParameters = null,
+                $timezone = null,
+                Type::ID
             );
         }
 
@@ -90,5 +98,4 @@ class IntranetSitesWithVisits extends Fixture
         $t->setUrl('http://example.com/?search=this is a site search query');
         self::checkResponse($t->doTrackPageView('Site search query'));
     }
-
 }

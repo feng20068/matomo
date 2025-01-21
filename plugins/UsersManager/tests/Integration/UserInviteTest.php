@@ -3,8 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\UsersManager\tests\Integration;
@@ -49,6 +49,13 @@ class UserInviteTest extends IntegrationTestCase
         $this->model = new Model();
     }
 
+    protected static function configureFixture($fixture)
+    {
+        parent::configureFixture($fixture);
+
+        $fixture->extraTestEnvVars['loadRealTranslations'] = true;
+    }
+
     public function testCopyLink()
     {
         Request::processRequest(
@@ -74,7 +81,7 @@ class UserInviteTest extends IntegrationTestCase
             10
         );
 
-        $this->assertStringContainsString('Accept invitation', $response, 'error on accept invite page');
+        $this->assertStringContainsString('Password', $response, 'error on accept invite page');
     }
 
     public function testInviteUser()
@@ -99,7 +106,7 @@ class UserInviteTest extends IntegrationTestCase
             10
         );
 
-        $this->assertStringContainsString('Accept invitation', $response, 'error on accept invite page');
+        $this->assertStringContainsString('Password', $response, 'error on accept invite page');
 
         $response = Http::sendHttpRequest(
             Fixture::getRootUrl() . 'tests/PHPUnit/proxy/index.php?module=Login&action=declineInvitation&token=' . $this->capturedToken,

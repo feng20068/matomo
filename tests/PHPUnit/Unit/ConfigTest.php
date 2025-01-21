@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Unit;
@@ -11,6 +12,7 @@ namespace Piwik\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use Piwik\Application\Kernel\GlobalSettingsProvider;
 use Piwik\Config;
+use Piwik\Exception\MissingFilePermissionException;
 
 class DumpConfigTestMockIniFileChain extends Config\IniFileChain
 {
@@ -30,12 +32,12 @@ class MockIniSettingsProvider extends GlobalSettingsProvider
         parent::__construct();
 
         $this->iniFileChain = new DumpConfigTestMockIniFileChain(
-          array(
+            array(
             $this->pathGlobal => $configGlobal,
             $this->pathCommon => $configCommon,
             $this->pathLocal  => $configLocal,
-          ),
-          $configCache
+            ),
+            $configCache
         );
     }
 }
@@ -77,10 +79,9 @@ class ConfigTest extends TestCase
         $expectedArray = array('value1', 'value2');
         $array = $config->TestArrayOnlyInGlobalFile;
         $this->assertEquals($expectedArray, $array['my_array']);
-
     }
 
-    public function test_CommonConfig_Overrides()
+    public function testCommonConfigOverrides()
     {
         $userFile = PIWIK_INCLUDE_PATH . '/tests/resources/Config/config.ini.php';
         $globalFile = PIWIK_INCLUDE_PATH . '/tests/resources/Config/global.ini.php';
@@ -91,7 +92,6 @@ class ConfigTest extends TestCase
         $this->assertEquals("valueCommon", $config->Category['key2'], var_export($config->Category['key2'], true));
         $this->assertEquals("test", $config->GeneralSection['password']);
         $this->assertEquals("commonValue", $config->TestOnlyInCommon['value']);
-
     }
 
     public function testWritingConfigWithSpecialCharacters()
@@ -459,7 +459,6 @@ class ConfigTest extends TestCase
               )
             ),
         );
-
     }
 
     /**
@@ -486,7 +485,7 @@ class ConfigTest extends TestCase
         $this->assertEquals('${@piwik(crash))}', $config->Category['key3']);
     }
 
-    public function test_forceSave_writesNothingIfThereAreNoChanges()
+    public function testForceSaveWritesNothingIfThereAreNoChanges()
     {
         $sourceConfigFile = PIWIK_INCLUDE_PATH . '/tests/resources/Config/config.ini.php';
         $configFile = PIWIK_INCLUDE_PATH . '/tmp/tmp.config.ini.php';
@@ -563,5 +562,28 @@ class ConfigTest extends TestCase
         $this->assertFalse($config->sanityCheck($userFile, $incorrectContent, true));
         $this->assertTrue($config->sanityCheck($userFile, $correctContent));
         $this->assertSame($userFile, $expectedPath);
+    }
+
+    public function testCheckConfigIsWritableNotThrowsExceptionWhenWritable()
+    {
+        $this->assertTrue($this->checkConfigIsWritable('Config'));
+    }
+
+    public function testCheckConfigIsWritableThrowsExceptionWhenNotWritable()
+    {
+        $this->expectException(MissingFilePermissionException::class);
+        $this->expectExceptionMessage('ConfigFileIsNotWritable');
+        $this->checkConfigIsWritable('ConfigNotExists');
+    }
+
+    private function checkConfigIsWritable(string $directory): bool
+    {
+        $userFile = PIWIK_INCLUDE_PATH . "/tests/resources/$directory/config.ini.php";
+        $globalFile = PIWIK_INCLUDE_PATH . "/tests/resources/$directory/global.ini.php";
+        $commonFile = PIWIK_INCLUDE_PATH . "/tests/resources/$directory/common.config.ini.php";
+
+        $config = new Config(new GlobalSettingsProvider($globalFile, $userFile, $commonFile));
+        $config->checkConfigIsWritable();
+        return true;
     }
 }

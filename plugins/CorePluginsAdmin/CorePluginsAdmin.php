@@ -1,21 +1,21 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CorePluginsAdmin;
 
 use Piwik\Config;
+use Piwik\Container\StaticContainer;
 use Piwik\Piwik;
 use Piwik\Plugin;
 use Piwik\Plugins\CoreHome\SystemSummary;
 use Piwik\Plugins\CorePluginsAdmin\Model\TagManagerTeaser;
 use Piwik\Changes\Model as ChangesModel;
-use Piwik\Db;
-use Piwik\Plugin\Manager as PluginManager;
 
 class CorePluginsAdmin extends Plugin
 {
@@ -29,22 +29,20 @@ class CorePluginsAdmin extends Plugin
             'AssetManager.getStylesheetFiles'        => 'getStylesheetFiles',
             'System.addSystemSummaryItems'           => 'addSystemSummaryItems',
             'Translate.getClientSideTranslationKeys' => 'getClientSideTranslationKeys',
-            'PluginManager.pluginActivated'          => 'onPluginActivated',
-            'PluginManager.pluginInstalled'          => 'addPluginChanges',
             'Updater.componentUpdated'               => 'addPluginChanges',
-            'PluginManager.pluginUninstalled'        => 'removePluginChanges'
+            'PluginManager.pluginActivated'          => 'onPluginActivated',
+            'PluginManager.pluginDeactivated'        => 'removePluginChanges'
         );
     }
 
     /**
-     * Add any changes from newly installed or updated plugins to the changes table
+     * Add any changes from newly activated or updated plugins to the changes table
      *
-     * @param string $pluginName The name of the plugin that was updated or installed
+     * @param string $pluginName The name of the plugin that was updated or activated
      */
     public function addPluginChanges(string $pluginName)
     {
-        $changes = new ChangesModel(Db::get(), PluginManager::getInstance());
-        $changes->addChanges($pluginName);
+        $this->getChangesModel()->addChanges($pluginName);
     }
 
     /**
@@ -54,17 +52,28 @@ class CorePluginsAdmin extends Plugin
      */
     public function removePluginChanges(string $pluginName)
     {
-        $changes = new ChangesModel(Db::get(), PluginManager::getInstance());
-        $changes->removeChanges($pluginName);
+        $this->getChangesModel()->removeChanges($pluginName);
+    }
+
+    /**
+     * Retrieve an instantiated ChangesModel object
+     *
+     * @return ChangesModel
+     */
+    private function getChangesModel(): ChangesModel
+    {
+        return StaticContainer::get(\Piwik\Changes\Model::class);
     }
 
     public function onPluginActivated($pluginName)
     {
         if ($pluginName === 'TagManager') {
-            // make sure once activated once, it won't appear when disabling Tag Manager later 
+            // make sure once activated once, it won't appear when disabling Tag Manager later
             $tagManagerTeaser = new TagManagerTeaser(Piwik::getCurrentUserLogin());
             $tagManagerTeaser->disableGlobally();
         }
+
+        $this->addPluginChanges($pluginName);
     }
 
     public function addSystemSummaryItems(&$systemSummary)
@@ -95,7 +104,6 @@ class CorePluginsAdmin extends Plugin
 
     public function getJsFiles(&$jsFiles)
     {
-        $jsFiles[] = "node_modules/jquery.dotdotdot/dist/jquery.dotdotdot.js";
         $jsFiles[] = "plugins/CoreHome/javascripts/popover.js";
     }
 
@@ -155,6 +163,8 @@ class CorePluginsAdmin extends Plugin
         $translations[] = 'CorePluginsAdmin_InfoThemeIsUsedByOtherUsersAsWell';
         $translations[] = 'CorePluginsAdmin_ThemesManagement';
         $translations[] = 'CorePluginsAdmin_NUpdatesAvailable';
+        $translations[] = 'CorePluginsAdmin_PluginFreeTrialStarted';
+        $translations[] = 'CorePluginsAdmin_PluginFreeTrialStartedAccountCreatedMessage';
+        $translations[] = 'CorePluginsAdmin_PluginFreeTrialStartedAccountCreatedTitle';
     }
-
 }

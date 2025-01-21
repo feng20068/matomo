@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -31,8 +32,8 @@
       class="segmentedlog"
       @click.prevent="showSegmentedVisitorLog()"
     >
-      <span class="icon-visitor-profile rowActionIcon"></span>
-      {{ translate('Live_RowActionTooltipWithDimension', translate('General_Goal')) }}
+      <span class="icon-visitor-profile rowActionIcon">&nbsp;
+      </span>{{ translate('Live_RowActionTooltipWithDimension', translate('General_Goal')) }}
     </a>
     <br style="clear:left"/>
   </ContentBlock>

@@ -1,9 +1,14 @@
 <?php
 
+use Piwik\Container\Container;
 use Piwik\Container\StaticContainer;
+use Piwik\DataTable;
+use Piwik\Plugin\Visualization;
 use Piwik\Plugins\Diagnostics\Diagnostic\FileIntegrityCheck;
 use Piwik\Plugins\Diagnostics\Diagnostic\PhpVersionCheck;
 use Piwik\Plugins\Diagnostics\Diagnostic\RequiredPrivateDirectories;
+use Piwik\SiteContentDetector;
+use Piwik\Tests\Framework\Mock\FakeSiteContentDetector;
 
 return [
 
@@ -13,9 +18,14 @@ return [
     'tests.ui.url_normalizer_blacklist.api' => [],
     'tests.ui.url_normalizer_blacklist.controller' => [],
 
+    // disable check for plugin updates during UI tests, allow for override
+    'dev.forced_plugin_update_result' => Piwik\DI::decorate(function ($previous, Container $c) {
+        return $c->get('test.vars.forceEnablePluginUpdateChecks') ? null : [];
+    }),
+
     'twig.cache' => function (\Piwik\Container\Container $container) {
         $templatesPath = $container->get('path.tmp.templates');
-        return new class($templatesPath) extends \Twig\Cache\FilesystemCache {
+        return new class ($templatesPath) extends \Twig\Cache\FilesystemCache {
             public function write(string $key, string $content): void
             {
                 $retryCount = 3;
@@ -38,12 +48,28 @@ return [
         };
     },
 
-    'Piwik\Config' => \Piwik\DI::decorate(function (\Piwik\Config $config) {
+    'Piwik\Config' => \Piwik\DI::decorate(function (\Piwik\Config $config, Container $c) {
         $config->General['cors_domains'][] = '*';
         $config->General['trusted_hosts'][] = '127.0.0.1';
         $config->General['trusted_hosts'][] = $config->tests['http_host'];
         $config->General['trusted_hosts'][] = $config->tests['http_host'] . ':' . $config->tests['port'];
+
+        // disable plugin promos for UI tests, only enable when explicitly requested
+        if ($c->get('test.vars.enableProfessionalSupportAdsForUITests')) {
+            $config->General['piwik_professional_support_ads_enabled'] = '1';
+        } else {
+            $config->General['piwik_professional_support_ads_enabled'] = '0';
+        }
+
         return $config;
+    }),
+
+    // avoid any site content detection checks
+    SiteContentDetector::class  => \Piwik\DI::decorate(function ($previous, Container $c) {
+        $detectedContentDetections = $c->get('test.vars.detectedContentDetections') ?: [];
+        $connectedConsentManagers = $c->get('test.vars.connectedConsentManagers') ?: [];
+
+        return new FakeSiteContentDetector($detectedContentDetections, $connectedConsentManagers);
     }),
 
     'observers.global' => \Piwik\DI::add([
@@ -85,6 +111,31 @@ return [
 
         ['Controller.RssWidget.rssPiwik.end', Piwik\DI::value(function (&$result, $parameters) {
             $result = '';
+        })],
+
+        ['Visualization.beforeRender', Piwik\DI::value(function (Visualization $visualization) {
+            $dataStates = StaticContainer::get('test.vars.forceDataStates');
+
+            if (!is_array($dataStates) || [] === $dataStates) {
+                return;
+            }
+
+            $dataTable = $visualization->getDataTable();
+
+            if (!($dataTable instanceof DataTable\Map)) {
+                return;
+            }
+
+            foreach ($dataTable->getDataTables() as $date => $subTable) {
+                if (!isset($dataStates[$date])) {
+                    continue;
+                }
+
+                $subTable->setMetadata(
+                    DataTable::ARCHIVE_STATE_METADATA_NAME,
+                    $dataStates[$date]
+                );
+            }
         })],
 
         \Piwik\Tests\Framework\XssTesting::getJavaScriptAddEvent(),

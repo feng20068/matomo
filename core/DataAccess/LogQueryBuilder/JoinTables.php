@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\DataAccess\LogQueryBuilder;
@@ -104,12 +104,14 @@ class JoinTables extends \ArrayObject
     public function hasJoinedTableManually($tableToFind, $joinToFind)
     {
         foreach ($this as $table) {
-            if (is_array($table)
+            if (
+                is_array($table)
                 && !empty($table['table'])
                 && $table['table'] === $tableToFind
                 && (!isset($table['tableAlias']) || $table['tableAlias'] === $tableToFind)
                 && (!isset($table['join']) || strtolower($table['join']) === 'left join')
-                && isset($table['joinOn']) && $table['joinOn'] === $joinToFind) {
+                && isset($table['joinOn']) && $table['joinOn'] === $joinToFind
+            ) {
                 return true;
             }
         }
@@ -125,11 +127,13 @@ class JoinTables extends \ArrayObject
     public function findIndexOfManuallyAddedTable($tableNameToFind)
     {
         foreach ($this as $index => $table) {
-            if (is_array($table)
+            if (
+                is_array($table)
                 && !empty($table['table'])
                 && $table['table'] === $tableNameToFind
                 && (!isset($table['join']) || strtolower($table['join']) === 'left join')
-                && (!isset($table['tableAlias']) || $table['tableAlias'] === $tableNameToFind)) {
+                && (!isset($table['tableAlias']) || $table['tableAlias'] === $tableNameToFind)
+            ) {
                 return $index;
             }
         }
@@ -150,6 +154,11 @@ class JoinTables extends \ArrayObject
         // the first entry is always the FROM table
         $firstTable = array_shift($tables);
         $sorted = [$firstTable];
+
+        // With the ability to specify which index to use, the $firstTable var may be an array
+        if (is_array($firstTable) && !empty($firstTable['table'])) {
+            $firstTable = $firstTable['table'];
+        }
 
         if (strpos($firstTable, LogAggregator::LOG_TABLE_SEGMENT_TEMPORARY_PREFIX) === 0) {
             // the first table might be a temporary segment table in which case we need to keep the next one as well
@@ -280,13 +289,15 @@ class JoinTables extends \ArrayObject
     private function isInTableArray($tables, $table)
     {
         foreach ($tables as $entry) {
-            if (is_string($entry)
+            if (
+                is_string($entry)
                 && $entry == $table
             ) {
                 return true;
             }
 
-            if (is_array($entry)
+            if (
+                is_array($entry)
                 && $entry['table'] == $table
             ) {
                 return true;
@@ -351,7 +362,7 @@ class JoinTables extends \ArrayObject
             $tableName = null;
             if (is_string($info)) {
                 $tableName = $info;
-            } else if (is_array($info)) {
+            } elseif (is_array($info)) {
                 $tableName = isset($info['tableAlias']) ? $info['tableAlias'] : $info['table'];
             }
 

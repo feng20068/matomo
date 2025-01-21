@@ -1,21 +1,26 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CorePluginsAdmin;
 
 use Piwik\Common;
 use Piwik\Piwik;
+use Piwik\Settings\FieldConfig;
 use Piwik\Settings\Setting;
 use Piwik\Settings\Settings;
 use Exception;
 
 class SettingsMetadata
 {
+    public const PASSWORD_PLACEHOLDER = '******';
+
+    public const EMPTY_ARRAY = '__empty__';
 
     /**
      * @param Settings[]  $settingsInstances
@@ -27,15 +32,25 @@ class SettingsMetadata
         try {
             foreach ($settingsInstances as $pluginName => $pluginSetting) {
                 foreach ($pluginSetting->getSettingsWritableByCurrentUser() as $setting) {
-
                     $value = $this->findSettingValueFromRequest($settingValues, $pluginName, $setting->getName());
 
-                    if (isset($value)) {
+                    $fieldConfig = $setting->configureField();
+
+                    // empty arrays are sent as __empty__ value, so we need to convert it here back to an array
+                    if ($setting->getType() === FieldConfig::TYPE_ARRAY && $value === self::EMPTY_ARRAY) {
+                        $value = [];
+                    }
+
+                    if (
+                        isset($value) && (
+                        $fieldConfig->uiControl !== FieldConfig::UI_CONTROL_PASSWORD ||
+                        $value !== self::PASSWORD_PLACEHOLDER
+                        )
+                    ) {
                         $setting->setValue($value);
                     }
                 }
             }
-
         } catch (Exception $e) {
             $message = $e->getMessage();
 
@@ -113,10 +128,16 @@ class SettingsMetadata
             $availableValues = (object) $availableValues;
         }
 
+        $value = $setting->getValue();
+
+        if (!empty($value) && $config->uiControl === FieldConfig::UI_CONTROL_PASSWORD) {
+            $value = self::PASSWORD_PLACEHOLDER;
+        }
+
         $result = array(
             'name' => $setting->getName(),
             'title' => $config->title,
-            'value' => $setting->getValue(),
+            'value' => $value,
             'defaultValue' => $setting->getDefaultValue(),
             'type' => $setting->getType(),
             'uiControl' => $config->uiControl,
@@ -135,5 +156,4 @@ class SettingsMetadata
 
         return $result;
     }
-
 }

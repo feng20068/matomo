@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreUpdater;
 
 use Exception;
@@ -50,7 +51,7 @@ class Controller extends \Piwik\Plugin\Controller
      */
     private $marketplacePlugins;
 
-    public function __construct(Updater $updater, Plugins $marketplacePlugins = null)
+    public function __construct(Updater $updater, ?Plugins $marketplacePlugins = null)
     {
         $this->updater = $updater;
         $this->marketplacePlugins = $marketplacePlugins;
@@ -72,11 +73,13 @@ class Controller extends \Piwik\Plugin\Controller
             'plugins/Morpheus/stylesheets/base/bootstrap.css',
             'plugins/Morpheus/stylesheets/base/icons.css',
             "node_modules/jquery-ui-dist/jquery-ui.theme.min.css",
+            "node_modules/jquery-ui-dist/jquery-ui.structure.min.css",
             'node_modules/@materializecss/materialize/dist/css/materialize.min.css',
             'plugins/Morpheus/stylesheets/base.less',
             'plugins/Morpheus/stylesheets/general/_forms.less',
             'plugins/Morpheus/stylesheets/simple_structure.css',
             'plugins/CoreHome/stylesheets/jquery.ui.autocomplete.css',
+            'plugins/Dashboard/stylesheets/dashboard.less',
             'plugins/CoreUpdater/stylesheets/updateLayout.css'
         );
 
@@ -138,7 +141,8 @@ class Controller extends \Piwik\Plugin\Controller
             if (!empty($incompatiblePlugins) && $this->marketplacePlugins) {
                 $marketplacePlugins = $this->marketplacePlugins->getAllAvailablePluginNames();
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         $view->marketplacePlugins = $marketplacePlugins;
         $view->incompatiblePlugins = $incompatiblePlugins;
@@ -176,10 +180,7 @@ class Controller extends \Piwik\Plugin\Controller
         }
 
         $view->feedbackMessages = $messages;
-        $this->addCustomLogoInfo($view);
         $result = $view->render();
-
-        Filesystem::deleteAllCacheOnUpdate();
 
         return $result;
     }
@@ -204,10 +205,12 @@ class Controller extends \Piwik\Plugin\Controller
         }
         $value = json_decode($value, true);
 
-        if (empty($value['nonce'])
+        if (
+            empty($value['nonce'])
             || empty($value['ttl'])
             || time() > (int) $value['ttl']
-            || $nonce !== $value['nonce']) {
+            || $nonce !== $value['nonce']
+        ) {
             return json_encode(['Invalid nonce or nonce expired. ' . $task]);
         }
 
@@ -255,7 +258,8 @@ class Controller extends \Piwik\Plugin\Controller
 
     protected function redirectToDashboardWhenNoError(DbUpdater $updater)
     {
-        if (count($updater->getSqlQueriesToExecute()) == 1
+        if (
+            count($updater->getSqlQueriesToExecute()) == 1
             && !$this->coreError
             && empty($this->warningMessages)
             && empty($this->errorMessages)
@@ -276,7 +280,7 @@ class Controller extends \Piwik\Plugin\Controller
     {
         try {
             return $this->runUpdaterAndExit();
-        } catch(NoUpdatesFoundException $e) {
+        } catch (NoUpdatesFoundException $e) {
             Piwik::redirectToModule('CoreHome');
         }
     }
@@ -345,7 +349,8 @@ class Controller extends \Piwik\Plugin\Controller
         $group = null;
         foreach ($migrations as $migration) {
             $type = $migration instanceof DbMigration ? 'sql' : 'command';
-            if ($group === null
+            if (
+                $group === null
                 || $type != $group['type']
             ) {
                 $group = [
@@ -440,5 +445,4 @@ class Controller extends \Piwik\Plugin\Controller
     {
         return PluginManager::getInstance()->getIncompatiblePlugins($piwikVersion);
     }
-
 }

@@ -3,9 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Actions;
@@ -175,9 +174,15 @@ class API extends \Piwik\Plugin\API
      * Returns a DataTable with analytics information for every unique entry page URL, for
      * the specified site, period & segment.
      */
-    public function getEntryPageUrls($idSite, $period, $date, $segment = false, $expanded = false, $idSubtable = false,
-                                     $flat = false)
-    {
+    public function getEntryPageUrls(
+        $idSite,
+        $period,
+        $date,
+        $segment = false,
+        $expanded = false,
+        $idSubtable = false,
+        $flat = false
+    ) {
         Piwik::checkUserHasViewAccess($idSite);
 
         $dataTable = $this->getPageUrls($idSite, $period, $date, $segment, $expanded, $idSubtable, false, $flat);
@@ -189,9 +194,15 @@ class API extends \Piwik\Plugin\API
      * Returns a DataTable with analytics information for every unique exit page URL, for
      * the specified site, period & segment.
      */
-    public function getExitPageUrls($idSite, $period, $date, $segment = false, $expanded = false, $idSubtable = false,
-                                    $flat = false)
-    {
+    public function getExitPageUrls(
+        $idSite,
+        $period,
+        $date,
+        $segment = false,
+        $expanded = false,
+        $idSubtable = false,
+        $flat = false
+    ) {
         Piwik::checkUserHasViewAccess($idSite);
 
         $dataTable = $this->getPageUrls($idSite, $period, $date, $segment, $expanded, $idSubtable, false, $flat);
@@ -502,11 +513,13 @@ class API extends \Piwik\Plugin\API
      */
     private function filterActionsDataTable($dataTable, $isPageTitleType)
     {
+        $dataTable->filter(function ($dataTable) {
+            $dataTable->setMetadata(DataTable::COLUMN_AGGREGATION_OPS_METADATA_NAME, Metrics::getColumnsAggregationOperation());
+        });
         // Must be applied before Sort in this case, since the DataTable can contain both int and strings indexes
         // (in the transition period between pre 1.2 and post 1.2 datatable structure)
         $dataTable->filter('Piwik\Plugins\Actions\DataTable\Filter\Actions', [$isPageTitleType]);
         $dataTable->filter('Piwik\Plugins\Goals\DataTable\Filter\CalculateConversionPageRate');
-
         return $dataTable;
     }
 

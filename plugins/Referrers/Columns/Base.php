@@ -3,9 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Referrers\Columns;
@@ -38,8 +37,8 @@ abstract class Base extends VisitDimension
     protected $campaignKeywords;
 
     // Used to prefix when a adsense referrer is detected
-    const LABEL_PREFIX_ADWORDS_KEYWORD = '(adwords) ';
-    const LABEL_ADWORDS_NAME = 'AdWords';
+    public const LABEL_PREFIX_ADWORDS_KEYWORD = '(adwords) ';
+    public const LABEL_ADWORDS_NAME = 'AdWords';
 
 
     /**
@@ -409,13 +408,13 @@ abstract class Base extends VisitDimension
         return !empty($this->keywordReferrerAnalyzed);
     }
 
-    protected function detectReferrerCampaignFromLandingUrl()
+    protected function detectReferrerCampaignFromLandingUrl(): void
     {
         if (
             !isset($this->currentUrlParse['query'])
             && !isset($this->currentUrlParse['fragment'])
         ) {
-            return false;
+            return;
         }
         $campaignParameters = Common::getCampaignParameters();
         $this->campaignNames = $campaignParameters[0];
@@ -438,22 +437,39 @@ abstract class Base extends VisitDimension
     }
 
 
-    protected function detectReferrerCampaignFromTrackerParams(Request $request)
+    /**
+     * Check if campaign parameters were directly provided in tracking request.
+     * This might e.g. be the case when using image tracking
+     *
+     * @param Request $request
+     * @return void
+     */
+    protected function detectReferrerCampaignFromTrackerParams(Request $request): void
     {
-        $campaignName = $this->getReferrerCampaignQueryParam($request, '_rcn');
+        $campaignName = null;
+        $campaignParameters = Common::getCampaignParameters();
+        $allTrackingParams = $request->getRawParams();
+
+        foreach ($campaignParameters[0] as $parameter) {
+            if (!empty($allTrackingParams[$parameter])) {
+                $campaignName = $allTrackingParams[$parameter];
+                break;
+            }
+        }
+
         if (empty($campaignName)) {
-            return false;
+            return;
         }
 
         $this->typeReferrerAnalyzed = Common::REFERRER_TYPE_CAMPAIGN;
         $this->nameReferrerAnalyzed = $campaignName;
 
-        $keyword = $this->getReferrerCampaignQueryParam($request, '_rck');
-        if (!empty($keyword)) {
-            $this->keywordReferrerAnalyzed = $keyword;
+        foreach ($campaignParameters[1] as $parameter) {
+            if (!empty($allTrackingParams[$parameter])) {
+                $this->keywordReferrerAnalyzed = $allTrackingParams[$parameter];
+                break;
+            }
         }
-
-        return true;
     }
 
     private function getCachedUrlsByHostAndIdSite()
@@ -510,14 +526,14 @@ abstract class Base extends VisitDimension
         return false;
     }
 
-    protected function detectCampaignKeywordFromReferrerUrl()
+    protected function detectCampaignKeywordFromReferrerUrl(): void
     {
         if (
             !empty($this->nameReferrerAnalyzed)
             && !empty($this->keywordReferrerAnalyzed)
         ) {
             // keyword is already set, we skip
-            return true;
+            return;
         }
 
         // Set the Campaign keyword to the keyword found in the Referrer URL if any
@@ -567,8 +583,8 @@ abstract class Base extends VisitDimension
     protected function detectReferrerCampaign(Request $request, Visitor $visitor)
     {
         $this->detectReferrerCampaignFromLandingUrl();
-
         $this->detectCampaignKeywordFromReferrerUrl();
+        $this->detectReferrerCampaignFromTrackerParams($request);
 
         $referrerNameAnalayzed = mb_strtolower($this->nameReferrerAnalyzed);
         $referrerNameAnalayzed = $this->truncateReferrerName($referrerNameAnalayzed);
@@ -639,14 +655,14 @@ abstract class Base extends VisitDimension
         ) {
             // Use default values per above
             Common::printDebug("Invalid Referrer information found: current visitor seems to have used a campaign, but campaign name was not found in the request.");
-        } // 1) Campaigns from 1st party cookie
-        elseif (!empty($referrerCampaignName)) {
+        } elseif (!empty($referrerCampaignName)) {
+            // 1) Campaigns from 1st party cookie
             $type    = Common::REFERRER_TYPE_CAMPAIGN;
             $name    = $referrerCampaignName;
             $keyword = $referrerCampaignKeyword;
             Common::printDebug("Campaign information from 1st party cookie is used.");
-        } // 2) Referrer URL parsing
-        elseif (!empty($referrerUrl)) {
+        } elseif (!empty($referrerUrl)) {
+            // 2) Referrer URL parsing
             $idSite   = $request->getIdSite();
             $referrer = $this->getReferrerInformation($referrerUrl, $currentUrl = '', $idSite, $request, $visitor);
 

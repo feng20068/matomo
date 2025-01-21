@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreAdminHome\Commands;
@@ -48,7 +48,7 @@ class RunScheduledTasks extends ConsoleCommand
             $scheduler->run();
         }
 
-        $this->writeSuccessMessage(array('Scheduled Tasks executed'));
+        $this->writeSuccessMessage('Scheduled Tasks executed');
 
         return self::SUCCESS;
     }

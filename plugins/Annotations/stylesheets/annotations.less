@@ -3,6 +3,7 @@
     height: 18px;
     width: 100%;
     cursor: pointer;
+    margin-top: 3px;
 
     .icon-annotation {
         font-size: 16px;
@@ -12,14 +13,10 @@
     .icon-annotation.starred {
         color: @theme-color-brand;
     }
-}
 
-.evolution-annotations > span {
-    position: absolute;
-}
-
-.evolution-annotations  {
-  margin-top: 3px;
+    & > span {
+        position: absolute;
+    }
 }
 
 .annotation-manager {
@@ -73,7 +70,7 @@ span.annotation {
 .annotation-controls {
     display: inline-block;
     margin:0;
-    padding: 50px 0px 10px 10px;
+    padding: 50px 0 10px 10px;
     color: transparent;
 }
 
@@ -85,6 +82,7 @@ span.annotation {
     padding: 3px 0 6px 0;
     display: inline-block;
     margin:0;
+    text-decoration: none;
 }
 
 .annotation-controls>a:hover {

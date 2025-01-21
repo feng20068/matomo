@@ -3,8 +3,8 @@
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreAdminHome\Commands;
@@ -16,7 +16,6 @@ use Piwik\Settings\Plugin\SystemConfigSetting;
 
 class ConfigDelete extends ConsoleCommand
 {
-
     // Message output if no matching setting is found.
     private const MSG_NOTHING_FOUND = 'Nothing found';
     // Message output on success.

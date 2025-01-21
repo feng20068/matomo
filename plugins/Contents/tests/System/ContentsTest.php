@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Contents\tests\System;
 
 use Piwik\Tests\Framework\Fixture;
@@ -77,7 +79,7 @@ class ContentsTest extends SystemTestCase
                 'idSite'       => $idSite1,
                 'date'         => $dateTime,
                 'periods'      => $dayPeriod,
-                'segment'      => "contentName==ImageAd,contentPiece==".urlencode('Click to download Piwik now'),
+                'segment'      => "contentName==ImageAd,contentPiece==" . urlencode('Click to download Piwik now'),
                 'setDateLastN' => false,
                 'testSuffix'   => 'contentNameOrPieceMatch')
             ),
@@ -86,7 +88,7 @@ class ContentsTest extends SystemTestCase
                 'idSite'       => $idSite1,
                 'date'         => $dateTime,
                 'periods'      => $dayPeriod,
-                'segment'      => "contentTarget==".urlencode('http://www.example.com'),
+                'segment'      => "contentTarget==" . urlencode('http://www.example.com'),
                 'setDateLastN' => false,
                 'testSuffix'   => '_contentTargetMatch')
             ),

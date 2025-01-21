@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -107,9 +108,11 @@ export default defineComponent({
   mounted() {
     const root = this.$refs.root as HTMLElement;
 
-    $('.scrollspy', root).scrollSpy();
-    $('.pushpin', root).pushpin({ top: $('.pushpin', root).offset()!.top });
-    $('.tabs', root).tabs();
+    setTimeout(() => {
+      $('.scrollspy', root).scrollSpy();
+      $('.pushpin', root).pushpin({ top: $('.pushpin', root).offset()!.top });
+      $('.tabs', root).tabs();
+    });
   },
   methods: {
     entriesByLetter(entries: GlossaryItemEntry[]) {

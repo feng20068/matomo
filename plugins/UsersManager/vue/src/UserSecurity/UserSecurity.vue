@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -87,7 +88,7 @@
           <th>{{ translate('General_CreationDate') }}</th>
           <th>{{ translate('General_Description') }}</th>
           <th>{{ translate('UsersManager_LastUsed') }}</th>
-          <th>{{ translate('UsersManager_PostOnly') }}</th>
+          <th>{{ translate('UsersManager_SecureUseOnly') }}</th>
           <th
             v-if="hasTokensWithExpireDate"
             :title="translate('UsersManager_TokensWithExpireDateCreationBySystem')"
@@ -111,7 +112,7 @@
             {{ theToken.last_used ? theToken.last_used : translate('General_Never') }}
           </td>
           <td>
-            {{ parseInt(theToken.post_only, 10) === 1 ?
+            {{ parseInt(theToken.secure_only, 10) === 1 ?
                translate('General_Yes') : translate('General_No') }}
           </td>
           <td

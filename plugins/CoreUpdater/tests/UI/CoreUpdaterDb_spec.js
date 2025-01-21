@@ -3,8 +3,8 @@
  *
  * CoreUpdater screenshot tests.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 describe("CoreUpdaterDb", function () {
@@ -41,12 +41,19 @@ describe("CoreUpdaterDb", function () {
         await page.goto("");
         await page.evaluate(function () {
             $('p').each(function () {
-                var replace = $(this).html().replace(/(?!1\.0)\d+\.\d+(\.\d+)?([\-a-z]*\d+)?/g, '');
+                var replace = $(this).html().replace(/(?!1\.0)\d+\.\d+(\.\d+)?([\-a-z]*\d+|-alpha)?(\.[0-9]{14})?/g, '');
                 $(this).html(replace);
             });
         });
 
         expect(await page.screenshot({ fullPage: true })).to.matchImage('main');
+    });
+
+    it("should show the file integrity dialog", async function() {
+        await page.click('#more-results');
+        await page.waitForTimeout(50);
+
+        expect(await page.screenshot({ fullPage: true })).to.matchImage('file-integrity');
     });
 
     it("should show instance id in updating screen", async function() {
@@ -58,7 +65,7 @@ describe("CoreUpdaterDb", function () {
         await page.goto("");
         await page.evaluate(function () {
             $('p').each(function () {
-                var replace = $(this).html().replace(/(?!1\.0)\d+\.\d+(\.\d+)?([\-a-z]*\d+)?/g, '');
+                var replace = $(this).html().replace(/(?!1\.0)\d+\.\d+(\.\d+)?([\-a-z]*\d+|-alpha)?(\.[0-9]{14})?/g, '');
                 $(this).html(replace);
             });
         });

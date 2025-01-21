@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\UsersManager;
 
 use Exception;
@@ -37,9 +38,9 @@ use Piwik\Plugins\CoreAdminHome\Emails\TokenAuthDeletedEmail;
 
 class Controller extends ControllerAdmin
 {
-    const NONCE_CHANGE_PASSWORD = 'changePasswordNonce';
-    const NONCE_ADD_AUTH_TOKEN = 'addAuthTokenNonce';
-    const NONCE_DELETE_AUTH_TOKEN = 'deleteAuthTokenNonce';
+    public const NONCE_CHANGE_PASSWORD = 'changePasswordNonce';
+    public const NONCE_ADD_AUTH_TOKEN = 'addAuthTokenNonce';
+    public const NONCE_DELETE_AUTH_TOKEN = 'deleteAuthTokenNonce';
 
     /**
      * @var Translator
@@ -52,6 +53,11 @@ class Controller extends ControllerAdmin
     private $passwordVerify;
 
     /**
+     * @var Plugin\Manager
+     */
+    private $pluginManager;
+
+    /**
      * @var Model
      */
     private $userModel;
@@ -61,6 +67,7 @@ class Controller extends ControllerAdmin
         $this->translator = $translator;
         $this->passwordVerify = $passwordVerify;
         $this->userModel = $userModel;
+        $this->pluginManager = Plugin\Manager::getInstance();
 
         parent::__construct();
     }
@@ -129,6 +136,8 @@ class Controller extends ControllerAdmin
             $view->accessLevels[] = $capabilityEntry;
             $view->filterAccessLevels[] = $capabilityEntry;
         }
+
+        $view->activatedPlugins = $this->pluginManager->getActivatedPlugins();
 
         $this->setBasicVariablesView($view);
 
@@ -229,7 +238,6 @@ class Controller extends ControllerAdmin
         $view->defaultReport = $defaultReport;
 
         if ($defaultReport == 'MultiSites') {
-
             $defaultSiteId = $userPreferences->getDefaultWebsiteId();
             $reportOptionsValue = $defaultSiteId;
 
@@ -286,7 +294,7 @@ class Controller extends ControllerAdmin
         Piwik::checkUserIsNotAnonymous();
 
         $tokens = $this->userModel->getAllNonSystemTokensForLogin(Piwik::getCurrentUserLogin());
-        $tokens = array_map(function ($token){
+        $tokens = array_map(function ($token) {
             foreach (['date_created', 'last_used', 'date_expired'] as $key) {
                 if (!empty($token[$key])) {
                     $token[$key] = Date::factory($token[$key])->getLocalized(Date::DATE_FORMAT_LONG);
@@ -384,13 +392,13 @@ class Controller extends ControllerAdmin
             Nonce::checkNonce(self::NONCE_ADD_AUTH_TOKEN);
 
             $description = \Piwik\Request::fromRequest()->getStringParameter('description', '');
-            $postOnly = \Piwik\Request::fromRequest()->getBoolParameter('post_only', false);
+            $secureOnly = \Piwik\Request::fromRequest()->getBoolParameter('secure_only', false);
 
             $login = Piwik::getCurrentUserLogin();
 
             $generatedToken = $this->userModel->generateRandomTokenAuth();
 
-            $this->userModel->addTokenAuth($login, $generatedToken, $description, Date::now()->getDatetime(), null, false, $postOnly);
+            $this->userModel->addTokenAuth($login, $generatedToken, $description, Date::now()->getDatetime(), null, false, $secureOnly);
 
             $container = StaticContainer::getContainer();
             $email = $container->make(TokenAuthCreatedEmail::class, [
@@ -408,7 +416,7 @@ class Controller extends ControllerAdmin
         return $this->renderTemplate('addNewToken', [
             'nonce' => Nonce::getNonce(self::NONCE_ADD_AUTH_TOKEN),
             'noDescription' => $noDescription,
-            'forcePostOnly' => GeneralConfig::getConfigValue('only_allow_posted_auth_tokens')
+            'forceSecureOnly' => GeneralConfig::getConfigValue('only_allow_secure_auth_tokens')
         ]);
     }
 
@@ -521,12 +529,16 @@ class Controller extends ControllerAdmin
             $anonymousDefaultReport = Common::getRequestVar('anonymousDefaultReport');
             $anonymousDefaultDate = Common::getRequestVar('anonymousDefaultDate');
             $userLogin = 'anonymous';
-            APIUsersManager::getInstance()->setUserPreference($userLogin,
+            APIUsersManager::getInstance()->setUserPreference(
+                $userLogin,
                 APIUsersManager::PREFERENCE_DEFAULT_REPORT,
-                $anonymousDefaultReport);
-            APIUsersManager::getInstance()->setUserPreference($userLogin,
+                $anonymousDefaultReport
+            );
+            APIUsersManager::getInstance()->setUserPreference(
+                $userLogin,
                 APIUsersManager::PREFERENCE_DEFAULT_REPORT_DATE,
-                $anonymousDefaultDate);
+                $anonymousDefaultDate
+            );
             $toReturn = $response->getResponse();
         } catch (Exception $e) {
             $toReturn = $response->getResponseException($e);
@@ -566,12 +578,16 @@ class Controller extends ControllerAdmin
                 'use12HourClock' => $timeFormat,
             ]);
 
-            APIUsersManager::getInstance()->setUserPreference($userLogin,
+            APIUsersManager::getInstance()->setUserPreference(
+                $userLogin,
                 APIUsersManager::PREFERENCE_DEFAULT_REPORT,
-                $defaultReport);
-            APIUsersManager::getInstance()->setUserPreference($userLogin,
+                $defaultReport
+            );
+            APIUsersManager::getInstance()->setUserPreference(
+                $userLogin,
                 APIUsersManager::PREFERENCE_DEFAULT_REPORT_DATE,
-                $defaultDate);
+                $defaultDate
+            );
             $toReturn = $response->getResponse();
         } catch (Exception $e) {
             $toReturn = $response->getResponseException($e);
@@ -597,7 +613,7 @@ class Controller extends ControllerAdmin
         $notification = new Notification(Piwik::translate('CoreAdminHome_SettingsSaveSuccess'));
         $notification->context = Notification::CONTEXT_SUCCESS;
         Notification\Manager::notify('successpass', $notification);
-        $this->redirectToIndex('UsersManager',  'userSecurity');
+        $this->redirectToIndex('UsersManager', 'userSecurity');
     }
 
     private function noAdminAccessToWebsite($idSiteSelected, $defaultReportSiteName, $message)

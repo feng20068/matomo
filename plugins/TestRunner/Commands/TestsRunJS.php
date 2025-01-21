@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\TestRunner\Commands;
 
 use Piwik\Plugin\ConsoleCommand;
@@ -39,19 +41,6 @@ class TestsRunJS extends ConsoleCommand
 
         passthru($cmdNode, $returnCodeNode);
 
-        $cmdPhantom = "phantomjs $javascriptTestingDir/testrunnerPhantom.js '$matomoUrl/tests/javascript/'";
-        if (!empty($plugin)) {
-            $cmdPhantom .= ' --plugin=' . escapeshellarg($plugin);
-        }
-
-        $output->writeln('');
-        $output->writeln('');
-        $output->writeln('Executing command: <info>' . $cmdPhantom . '</info>');
-        $output->writeln('');
-
-        passthru($cmdPhantom, $returnCodePhantom);
-
-
-        return $returnCodeNode + $returnCodePhantom;
+        return $returnCodeNode;
     }
 }

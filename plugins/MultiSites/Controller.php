@@ -1,31 +1,42 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\MultiSites;
 
 use Piwik\Common;
 use Piwik\Config;
 use Piwik\Date;
 use Piwik\Piwik;
+use Piwik\Plugins\FeatureFlags\FeatureFlagManager;
+use Piwik\Plugins\MultiSites\FeatureFlags\ImprovedAllWebsitesDashboard;
+use Piwik\Plugins\Goals\API as GoalsAPI;
+use Piwik\Plugins\SitesManager\API as SitesManagerAPI;
 use Piwik\Translation\Translator;
 use Piwik\View;
 
 class Controller extends \Piwik\Plugin\Controller
 {
     /**
+     * @var FeatureFlagManager
+     */
+    private $featureFlagManager;
+
+    /**
      * @var Translator
      */
     private $translator;
 
-    public function __construct(Translator $translator)
+    public function __construct(Translator $translator, FeatureFlagManager $featureFlagManager)
     {
         parent::__construct();
 
+        $this->featureFlagManager = $featureFlagManager;
         $this->translator = $translator;
     }
 
@@ -49,17 +60,22 @@ class Controller extends \Piwik\Plugin\Controller
         $date = Piwik::getDate('today');
         $period = Piwik::getPeriod('day');
 
-        $view = new View("@MultiSites/getSitesInfo");
+        if ($this->featureFlagManager->isFeatureActive(ImprovedAllWebsitesDashboard::class)) {
+            $view = new View('@MultiSites/allWebsitesDashboard');
+        } else {
+            $view = new View('@MultiSites/getSitesInfo');
+        }
 
         $view->isWidgetized         = $isWidgetized;
-        $view->displayRevenueColumn = Common::isGoalPluginEnabled();
+        $view->displayRevenueColumn = $this->shouldDisplayRevenueColumn();
         $view->limit                = Config::getInstance()->General['all_websites_website_per_page'];
         $view->show_sparklines      = Config::getInstance()->General['show_multisites_sparklines'];
 
         $view->autoRefreshTodayReport = 0;
         // if the current date is today, or yesterday,
         // in case the website is set to UTC-12), or today in UTC+14, we refresh the page every 5min
-        if (in_array($date, array('today', date('Y-m-d'),
+        if (
+            in_array($date, array('today', date('Y-m-d'),
                                   'yesterday', Date::factory('yesterday')->toString('Y-m-d'),
                                   Date::factory('now', 'UTC+14')->toString('Y-m-d')))
         ) {
@@ -89,5 +105,35 @@ class Controller extends \Piwik\Plugin\Controller
         $view = $this->getLastUnitGraph($this->pluginName, __FUNCTION__, $api);
         $view->requestConfig->totals = 0;
         return $this->renderView($view);
+    }
+
+    private function shouldDisplayRevenueColumn(): bool
+    {
+        if (!Common::isGoalPluginEnabled()) {
+            return false;
+        }
+
+        if (!$this->featureFlagManager->isFeatureActive(ImprovedAllWebsitesDashboard::class)) {
+            return true;
+        }
+
+        $sites = SitesManagerAPI::getInstance()->getSitesWithAtLeastViewAccess();
+
+        foreach ($sites as $site) {
+            if ($site['ecommerce']) {
+                return true;
+            }
+        }
+
+        $idSites = array_column($sites, 'idsite');
+        $goals = GoalsAPI::getInstance()->getGoals($idSites);
+
+        foreach ($goals as $goal) {
+            if (0.0 < $goal['revenue'] || true === (bool) $goal['event_value_as_revenue']) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

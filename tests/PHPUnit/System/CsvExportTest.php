@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Tests\System;
 
 use Piwik\Date;
@@ -54,7 +56,7 @@ class CsvExportTest extends SystemTestCase
                                     'testSuffix'             => '_xp1_inner1_trans-de')),
 
             array($apiToCall, array('idSite'                 => $idSite,
-                                    'date'                   => Date::factory($dateTime)->toString() .','. Date::factory($dateTime)->addDay(21)->toString(),
+                                    'date'                   => Date::factory($dateTime)->toString() . ',' . Date::factory($dateTime)->addDay(21)->toString(),
                                     'period'                 => 'week',
                                     'format'                 => 'csv',
                                     'testSuffix'             => '_multi')),

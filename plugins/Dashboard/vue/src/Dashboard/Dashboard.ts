@@ -1,8 +1,8 @@
 /*!
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 import { DirectiveBinding, watch } from 'vue';
@@ -66,8 +66,6 @@ function fetchDashboard(dashboardId: string|number) {
   return new Promise((resolve) => setTimeout(resolve)).then(
     () => Promise.resolve(window.widgetsHelper.firstGetAvailableWidgetsCall),
   ).then(() => {
-    window.globalAjaxQueue.abort();
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dashboardElement = $('#dashboardWidgetsArea') as any;
     dashboardElement.dashboard('destroyWidgets');

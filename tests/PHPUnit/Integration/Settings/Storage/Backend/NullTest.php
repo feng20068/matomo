@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration\Settings\Storage\Backend;
@@ -17,7 +18,6 @@ use Piwik\Settings\Storage\Backend\NullBackend;
  */
 class NullTest extends \PHPUnit\Framework\TestCase
 {
-
     /**
      * @var Null
      */
@@ -30,16 +30,15 @@ class NullTest extends \PHPUnit\Framework\TestCase
         $this->backend = new NullBackend('storageId1FooBar');
     }
 
-    public function test_getStorageId_shouldReturnStorageId()
+    public function testGetStorageIdShouldReturnStorageId()
     {
         $this->assertSame('storageId1FooBar', $this->backend->getStorageId());
     }
 
-    public function test_save_load_shouldNotSaveAnything()
+    public function testSaveLoadShouldNotSaveAnything()
     {
         $this->assertSame(array(), $this->backend->load());
         $this->backend->save(array('foo' => 'bar'));
         $this->assertSame(array(), $this->backend->load());
     }
-
 }

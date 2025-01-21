@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -40,8 +41,7 @@
                   :is="beforeGoalListActionsHeadComponent"
                 ></component>
 
-                <th v-if="userCanEditGoals">{{ translate('General_Edit') }}</th>
-                <th v-if="userCanEditGoals">{{ translate('General_Delete') }}</th>
+                <th v-if="userCanEditGoals">{{ translate('General_Actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -85,21 +85,17 @@
 
                 <td v-if="userCanEditGoals" style="padding-top:2px">
                   <button
+                    v-if="userCanEditGoals"
                     @click="editGoal(goal.idgoal)"
-                    class="table-action"
+                    class="table-action icon-edit"
                     :title="translate('General_Edit')"
-                  >
-                    <span class="icon-edit"></span>
-                  </button>
-                </td>
-                <td v-if="userCanEditGoals" style="padding-top:2px">
+                  ></button>
                   <button
+                    v-if="userCanEditGoals"
                     @click="deleteGoal(goal.idgoal)"
-                    class="table-action"
+                    class="table-action icon-delete"
                     :title="translate('General_Delete')"
-                  >
-                    <span class="icon-delete"></span>
-                  </button>
+                  ></button>
                 </td>
               </tr>
             </tbody>
@@ -137,7 +133,8 @@
                 name="goal_name"
                 v-model="goal.name"
                 :maxlength="50"
-                :title="translate('Goals_GoalName')">
+                :title="translate('Goals_GoalName')"
+                @change="goalNameChanged">
               </Field>
             </div>
 
@@ -393,6 +390,7 @@ import {
   Alert,
   ReportingMenuStore,
   VueEntryContainer,
+  externalLink,
 } from 'CoreHome';
 import {
   Form,
@@ -503,7 +501,7 @@ export default defineComponent({
       useEventValueAsRevenue: boolean,
       goalId: string|number,
     ) {
-      Matomo.postEvent('Goals.beforeInitGoalForm', goalMethodAPI, goalId);
+      Matomo.postEvent('Goals.beforeInitGoalForm', goalMethodAPI, goalId, goalName);
 
       this.apiMethod = goalMethodAPI;
 
@@ -625,6 +623,7 @@ export default defineComponent({
 
         if (parameters.matchAttribute === 'event') {
           parameters.matchAttribute = this.eventType;
+          parameters.useEventValueAsRevenue = ambiguousBoolToInt(this.goal.event_value_as_revenue);
         }
 
         parameters.patternType = this.goal.pattern_type;
@@ -633,7 +632,6 @@ export default defineComponent({
       }
       parameters.revenue = this.goal.revenue || 0;
       parameters.allowMultipleConversionsPerVisit = ambiguousBoolToInt(this.goal.allow_multiple);
-      parameters.useEventValueAsRevenue = ambiguousBoolToInt(this.goal.event_value_as_revenue);
 
       parameters.idGoal = this.goal.idgoal;
       parameters.method = this.apiMethod;
@@ -695,13 +693,15 @@ export default defineComponent({
     ucfirst(s: string) {
       return `${s.slice(0, 1).toUpperCase()}${s.slice(1)}`;
     },
+    goalNameChanged() {
+      Matomo.postEvent('Goals.goalNameChanged', this.goal.name);
+    },
   },
   computed: {
     learnMoreAboutGoalTracking() {
       return translate(
         'Goals_LearnMoreAboutGoalTrackingDocumentation',
-        '<a target="_blank" rel="noreferrer noopener" '
-        + 'href="https://matomo.org/docs/tracking-goals-web-analytics/">',
+        externalLink('https://matomo.org/docs/tracking-goals-web-analytics/'),
         '</a>',
       );
     },
@@ -711,9 +711,10 @@ export default defineComponent({
         module: 'SitesManager',
         action: 'index',
       });
-
-      const ecommerceReportsText = '<a href="https://matomo.org/docs/ecommerce-analytics/" '
-        + `rel="noreferrer noopener" target="_blank">${translate('Goals_EcommerceReports')}</a>`;
+      /* eslint-disable prefer-template */
+      const ecommerceReportsText = externalLink('https://matomo.org/docs/ecommerce-analytics/')
+        + translate('Goals_EcommerceReports')
+        + '</a>';
       const websiteManageText = `<a href='${link}'>${translate('SitesManager_WebsitesManagement')}</a>`;
 
       return translate(
@@ -726,10 +727,9 @@ export default defineComponent({
       return Matomo.helper.htmlDecode(Matomo.siteName);
     },
     whereVisitedPageManuallyCallsJsTrackerText() {
-      const link = 'https://developer.matomo.org/guides/tracking-javascript-guide#manually-trigger-goal-conversions';
       return translate(
         'Goals_WhereVisitedPageManuallyCallsJavascriptTrackerLearnMore',
-        `<a target="_blank" rel="noreferrer noopener" href="${link}">`,
+        externalLink('https://developer.matomo.org/guides/tracking-javascript-guide#manually-trigger-goal-conversions'),
         '</a>',
       );
     },

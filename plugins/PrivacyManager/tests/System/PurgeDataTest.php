@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
  * @link    https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\PrivacyManager\tests\System;
 
 use Piwik\API\Request;
@@ -24,11 +26,9 @@ class PurgeDataTest extends SystemTestCase
 
     public static function setUpBeforeClass(): void
     {
-
     }
     public static function tearDownBeforeClass()
     {
-
     }
 
     public function setUp(): void
@@ -41,7 +41,7 @@ class PurgeDataTest extends SystemTestCase
         parent::tearDownAfterClass();
     }
 
-    public function test_purgeData_keepAllExceptDay()
+    public function testPurgeDataKeepAllExceptDay()
     {
         $this->assertHasOneDownload('day');
         $this->assertHasOneDownload('week');
@@ -59,7 +59,7 @@ class PurgeDataTest extends SystemTestCase
         $this->assertHasOneDownload('year');
     }
 
-    public function test_purgeData_keepOnlyDay()
+    public function testPurgeDataKeepOnlyDay()
     {
         $this->assertHasOneDownload('day');
         $this->assertHasOneDownload('week');
@@ -79,7 +79,7 @@ class PurgeDataTest extends SystemTestCase
         $this->assertHasNoDownload('year');
     }
 
-    public function test_purgeData_shouldNotPurgeAnything_IfDeleteReportsOlderThanIsFarBackInThePast()
+    public function testPurgeDataShouldNotPurgeAnythingIfDeleteReportsOlderThanIsFarBackInThePast()
     {
         $this->assertHasOneDownload('day');
         $this->assertHasOneDownload('week');
@@ -97,7 +97,7 @@ class PurgeDataTest extends SystemTestCase
         $this->assertHasOneDownload('year');
     }
 
-    public function test_purgeData_shouldPurgeAllPeriodsExceptBasicMetrics_IfNoPeriodToKeepIsGiven()
+    public function testPurgeDataShouldPurgeAllPeriodsExceptBasicMetricsIfNoPeriodToKeepIsGiven()
     {
         $this->assertHasOneDownload('day');
         $this->assertHasOneDownload('week');
@@ -119,7 +119,7 @@ class PurgeDataTest extends SystemTestCase
         $this->assertHasNoDownload('year');
     }
 
-    public function test_purgeData_shouldPurgeEverything_IfNoPeriodToKeepIsGivenAndBasicMetricsNotKept()
+    public function testPurgeDataShouldPurgeEverythingIfNoPeriodToKeepIsGivenAndBasicMetricsNotKept()
     {
         $this->assertHasOneDownload('day');
         $this->assertHasOneDownload('week');
@@ -141,7 +141,7 @@ class PurgeDataTest extends SystemTestCase
         $this->assertHasNoDownload('year');
     }
 
-    public function test_purgeData_shouldPurgeEverything_IfNoPeriodToKeepIsGivenAndBasicMetricsNotKeptSegmentsKept()
+    public function testPurgeDataShouldPurgeEverythingIfNoPeriodToKeepIsGivenAndBasicMetricsNotKeptSegmentsKept()
     {
         $this->assertHasOneDownload('day');
         $this->assertHasOneDownload('week');
@@ -168,7 +168,7 @@ class PurgeDataTest extends SystemTestCase
         $url = 'method=VisitsSummary.getVisits'
              . '&idSite=' . self::$fixture->idSite
              . '&date=' . self::$fixture->dateTime
-             . '&period='. $period
+             . '&period=' . $period
              . '&format=original';
         $api   = new Request($url);
         $table = $api->process();
@@ -194,7 +194,7 @@ class PurgeDataTest extends SystemTestCase
         return 'method=Actions.getDownloads'
              . '&idSite=' . self::$fixture->idSite
              . '&date=' . self::$fixture->dateTime
-             . '&period='. $period
+             . '&period=' . $period
              . '&format=original';
     }
 
@@ -203,8 +203,14 @@ class PurgeDataTest extends SystemTestCase
         $metricsToKeep           = PrivacyManager::getAllMetricsToKeep();
         $maxRowsToDeletePerQuery = 100000;
 
-        $purger = new ReportsPurger($deleteReportsOlderThan, $keepBasicMetrics, $reportPeriodsToKeep,
-                                    $keepSegmentReports, $metricsToKeep, $maxRowsToDeletePerQuery);
+        $purger = new ReportsPurger(
+            $deleteReportsOlderThan,
+            $keepBasicMetrics,
+            $reportPeriodsToKeep,
+            $keepSegmentReports,
+            $metricsToKeep,
+            $maxRowsToDeletePerQuery
+        );
         $purger->getPurgeEstimate();
         $purger->purgeData();
     }

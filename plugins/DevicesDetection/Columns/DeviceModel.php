@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\DevicesDetection\Columns;
 
 use Piwik\Tracker\Request;
@@ -35,7 +36,7 @@ class DeviceModel extends Base
         $model = $parser->getModel();
 
         if (!empty($model)) {
-            return $model;
+            return mb_substr($model, 0, 100);
         }
 
         $deviceType = $parser->getDeviceName();

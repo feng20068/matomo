@@ -3,8 +3,8 @@
  *
  * Export link screenshot tests.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 describe("ReportExporting", function () {
@@ -13,7 +13,7 @@ describe("ReportExporting", function () {
         visitsSummaryGetUrl = baseUrl + "&moduleToWidgetize=VisitsSummary&actionToWidgetize=get&forceView=1&viewDataTable=graphEvolution";
 
     function normalReportTest(format) {
-        it("should export a normal report correctly when the " + format + " export is chosen", async function () {
+        it(`should export a normal report correctly when the ${format} export is chosen`, async function () {
             if (await page.url() !== referrersGetWebsitesUrl) {
                 await page.goto(referrersGetWebsitesUrl);
                 await page.click('.activateExportSelection');
@@ -34,12 +34,12 @@ describe("ReportExporting", function () {
             });
             var pageContents = await page.downloadUrl(url);
 
-            expect.file('Referrers.getWebsites_exported.' + format.toLowerCase() + '.txt').to.equal(pageContents);
+            expect.fileMatchesContent('Referrers.getWebsites_exported.' + format.toLowerCase() + '.txt', pageContents);
         });
     }
 
     function evolutionReportTest(format) {
-        it("should export an evolution graph report correctly when the " + format + " export is chosen", async function () {
+        it(`should export an evolution graph report correctly when the ${format} export is chosen`, async function () {
             if (await page.url() !== visitsSummaryGetUrl) {
                 await page.goto(visitsSummaryGetUrl);
                 await page.click('.activateExportSelection');
@@ -60,12 +60,12 @@ describe("ReportExporting", function () {
             });
             var pageContents = await page.downloadUrl(url);
 
-            expect.file('VisitsSummary.get_exported.' + format.toLowerCase() + '.txt').to.equal(pageContents);
+            expect.fileMatchesContent('VisitsSummary.get_exported.' + format.toLowerCase() + '.txt', pageContents);
         });
     }
 
     function rowEvolutionReportTest(format) {
-        it("should export an row evolution graph report correctly when the " + format + " export link is clicked", async function () {
+        it(`should export an row evolution graph report correctly when the ${format} export link is clicked`, async function () {
             if (!page.url() || page.url().indexOf('popover') === -1) {
                 await page.goto(referrersGetWebsitesUrl);
 
@@ -96,7 +96,7 @@ describe("ReportExporting", function () {
             });
             var pageContents = await page.downloadUrl(url);
 
-            expect.file('RowEvolution_exported.' + format.toLowerCase() + '.txt').to.equal(pageContents);
+            expect.fileMatchesContent('RowEvolution_exported.' + format.toLowerCase() + '.txt', pageContents);
         });
     }
 

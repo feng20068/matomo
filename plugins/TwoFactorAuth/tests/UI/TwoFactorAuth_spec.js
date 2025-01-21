@@ -3,8 +3,8 @@
  *
  * Screenshot integration tests.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 describe("TwoFactorAuth", function () {
@@ -21,7 +21,7 @@ describe("TwoFactorAuth", function () {
     {
         await (await page.jQuery('.modal.open .modal-footer a:contains('+button+')')).click();
         await page.waitForNetworkIdle();
-        await page.waitForTimeout(100);
+        await page.waitForTimeout(250);
         await page.waitForNetworkIdle();
     }
 
@@ -32,9 +32,7 @@ describe("TwoFactorAuth", function () {
 
         // make sure to log out previous session
         await page.goto(logoutUrl);
-        await page.waitForNetworkIdle();
-        await page.waitForTimeout(100);
-        await page.waitForNetworkIdle();
+        await page.waitForSelector('.loginSection', {visible: true});
 
         var cookies = await page.cookies();
         cookies.forEach(cookie => {
@@ -156,10 +154,8 @@ describe("TwoFactorAuth", function () {
 
     it('should be possible to show recovery codes step1 authentication', async function () {
         await page.click('.showRecoveryCodesLink');
-        await page.waitForNetworkIdle();
-        const element = await page.$('.loginSection');
-        await page.waitForNetworkIdle();
-        await page.waitForTimeout(1000);
+        const element = await page.waitForSelector('.loginSection', {visible: true});
+        await page.waitForTimeout(200);
         expect(await element.screenshot()).to.matchImage('show_recovery_codes_step1');
     });
 
@@ -171,7 +167,8 @@ describe("TwoFactorAuth", function () {
     it('should show user settings when two-fa enabled', async function () {
         requireTwoFa();
         await page.goto(userSettings);
-        await page.waitForTimeout(1000);
+        await page.waitForSelector('.userSettings2FA', {visible: true});
+        await page.waitForTimeout(200);
         expect(await page.screenshotSelector('.userSettings2FA')).to.matchImage('usersettings_twofa_enabled_required');
     });
 
@@ -190,9 +187,9 @@ describe("TwoFactorAuth", function () {
 
     it('should be possible to disable two factor step 2 confirmed', async function () {
         await selectModalButton('Yes');
-        await page.waitForTimeout(150);
 
-        const element = await page.$('.loginSection');
+        const element = await page.waitForSelector('.loginSection', {visible: true});
+        await page.waitForTimeout(150);
         expect(await element.screenshot()).to.matchImage('usersettings_twofa_disable_step2');
     });
 
@@ -210,7 +207,7 @@ describe("TwoFactorAuth", function () {
         await page.waitForNetworkIdle();
         await page.click('.enable2FaLink');
         await confirmPassword();
-        await page.waitForTimeout(1000);
+        await page.waitForSelector('.setupTwoFactorAuthentication');
         const element = await page.$('#content');
         expect(await element.screenshot()).to.matchImage('twofa_setup_step1');
     });
@@ -222,17 +219,54 @@ describe("TwoFactorAuth", function () {
         await page.waitForNetworkIdle();
         await page.click('.setupTwoFactorAuthentication .goToStep2');
         await page.waitForNetworkIdle();
+        await page.waitForTimeout(500);
+
+        const element = await page.$('#content');
+        expect(await element.screenshot()).to.matchImage('twofa_setup_step2');
+    });
+
+    it('should open the OTP codes in modal', async function () {
+        await page.waitForTimeout(250);
+        await page.click('.setupTwoFactorAuthentication .showOtpCodes');
+        await page.waitForSelector('.modal.open', {visible: true});
+        await page.waitForTimeout(500);
+
+        // replace QR with an image
         await page.evaluate(function () {
-            $('#qrcode').parent().hide();
+          const qrCodeImg = $('#qrcode img');
+          qrCodeImg.attr('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII');
+          qrCodeImg.attr('width', 200);
+          qrCodeImg.attr('height', 200);
         });
+
+        await page.evaluate(() => $('.modal.open').css('max-height', '90%').css('top', '5%'));
+        const modal = await page.waitForSelector('.modal.open', { visible: true });
+        expect(await modal.screenshot()).to.matchImage('twofa_setup_step2_showcodes');
+    });
+
+    it('should show the manual OTP code in modal', async function () {
+        const codeLength = await page.evaluate(() => {
+            return $('.modal.open .text-code pre').text().length;
+        });
+
+        expect(codeLength).to.equal(16);
+    });
+
+    it('should not show step 3 if OTP codes modal just closed', async function () {
+        selectModalButton('Cancel');
+        await page.waitForTimeout(500);
+
         const element = await page.$('#content');
         expect(await element.screenshot()).to.matchImage('twofa_setup_step2');
     });
 
     it('should move to third step in setup - step 3', async function () {
-        await page.click('.setupTwoFactorAuthentication .goToStep3');
-        await page.waitForNetworkIdle();
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(250);
+        await page.click('.setupTwoFactorAuthentication .showOtpCodes');
+        await page.waitForSelector('.modal.open', {visible: true});
+
+        selectModalButton('Continue');
+        await page.waitForTimeout(250);
 
         const element = await page.$('#content');
         expect(await element.screenshot()).to.matchImage('twofa_setup_step3');
@@ -270,10 +304,27 @@ describe("TwoFactorAuth", function () {
         expect(await page.screenshotSelector('.loginSection,#content,#notificationContainer')).to.matchImage('twofa_forced_step2');
     });
 
+    it('should force user to setup 2fa when not set up yet but enforced step 2 show codes', async function () {
+        await page.click('.setupTwoFactorAuthentication .showOtpCodes');
+        await page.waitForTimeout(500);
+
+        // replace QR with an image
+        await page.evaluate(function () {
+          const qrCodeImg = $('#qrcode img');
+          qrCodeImg.attr('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII');
+          qrCodeImg.attr('width', 200);
+          qrCodeImg.attr('height', 200);
+        });
+
+        await page.evaluate(() => $('.modal.open').css('max-height', '90%').css('top', '5%'));
+        const modal = await page.waitForSelector('.modal.open', { visible: true });
+        expect(await modal.screenshot()).to.matchImage('twofa_forced_step2_showcodes');
+    });
+
     it('should force user to setup 2fa when not set up yet but enforced step 3', async function () {
-        await page.click('.setupTwoFactorAuthentication .goToStep3');
-        await page.waitForTimeout(100);
-        await page.waitForNetworkIdle();
+        selectModalButton('Continue');
+        await page.waitForTimeout(250);
+
         await page.mouse.move(-10, -10);
         expect(await page.screenshotSelector('.loginSection,#content,#notificationContainer')).to.matchImage('twofa_forced_step3');
     });

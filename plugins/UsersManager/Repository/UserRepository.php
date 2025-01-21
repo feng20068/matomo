@@ -109,7 +109,7 @@ class UserRepository
         $this->sendInvitationEmail($user, $generatedToken, $expiryInDays);
     }
 
-    public function reInviteUser(string $userLogin, $expiryInDays = null): void
+    public function reInviteUser(string $userLogin, int $expiryInDays): void
     {
         $user = $this->model->getUser($userLogin);
         $generatedToken = $this->model->generateRandomInviteToken();
@@ -117,7 +117,7 @@ class UserRepository
         $this->sendInvitationEmail($user, $generatedToken, $expiryInDays);
     }
 
-    public function generateInviteToken(string $userLogin, $expiryInDays = null): string
+    public function generateInviteToken(string $userLogin, int $expiryInDays): string
     {
         $generatedToken = $this->model->generateRandomInviteToken();
         $this->model->attachInviteLinkToken($userLogin, $generatedToken, $expiryInDays);
@@ -126,12 +126,14 @@ class UserRepository
 
     protected function sendUserCreationNotification(string $createdUserLogin): void
     {
-        $mail = StaticContainer::getContainer()->make(UserCreatedEmail::class, [
-            'login'        => Piwik::getCurrentUserLogin(),
-            'emailAddress' => Piwik::getCurrentUserEmail(),
-            'userLogin'    => $createdUserLogin,
-        ]);
-        $mail->safeSend();
+        if (Piwik::getCurrentUserLogin() !== 'anonymous') {
+            $mail = StaticContainer::getContainer()->make(UserCreatedEmail::class, [
+                'login' => Piwik::getCurrentUserLogin(),
+                'emailAddress' => Piwik::getCurrentUserEmail(),
+                'userLogin' => $createdUserLogin,
+            ]);
+            $mail->safeSend();
+        }
     }
 
     protected function sendInvitationEmail(array $user, string $inviteToken, int $expiryInDays): void
@@ -169,6 +171,7 @@ class UserRepository
         unset($user['password']);
         unset($user['ts_password_modified']);
         unset($user['idchange_last_viewed']);
+        unset($user['ts_changes_shown']);
         unset($user['invite_token']);
         unset($user['invite_link_token']);
 

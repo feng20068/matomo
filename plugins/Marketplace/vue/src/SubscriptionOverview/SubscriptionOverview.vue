@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -59,6 +60,9 @@
           >
             <span class="icon-error" v-if="!subscription.isValid"></span>
             <span class="icon-warning" v-else-if="subscription.isExpiredSoon"></span>
+            <span class="icon-error"
+                  v-else-if="subscription.status !== '' && subscription.status !== 'Active'">
+            </span>
             <span class="icon-ok" v-else></span>
 
             {{ subscription.status }}
@@ -154,9 +158,17 @@ export default defineComponent({
         action: 'overview',
       })}`;
     },
+    licenseKeyLink() {
+      return `?${MatomoUrl.stringify({
+        module: 'Marketplace',
+        action: 'manageLicenseKey',
+      })}`;
+    },
     missingLicenseText() {
       return translate(
-        'Marketplace_OverviewPluginSubscriptionsMissingLicense',
+        'Marketplace_OverviewPluginSubscriptionsMissingLicenseMessage',
+        `<a href="${this.licenseKeyLink}">`,
+        '</a>',
         `<a href="${this.marketplaceOverviewLink}">`,
         '</a>',
       );

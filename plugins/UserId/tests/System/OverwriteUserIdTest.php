@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\UserId\tests\System;
@@ -36,7 +37,7 @@ class OverwriteUserIdTest extends SystemTestCase
     {
         $api = 'UserId.getUsers';
         $startDate = substr(self::$fixture->dateTime, 0, 10);
-        $endDate = date('Y-m-d', strtotime($startDate) + 3600*24*365);
+        $endDate = date('Y-m-d', strtotime($startDate) + 3600 * 24 * 365);
 
         $apiToTest   = array();
         $apiToTest[] = array(
@@ -83,7 +84,6 @@ class OverwriteUserIdTest extends SystemTestCase
     {
         return dirname(__FILE__);
     }
-
 }
 
 OverwriteUserIdTest::$fixture = new OverwriteUserIdFixture();

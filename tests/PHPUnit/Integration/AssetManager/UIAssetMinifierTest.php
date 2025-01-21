@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Tests\Integration\AssetManager;
@@ -23,12 +24,11 @@ class UIAssetMinifierTest extends \PHPUnit\Framework\TestCase
         $this->assetMinifier = UIAssetMinifier::getInstance();
     }
 
-    public function provider_isMinifiedJs()
+    public function providerIsMinifiedJs()
     {
         return array(
             array('node_modules/jquery/dist/jquery.min.js', true),
             array('node_modules/jquery-ui-dist/jquery-ui.min.js', true),
-            array('node_modules/jquery.browser/dist/jquery.browser.min.js', true),
             array('libs/jqplot/jqplot-custom.min.js', true),
             array('plugins/TreemapVisualization/libs/Jit/jit-2.0.1-yc.js', true),
             array('plugins/TreemapVisualization/javascripts/treemapViz.js', false),
@@ -41,9 +41,9 @@ class UIAssetMinifierTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @group Core
-     * @dataProvider provider_isMinifiedJs
+     * @dataProvider providerIsMinifiedJs
      */
-    public function test_isMinifiedJs($scriptFileName, $isMinified)
+    public function testIsMinifiedJs($scriptFileName, $isMinified)
     {
         $scriptFile = new OnDiskUIAsset(PIWIK_DOCUMENT_ROOT, $scriptFileName);
 

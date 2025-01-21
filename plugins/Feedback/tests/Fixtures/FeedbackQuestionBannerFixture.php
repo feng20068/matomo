@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Piwik\Plugins\Feedback\tests\Fixtures;
 
 use Piwik\Date;
@@ -21,5 +20,4 @@ class FeedbackQuestionBannerFixture extends UITestFixture
         parent::tearDown();
         Option::delete('Feedback.nextFeedbackReminder.superUserLogin');
     }
-
 }

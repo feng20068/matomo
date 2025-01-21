@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\ExamplePlugin\tests\Unit;
@@ -19,7 +20,7 @@ class SimpleTest extends \PHPUnit\Framework\TestCase
     {
         // set up here if needed
     }
-    
+
     public function tearDown(): void
     {
         // tear down here if needed
@@ -30,7 +31,6 @@ class SimpleTest extends \PHPUnit\Framework\TestCase
      */
     public function testSimpleAddition()
     {
-        $this->assertEquals(2, 1+1);
+        $this->assertEquals(2, 1 + 1);
     }
-
 }

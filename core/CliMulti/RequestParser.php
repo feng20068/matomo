@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\CliMulti;
@@ -50,7 +50,8 @@ class RequestParser
     private function filterNonArchivingJobs($commands)
     {
         $result = array_filter($commands, function ($command) {
-            if (empty($command['trigger'])
+            if (
+                empty($command['trigger'])
                 || $command['trigger'] != 'archivephp'
             ) {
                 return false;
@@ -107,6 +108,6 @@ class RequestParser
             return ''; // skip check in tests as it might result in random failures
         }
 
-        return `ps aux`;
+        return `ps wwaux`;
     }
 }

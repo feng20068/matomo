@@ -1,14 +1,15 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
   <ContentBlock
     id="entityEditContainer"
     class="entityTableContainer"
-    help-url="https://matomo.org/docs/email-reports/"
+    :help-url="externalRawLink('https://matomo.org/docs/email-reports/')"
     :feature="'true'"
     :content-title="contentTitle"
   >

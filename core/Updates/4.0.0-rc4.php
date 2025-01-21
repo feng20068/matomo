@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Updates;
@@ -38,7 +38,7 @@ class Updates_4_0_0_rc4 extends PiwikUpdates
         $migrations = [];
 
         $migrations[] = $this->migration->plugin->deactivate('ExampleTheme');
-      
+
         $channel = StaticContainer::get(ReleaseChannels::class)->getActiveReleaseChannel()->getId();
         $isBeta = stripos($channel, 'beta') !== false;
 
@@ -51,7 +51,9 @@ class Updates_4_0_0_rc4 extends PiwikUpdates
 
                 if (DbHelper::tableExists($blobTable) && DbHelper::tableExists($numericTable)) {
                     $migrations[] = $this->migration->db->sql(
-                        "DELETE FROM `$blobTable` WHERE idarchive NOT IN (SELECT idarchive FROM `$numericTable`)", []);
+                        "DELETE FROM `$blobTable` WHERE idarchive NOT IN (SELECT idarchive FROM `$numericTable`)",
+                        []
+                    );
                 }
             }
         }
@@ -63,5 +65,4 @@ class Updates_4_0_0_rc4 extends PiwikUpdates
     {
         $updater->executeMigrations(__FILE__, $this->getMigrations($updater));
     }
-
 }

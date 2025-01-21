@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Referrers\tests;
@@ -26,7 +27,7 @@ class SearchEngineTest extends \PHPUnit\Framework\TestCase
 
     public function getSearchEngineUrls()
     {
-        return Spyc::YAMLLoad(PIWIK_PATH_TEST_TO_ROOT .'/tests/resources/extractSearchEngineInformationFromUrlTests.yml');
+        return Spyc::YAMLLoad(PIWIK_PATH_TEST_TO_ROOT . '/tests/resources/extractSearchEngineInformationFromUrlTests.yml');
     }
 
     /**
@@ -65,7 +66,6 @@ class SearchEngineTest extends \PHPUnit\Framework\TestCase
                 if (is_string($info['charsets'])) {
                     $this->assertTrue(trim($info['charsets']) !== '', $host . ' charsets cannot be an empty string');
                     $this->assertTrue(strpos($info['charsets'], ' ') === false, $host . ' charsets cannot contain spaces');
-
                 }
 
                 if (is_array($info['charsets'])) {

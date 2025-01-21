@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\Goals\Columns\Metrics;
 
 use Piwik\Archive\DataTableFactory;
@@ -50,14 +52,15 @@ class RevenuePerVisit extends ProcessedMetric
 
         $revenue = 0;
         foreach ($goals as $goalId => $goalMetrics) {
-            if ($goalId == Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_CART) {
+            if (is_numeric($goalId) && $goalId < GoalManager::IDGOAL_ORDER) {
                 continue;
             }
-            if ($goalId >= GoalManager::IDGOAL_ORDER
-                || $goalId == Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_ORDER
-            ) {
-                $revenue += (int) $this->getMetric($goalMetrics, 'revenue', $mappingFromNameToIdGoal);
+
+            if (!is_numeric($goalId) && $goalId != Piwik::LABEL_ID_GOAL_IS_ECOMMERCE_ORDER) {
+                continue;
             }
+
+            $revenue += (int) $this->getMetric($goalMetrics, 'revenue', $mappingFromNameToIdGoal);
         }
 
         if ($revenue == 0) {

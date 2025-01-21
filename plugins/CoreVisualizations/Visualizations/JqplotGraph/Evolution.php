@@ -1,10 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\CoreVisualizations\Visualizations\JqplotGraph;
@@ -26,8 +26,8 @@ use Piwik\Site;
  */
 class Evolution extends JqplotGraph
 {
-    const ID = 'graphEvolution';
-    const SERIES_COLOR_COUNT = 8;
+    public const ID = 'graphEvolution';
+    public const SERIES_COLOR_COUNT = 8;
 
     public static function getDefaultConfig()
     {
@@ -51,6 +51,9 @@ class Evolution extends JqplotGraph
         }
 
         parent::beforeLoadDataTable();
+
+        // fetch archive states for incomplete data point visualization
+        $this->requestConfig->request_parameters_to_modify['fetch_archive_state'] = true;
 
         // period will be overridden when 'range' is requested in the UI.
         // The graph will display the range in the most suitable period and
@@ -131,7 +134,6 @@ class Evolution extends JqplotGraph
                 // overwrite last_n param using the date range
                 $oPeriod = new Range($period, $originalDate, $timezone);
                 $lastN   = count($oPeriod->getSubperiods());
-
             } else {
                 // if not a multiple period
                 list($newDate, $lastN) = self::getDateRangeAndLastN($period, $originalDate, $defaultLastN);

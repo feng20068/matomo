@@ -1,11 +1,12 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
-  <div class="card" ref="root">
+  <div :class="{ card: true, 'card-with-image': !!this.imageUrl }" ref="root">
     <div class="card-content">
       <h2
         v-if="contentTitle && !actualFeature && !helpUrl && !actualHelpText"
@@ -27,6 +28,9 @@
         <slot />
       </div>
     </div>
+    <div class="card-image hide-on-med-and-down" v-if="imageUrl">
+      <img :src="imageUrl" :alt="actualImageAltText" />
+    </div>
   </div>
 </template>
 
@@ -46,6 +50,8 @@ export default defineComponent({
     helpUrl: String,
     helpText: String,
     anchor: String,
+    imageUrl: String,
+    imageAltText: String,
   },
   components: {
     EnrichedHeadline,
@@ -54,6 +60,7 @@ export default defineComponent({
     return {
       actualFeature: this.feature,
       actualHelpText: this.helpText,
+      actualImageAltText: this.imageAltText ? this.imageAltText : this.contentTitle,
     };
   },
   watch: {

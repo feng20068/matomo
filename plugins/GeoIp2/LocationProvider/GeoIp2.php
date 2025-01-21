@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\GeoIp2\LocationProvider;
 
 use Exception;
@@ -21,9 +22,8 @@ use Piwik\Plugins\UserCountry\LocationProvider;
  */
 abstract class GeoIp2 extends LocationProvider
 {
-
-    const TEST_IP = '194.57.91.215';
-    const SWITCH_TO_ISO_REGIONS_OPTION_NAME = 'usercountry.switchtoisoregions';
+    public const TEST_IP = '194.57.91.215';
+    public const SWITCH_TO_ISO_REGIONS_OPTION_NAME = 'usercountry.switchtoisoregions';
 
     /**
      * Cached region name array. Data is from geoipregionvars.php.
@@ -142,7 +142,7 @@ abstract class GeoIp2 extends LocationProvider
     {
         foreach (self::$dbNames as $key => $names) {
             foreach ($names as $name) {
-                if ($name === $filename || preg_match('/'.$name.'/', $filename)) {
+                if ($name === $filename || preg_match('/' . $name . '/', $filename)) {
                     return $key;
                 }
             }
@@ -214,7 +214,7 @@ abstract class GeoIp2 extends LocationProvider
     public static function convertRegionCodeToIso($countryCode, $fipsRegionCode, $returnOriginalIfNotFound = false)
     {
         static $mapping;
-        if(empty($mapping)) {
+        if (empty($mapping)) {
             $mapping = include __DIR__ . '/../data/regionMapping.php';
         }
         $countryCode = strtoupper($countryCode);
@@ -247,5 +247,15 @@ abstract class GeoIp2 extends LocationProvider
         $ip = \Matomo\Network\IP::fromStringIP($info['ip']);
 
         return $ip->toString();
+    }
+
+    /**
+     * GeoIP2 providers can be used for location-based security checks
+     *
+     * @return bool
+     */
+    public function canBeUsedForLocationBasedSecurityChecks(): bool
+    {
+        return true;
     }
 }

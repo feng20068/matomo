@@ -55,9 +55,9 @@ function checkEnv() {
         die "Cannot find zip"
     fi
 
-    if [ ! -x "/usr/bin/md5sum" ] && [ ! -x "$(which md5sum)" ]
+    if [ ! -x "/usr/bin/sha256sum" ] && [ ! -x "$(which sha256sum)" ]
     then
-        die "Cannot find md5sum"
+        die "Cannot find sha256sum"
     fi
 }
 
@@ -123,7 +123,7 @@ function organizePackage() {
         rm -rf misc/package/
     fi
 
-    find ./ -type f -printf '%s ' -exec md5sum {} \; \
+    find ./ -type f -printf '%s ' -exec sha256sum {} \; \
         | grep -v "user/.htaccess" \
         | egrep -v 'manifest.inc.php|vendor/autoload.php|vendor/composer/autoload_real.php' \
         | sed '1,$ s/\([0-9]*\) \([a-z0-9]*\) *\.\/\(.*\)/\t\t"\3" => array("\1", "\2"),/;' \
@@ -168,7 +168,7 @@ echo -e "Going to build Matomo $VERSION (Major version: $MAJOR_VERSION)"
 
 if ! echo "$VERSION" | grep -E 'rc|b|a|alpha|beta|dev|build' -i
 then
-    if curl --output /dev/null --silent --head --fail "https://builds.matomo.org/$F-$VERSION.zip"
+    if curl --output /dev/null --silent --head --fail "https://builds.matomo.org/matomo-$VERSION.zip"
     then
         echo "--> Error: stable version $VERSION has already been built (not expected). <-- "
     fi
@@ -180,6 +180,7 @@ sleep 2
 echo "Starting '$FLAVOUR' build...."
 
 if [ "$VERSION" == "build" ]; then
+  rm -rf $LOCAL_REPO
   mkdir $LOCAL_REPO
   cp -pdr !($LOCAL_REPO) $LOCAL_REPO
   cp -r .git $LOCAL_REPO
@@ -218,7 +219,8 @@ echo "Git tag: $(git describe --exact-match --tags HEAD)"
 echo "Git path: $CURRENT_DIR/$LOCAL_REPO"
 echo "Matomo version in core/Version.php: $(php -r "include_once 'core/Version.php'; echo \Piwik\Version::VERSION;")"
 
-if [ "$VERSION" != "build" ]; then
+if [ "$VERSION" != "build" ]
+then
   [ "$(grep "'$VERSION'" core/Version.php | wc -l)" = "1" ] || die "version $VERSION does not match core/Version.php";
 fi
 

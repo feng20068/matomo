@@ -3,8 +3,8 @@
  *
  * Screenshot integration tests.
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 describe("Goals", function () {
@@ -39,14 +39,29 @@ describe("Goals", function () {
         expect(await report.screenshot()).to.matchImage('goals_by_pages');
     });
 
-    it('should show goals by page titles', async function() {
+    it('should load row evolution with goal metrics for subtable row', async function() {
+      const row = await page.jQuery('.dataTable tr.level1:eq(1)');
+      await row.hover();
 
+      const icon = await page.jQuery('.dataTable tr.level1:eq(1) a.actionRowEvolution');
+      await icon.click();
+
+      await page.waitForSelector('.ui-dialog');
+      await page.waitForNetworkIdle();
+
+      const dialog = await page.$('.ui-dialog');
+      expect(await dialog.screenshot()).to.matchImage('goals_by_pages_row_evolution');
+    });
+
+    it('should show goals by page titles', async function() {
+        await page.click('.ui-widget .ui-dialog-titlebar-close');
         await page.evaluate(function(){
             $('div.dimensionCategory:nth-child(2) > ul:nth-child(1) > li:nth-child(4)').click();
         });
         await page.waitForTimeout(100);
         await page.waitForSelector('.dimensionReport .dataTableVizGoals');
         await page.waitForNetworkIdle();
+        await page.mouse.move(-10, -10);
 
         var report = await page.$('.dimensionReport');
         expect(await report.screenshot()).to.matchImage('goals_by_page_titles');
@@ -60,6 +75,7 @@ describe("Goals", function () {
         await page.waitForTimeout(100);
         await page.waitForSelector('.dimensionReport .dataTableVizGoals');
         await page.waitForNetworkIdle();
+        await page.mouse.move(-10, -10);
 
         var report = await page.$('.dimensionReport');
         expect(await report.screenshot()).to.matchImage('goals_by_entry_pages');
@@ -73,11 +89,25 @@ describe("Goals", function () {
         await page.waitForTimeout(100);
         await page.waitForSelector('.dimensionReport .dataTableVizGoals');
         await page.waitForNetworkIdle();
+        await page.mouse.move(-10, -10);
 
         var report = await page.$('.dimensionReport');
         expect(await report.screenshot()).to.matchImage('goals_by_entry_page_titles');
     });
 
+    it('should load row evolution with goal metrics', async function() {
+        const row = await page.waitForSelector('.reportsByDimensionView tbody tr:first-child');
+        await row.hover();
+
+        const icon = await page.waitForSelector('.reportsByDimensionView tbody tr:first-child a.actionRowEvolution');
+        await icon.click();
+
+        await page.waitForSelector('.ui-dialog');
+        await page.waitForNetworkIdle();
+
+        const dialog = await page.$('.ui-dialog');
+        expect(await dialog.screenshot()).to.matchImage('goals_by_entry_page_titles_row_evolution');
+    });
 
     it('should show action goals visualization for page urls', async function() {
 

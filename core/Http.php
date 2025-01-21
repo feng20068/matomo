@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik;
 
 use Composer\CaBundle\CaBundle;
@@ -85,26 +86,44 @@ class Http
      *                     `false` is still returned on failure.
      * @api
      */
-    public static function sendHttpRequest($aUrl,
-                                           $timeout,
-                                           $userAgent = null,
-                                           $destinationPath = null,
-                                           $followDepth = 0,
-                                           $acceptLanguage = false,
-                                           $byteRange = false,
-                                           $getExtendedInfo = false,
-                                           $httpMethod = 'GET',
-                                           $httpUsername = null,
-                                           $httpPassword = null,
-                                           $checkHostIsAllowed = true)
-    {
+    public static function sendHttpRequest(
+        $aUrl,
+        $timeout,
+        $userAgent = null,
+        $destinationPath = null,
+        $followDepth = 0,
+        $acceptLanguage = false,
+        $byteRange = false,
+        $getExtendedInfo = false,
+        $httpMethod = 'GET',
+        $httpUsername = null,
+        $httpPassword = null,
+        $checkHostIsAllowed = true
+    ) {
         // create output file
         $file = self::ensureDestinationDirectoryExists($destinationPath);
 
         $acceptLanguage = $acceptLanguage ? 'Accept-Language: ' . $acceptLanguage : '';
-        return self::sendHttpRequestBy(self::getTransportMethod(), $aUrl, $timeout, $userAgent, $destinationPath, $file,
-            $followDepth, $acceptLanguage, $acceptInvalidSslCertificate = false, $byteRange, $getExtendedInfo, $httpMethod,
-            $httpUsername, $httpPassword, null, [], null, $checkHostIsAllowed);
+        return self::sendHttpRequestBy(
+            self::getTransportMethod(),
+            $aUrl,
+            $timeout,
+            $userAgent,
+            $destinationPath,
+            $file,
+            $followDepth,
+            $acceptLanguage,
+            $acceptInvalidSslCertificate = false,
+            $byteRange,
+            $getExtendedInfo,
+            $httpMethod,
+            $httpUsername,
+            $httpPassword,
+            null,
+            [],
+            null,
+            $checkHostIsAllowed
+        );
     }
 
     public static function ensureDestinationDirectoryExists($destinationPath)
@@ -244,16 +263,11 @@ class Http
         $contentLength = 0;
         $fileLength = 0;
 
-        if ( !empty($requestBody ) && is_array($requestBody )) {
-            $requestBodyQuery = self::buildQuery($requestBody );
+        if (!empty($requestBody) && is_array($requestBody)) {
+            $requestBodyQuery = self::buildQuery($requestBody);
         } else {
             $requestBodyQuery = $requestBody;
         }
-
-        // Piwik services behave like a proxy, so we should act like one.
-        $xff = 'X-Forwarded-For: '
-            . (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] . ',' : '')
-            . IP::getIpFromHeader();
 
         if (empty($userAgent)) {
             $userAgent = self::getUserAgent();
@@ -283,7 +297,7 @@ class Http
 
         $httpAuth = '';
         if ($httpAuthIsUsed) {
-            $httpAuth = 'Authorization: Basic ' . base64_encode($httpUsername.':'.$httpPassword) . "\r\n";
+            $httpAuth = 'Authorization: Basic ' . base64_encode($httpUsername . ':' . $httpPassword) . "\r\n";
         }
 
         $httpEventParams = array(
@@ -291,9 +305,9 @@ class Http
             'body' => $requestBody,
             'userAgent' => $userAgent,
             'timeout' => $timeout,
-            'headers' => array_map('trim', array_filter(array_merge(array(
-                $rangeHeader, $via, $xff, $httpAuth, $acceptLanguage
-            ), $additionalHeaders))),
+            'headers' => array_map('trim', array_filter(array_merge([
+                $rangeHeader, $via, $httpAuth, $acceptLanguage
+            ], $additionalHeaders))),
             'verifySsl' => !$acceptInvalidSslCertificate,
             'destinationPath' => $destinationPath
         );
@@ -323,19 +337,19 @@ class Http
              * described below
              * @ignore
              */
-                    Piwik::postEvent('Http.sendHttpRequest.end', array($aUrl, $httpEventParams, &$response, &$status, &$headers));
+            Piwik::postEvent('Http.sendHttpRequest.end', array($aUrl, $httpEventParams, &$response, &$status, &$headers));
 
-                    if ($destinationPath && file_exists($destinationPath)) {
-                        return true;
-                    }
-                    if ($getExtendedInfo) {
-                        return array(
-                            'status'  => $status,
-                            'headers' => $headers,
-                            'data'    => $response
-                        );
+            if ($destinationPath && file_exists($destinationPath)) {
+                return true;
+            }
+            if ($getExtendedInfo) {
+                return array(
+                    'status'  => $status,
+                    'headers' => $headers,
+                    'data'    => $response
+                );
             } else {
-                        return trim($response);
+                return trim($response);
             }
         }
 
@@ -362,7 +376,8 @@ class Http
             $errno = null;
             $errstr = null;
 
-            if ((!empty($proxyHost) && !empty($proxyPort))
+            if (
+                (!empty($proxyHost) && !empty($proxyPort))
                 || !empty($byteRange)
             ) {
                 $httpVer = '1.1';
@@ -403,17 +418,16 @@ class Http
                 . ($proxyAuth ? $proxyAuth : '')
                 . 'User-Agent: ' . $userAgent . "\r\n"
                 . ($acceptLanguage ? $acceptLanguage . "\r\n" : '')
-                . $xff . "\r\n"
                 . $via . "\r\n"
                 . $rangeHeader
                 . (!empty($additionalHeaders) ? implode("\r\n", $additionalHeaders) . "\r\n" : '')
                 . "Connection: close\r\n";
             fwrite($fsock, $requestHeader);
 
-            if (strtolower($httpMethod) === 'post' && !empty($requestBodyQuery )) {
-                fwrite($fsock, self::buildHeadersForPost($requestBodyQuery ));
+            if (strtolower($httpMethod) === 'post' && !empty($requestBodyQuery)) {
+                fwrite($fsock, self::buildHeadersForPost($requestBodyQuery));
                 fwrite($fsock, "\r\n");
-                fwrite($fsock, $requestBodyQuery );
+                fwrite($fsock, $requestBodyQuery);
             } else {
                 fwrite($fsock, "\r\n");
             }
@@ -458,7 +472,7 @@ class Http
                         throw new Exception('Expected server response code.  Got ' . rtrim($line, "\r\n"));
                     }
 
-                    $status = (integer)$m[2];
+                    $status = (int)$m[2];
 
                     // Informational 1xx or Client Error 4xx
                     if ($status < 200 || $status >= 400) {
@@ -509,13 +523,14 @@ class Http
 
                 // save expected content length for later verification
                 if (preg_match('/^Content-Length:\s*(\d+)/', $line, $m)) {
-                    $contentLength = (integer)$m[1];
+                    $contentLength = (int)$m[1];
                 }
 
                 self::parseHeaderLine($headers, $line);
             }
 
-            if (feof($fsock)
+            if (
+                feof($fsock)
                 && $httpMethod != 'HEAD'
             ) {
                 throw new Exception('Unexpected end of transmission');
@@ -565,7 +580,6 @@ class Http
                         'header'        => 'User-Agent: ' . $userAgent . "\r\n"
                             . ($httpAuth ? $httpAuth : '')
                             . ($acceptLanguage ? $acceptLanguage . "\r\n" : '')
-                            . $xff . "\r\n"
                             . $via . "\r\n"
                             . (!empty($additionalHeaders) ? implode("\r\n", $additionalHeaders) . "\r\n" : '')
                             . $rangeHeader,
@@ -582,8 +596,8 @@ class Http
                     }
                 }
 
-                if (strtolower($httpMethod) === 'post' && !empty($requestBodyQuery )) {
-                    $postHeader  = self::buildHeadersForPost($requestBodyQuery );
+                if (strtolower($httpMethod) === 'post' && !empty($requestBodyQuery)) {
+                    $postHeader  = self::buildHeadersForPost($requestBodyQuery);
                     $postHeader .= "\r\n";
                     $stream_options['http']['method']  = 'POST';
                     $stream_options['http']['header'] .= $postHeader;
@@ -643,14 +657,11 @@ class Http
             }
 
             $curl_options = array(
-                // internal to ext/curl
-                CURLOPT_BINARYTRANSFER => is_resource($file),
 
                 // curl options (sorted oldest to newest)
                 CURLOPT_URL            => $aUrl,
                 CURLOPT_USERAGENT      => $userAgent,
                 CURLOPT_HTTPHEADER     => array_merge(array(
-                    $xff,
                     $via,
                     $acceptLanguage
                 ), $additionalHeaders),
@@ -681,9 +692,9 @@ class Http
                 @curl_setopt($ch, CURLOPT_NOBODY, true);
             }
 
-            if (strtolower($httpMethod) === 'post' && !empty($requestBodyQuery )) {
+            if (strtolower($httpMethod) === 'post' && !empty($requestBodyQuery)) {
                 curl_setopt($ch, CURLOPT_POST, 1);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $requestBodyQuery );
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $requestBodyQuery);
             }
 
             if (!empty($httpUsername) && !empty($httpPassword)) {
@@ -748,7 +759,7 @@ class Http
                 while (substr($response, 0, 5) == "HTTP/") {
                     $split = explode("\r\n\r\n", $response, 2);
 
-                    if(count($split) == 2) {
+                    if (count($split) == 2) {
                         [$header, $response] = $split;
                     } else {
                         $response = '';
@@ -776,7 +787,8 @@ class Http
             @fclose($file);
 
             $fileSize = filesize($destinationPath);
-            if ($contentLength > 0
+            if (
+                $contentLength > 0
                 && $fileSize != $contentLength
             ) {
                 throw new Exception('File size error: ' . $destinationPath . '; expected ' . $contentLength . ' bytes; received ' . $fileLength . ' bytes; saved ' . $fileSize . ' bytes to file');
@@ -886,12 +898,14 @@ class Http
     public static function downloadChunk($url, $outputPath, $isContinuation)
     {
         // make sure file doesn't already exist if we're starting a new download
-        if (!$isContinuation
+        if (
+            !$isContinuation
             && file_exists($outputPath)
         ) {
             throw new Exception(
                 Piwik::translate('General_DownloadFail_FileExists', "'" . $outputPath . "'")
-                . ' ' . Piwik::translate('General_DownloadPleaseRemoveExisting'));
+                . ' ' . Piwik::translate('General_DownloadPleaseRemoveExisting')
+            );
         }
 
         // if we're starting a download, get the expected file size & save as an option
@@ -933,7 +947,8 @@ class Http
         if ($existingSize >= $expectedFileSize) {
             throw new Exception(
                 Piwik::translate('General_DownloadFail_FileExistsContinue', "'" . $outputPath . "'")
-                . ' ' . Piwik::translate('General_DownloadPleaseRemoveExisting'));
+                . ' ' . Piwik::translate('General_DownloadPleaseRemoveExisting')
+            );
         }
 
         // download a chunk of the file
@@ -948,13 +963,19 @@ class Http
             $getExtendedInfo = true
         );
 
-        if ($result === false
+        if (
+            $result === false
             || $result['status'] < 200
             || $result['status'] > 299
         ) {
             $result['data'] = self::truncateStr($result['data'], 1024);
-            Log::info("Failed to download range '%s-%s' of file from url '%s'. Got result: %s",
-                $byteRange[0], $byteRange[1], $url, print_r($result, true));
+            Log::info(
+                "Failed to download range '%s-%s' of file from url '%s'. Got result: %s",
+                $byteRange[0],
+                $byteRange[1],
+                $url,
+                print_r($result, true)
+            );
 
             throw new Exception(Piwik::translate('General_DownloadFail_HttpRequestFail'));
         }

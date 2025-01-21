@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\CoreAdminHome\Model;
 
 use Piwik\Common;
@@ -56,7 +58,7 @@ class DuplicateActionRemover
      * @param TableMetadata $tableMetadataAccess
      * @param LoggerInterface $logger
      */
-    public function __construct(TableMetadata $tableMetadataAccess = null, LoggerInterface $logger = null)
+    public function __construct(?TableMetadata $tableMetadataAccess = null, ?LoggerInterface $logger = null)
     {
         $this->tableMetadataAccess = $tableMetadataAccess ?: new TableMetadata();
         $this->logger = $logger ?: StaticContainer::get(LoggerInterface::class);

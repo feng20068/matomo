@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\SegmentEditor\tests\Integration;
@@ -41,7 +42,7 @@ class ApiTest extends IntegrationTestCase
         }
     }
 
-    public function test_getAll_forOneWebsite_returnsSortedSegments()
+    public function testGetAllForOneWebsiteReturnsSortedSegments()
     {
         $this->createAdminUser();
         $this->createSegments();
@@ -66,7 +67,7 @@ class ApiTest extends IntegrationTestCase
         $this->assertSame($expectedOrder, $segmentNames);
     }
 
-    public function test_getAll_forAllWebsites_returnsSortedSegments()
+    public function testGetAllForAllWebsitesReturnsSortedSegments()
     {
         $this->createAdminUser();
         $this->createSegments();
@@ -93,7 +94,7 @@ class ApiTest extends IntegrationTestCase
         $this->assertSame($expectedOrder, $segmentNames);
     }
 
-    public function test_getAll_forAllWebsites_returnsSortedSegments_asSuperUser()
+    public function testGetAllForAllWebsitesReturnsSortedSegmentsAsSuperUser()
     {
         $this->createAdminUser();
         $this->createSegments();
@@ -121,7 +122,7 @@ class ApiTest extends IntegrationTestCase
         $this->assertSame($expectedOrder, $segmentNames);
     }
 
-    public function test_getAll_forOneWebsite_returnsSortedSegments_asSuperUser()
+    public function testGetAllForOneWebsiteReturnsSortedSegmentsAsSuperUser()
     {
         $this->createAdminUser();
         $this->createSegments();
@@ -168,11 +169,10 @@ class ApiTest extends IntegrationTestCase
 
         $this->setAnotherAdminUser();
         $this->api->add('segment 8', 'visitCount<2', $idSite = 1, $autoArchive = true, $enableAllUsers = false);
-        
+
         $this->setAnotherSuperUser();
         $this->api->add('segment 9', 'countryCode!=fr', $idSite = false, $autoArchive = false, $enableAllUsers = true);
         Rules::setBrowserTriggerArchiving(true);
-
     }
 
     protected function setSuperUser($userName = 'superUserLogin')
@@ -219,5 +219,4 @@ class ApiTest extends IntegrationTestCase
         }
         return $segmentNames;
     }
-
 }

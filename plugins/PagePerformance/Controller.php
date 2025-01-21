@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\PagePerformance;
 
 use Piwik\API\Request;
@@ -60,6 +61,7 @@ class Controller extends PluginController
             'segment'   => $request->getStringParameter('segment', ''),
             'date'      => 'range' === $period ? $date : EvolutionViz::getDateRangeAndLastN($period, $date)[0],
             'format'    => 'original',
+            'flat'      => $request->getIntegerParameter('flat', 0),
             'serialize' => '0',
         ];
 
@@ -74,7 +76,7 @@ class Controller extends PluginController
      * @return string|void
      * @throws \Exception
      */
-    public function getRowEvolutionGraph($dataTable=null)
+    public function getRowEvolutionGraph($dataTable = null)
     {
         $this->checkSitePermission();
 
@@ -86,7 +88,11 @@ class Controller extends PluginController
 
         // set up the view data table
         $view = ViewDataTableFactory::build(
-            StackedBarEvolution::ID, $apiMethod, 'PagePerformance.getRowEvolutionGraph', $forceDefault = true);
+            StackedBarEvolution::ID,
+            $apiMethod,
+            'PagePerformance.getRowEvolutionGraph',
+            $forceDefault = true
+        );
         $view->setDataTable($dataTable);
 
         $view->config->columns_to_display = array_keys(Metrics::getPagePerformanceMetrics());

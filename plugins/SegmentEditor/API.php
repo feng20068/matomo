@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
+
 namespace Piwik\Plugins\SegmentEditor;
 
 use Exception;
@@ -18,6 +19,7 @@ use Piwik\Piwik;
 use Piwik\Config;
 use Piwik\Segment;
 use Piwik\Cache;
+use Piwik\Url;
 
 /**
  * The SegmentEditor API lets you add, update, delete custom Segments, and list saved segments.
@@ -72,7 +74,8 @@ class API extends \Piwik\Plugin\API
     protected function checkEnabledAllUsers($enabledAllUsers)
     {
         $enabledAllUsers = (int)$enabledAllUsers;
-        if ($enabledAllUsers
+        if (
+            $enabledAllUsers
             && !Piwik::hasUserSuperUserAccess()
         ) {
             throw new Exception("enabledAllUsers=1 requires Super User access");
@@ -104,7 +107,7 @@ class API extends \Piwik\Plugin\API
         if (empty($idSite) && $autoArchive) {
             if (!Piwik::hasUserSuperUserAccess()) {
                 throw new Exception(
-                    "Please contact Support to make these changes on your behalf. ".
+                    "Please contact Support to make these changes on your behalf. " .
                     " To modify a pre-processed segment for all websites, a user must have super user access. "
                 );
             }
@@ -122,7 +125,7 @@ class API extends \Piwik\Plugin\API
             if (Rules::isBrowserTriggerEnabled()) {
                 $message = "Pre-processed segments can only be created if browser triggered archiving is disabled.";
                 if (Piwik::hasUserSuperUserAccess()) {
-                    $message .= " To disable browser archiving follow the instructions here: https://matomo.org/docs/setup-auto-archiving/.";
+                    $message .= " To disable browser archiving follow the instructions here: " . Url::addCampaignParametersToMatomoLink('https://matomo.org/docs/setup-auto-archiving/');
                 }
                 throw new Exception($message);
             }
@@ -153,7 +156,8 @@ class API extends \Piwik\Plugin\API
 
     protected function checkUserCanAddNewSegment($idSite)
     {
-        if (empty($idSite)
+        if (
+            empty($idSite)
             && !SegmentEditor::isAddingSegmentsForAllWebsitesEnabled()
         ) {
             throw new Exception(Piwik::translate('SegmentEditor_AddingSegmentForAllWebsitesDisabled'));
@@ -319,7 +323,8 @@ class API extends \Piwik\Plugin\API
 
         Cache::getEagerCache()->flushAll();
 
-        if ($autoArchive
+        if (
+            $autoArchive
             && !Rules::isBrowserTriggerEnabled()
             && $this->processNewSegmentsFrom != SegmentArchiving::CREATION_TIME
         ) {
@@ -351,11 +356,9 @@ class API extends \Piwik\Plugin\API
             return false;
         }
         try {
-
             if (!$segment['enable_all_users']) {
                 Piwik::checkUserHasSuperUserAccessOrIsTheUser($segment['login']);
             }
-
         } catch (Exception $e) {
             throw new Exception($this->getMessageCannotEditSegmentCreatedBySuperUser());
         }
@@ -384,7 +387,7 @@ class API extends \Piwik\Plugin\API
         $userLogin = Piwik::getCurrentUserLogin();
 
         $model = $this->getModel();
-        if(Piwik::hasUserSuperUserAccess()) {
+        if (Piwik::hasUserSuperUserAccess()) {
             $segments = $model->getAllSegmentsForAllUsers($idSite);
         } else {
             if (empty($idSite)) {
@@ -394,8 +397,31 @@ class API extends \Piwik\Plugin\API
             }
         }
 
+        $segments = $this->filterSegmentsWithDisabledElements($segments, $idSite);
         $segments = $this->sortSegmentsCreatedByUserFirst($segments);
 
+        return $segments;
+    }
+
+    /**
+     * Filter out any segments which cannot be initialized due to disable plugins or features
+     *
+     * @param array $segments
+     * @param bool|int $idSite
+     *
+     * @return array
+     */
+    private function filterSegmentsWithDisabledElements(array $segments, $idSite = false): array
+    {
+        $idSites = false === $idSite ? [] : [$idSite];
+
+        foreach ($segments as $k => $segment) {
+            try {
+                new Segment($segment['definition'], $idSites);
+            } catch (Exception $e) {
+                unset($segments[$k]);
+            }
+        }
         return $segments;
     }
 
@@ -412,19 +438,19 @@ class API extends \Piwik\Plugin\API
     private function sortSegmentsCreatedByUserFirst($segments)
     {
         $orderedSegments = array();
-        foreach($segments as $id => &$segment) {
-            if($segment['login'] == Piwik::getCurrentUserLogin()) {
+        foreach ($segments as $id => &$segment) {
+            if ($segment['login'] == Piwik::getCurrentUserLogin()) {
                 $orderedSegments[] = $segment;
                 unset($segments[$id]);
             }
         }
-        foreach($segments as $id => &$segment) {
-            if($segment['enable_all_users'] == 1) {
+        foreach ($segments as $id => &$segment) {
+            if ($segment['enable_all_users'] == 1) {
                 $orderedSegments[] = $segment;
                 unset($segments[$id]);
             }
         }
-        foreach($segments as $id => &$segment) {
+        foreach ($segments as $id => &$segment) {
             $orderedSegments[] = $segment;
         }
         return $orderedSegments;

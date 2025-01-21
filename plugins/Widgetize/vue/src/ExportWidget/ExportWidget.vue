@@ -1,7 +1,8 @@
 <!--
   Matomo - free/libre analytics platform
-  @link https://matomo.org
-  @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+
+  @link    https://matomo.org
+  @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
 -->
 
 <template>
@@ -58,6 +59,7 @@ import {
   ContentBlock,
   SelectOnFocus,
   MatomoUrl,
+  externalLink,
 } from 'CoreHome';
 import WidgetPreview from '../WidgetPreview/WidgetPreview.vue';
 
@@ -124,11 +126,7 @@ export default defineComponent({
     intro() {
       return translate(
         'Widgetize_Intro',
-        `<a
-          rel="noreferrer noopener"
-          target="_blank"
-          href="https://matomo.org/docs/embed-piwik-report/"
-        >`,
+        externalLink('https://matomo.org/docs/embed-piwik-report/'),
         '</a>',
       );
     },

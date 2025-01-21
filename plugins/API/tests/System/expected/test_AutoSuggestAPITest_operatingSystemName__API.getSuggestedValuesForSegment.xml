@@ -7,27 +7,27 @@
 	<row>webOS</row>
 	<row>watchOS</row>
 	<row>tvOS</row>
+	<row>risingOS</row>
 	<row>palmOS</row>
 	<row>moonOS</row>
 	<row>iPadOS</row>
 	<row>iOS</row>
+	<row>gNewSense</row>
+	<row>blackPanther OS</row>
 	<row>ZorinOS</row>
 	<row>Zenwalk</row>
 	<row>YunOS</row>
 	<row>Xubuntu</row>
 	<row>Xbox</row>
+	<row>WoPhone</row>
 	<row>Windows RT</row>
 	<row>Windows Phone</row>
 	<row>Windows Mobile</row>
 	<row>Windows IoT</row>
 	<row>Windows CE</row>
 	<row>Whale OS</row>
+	<row>Webian</row>
 	<row>WebTV</row>
-	<row>VectorLinux</row>
-	<row>Unknown</row>
-	<row>TmaxOS</row>
-	<row>Tizen</row>
-	<row>ThreadX</row>
-	<row>TencentOS</row>
-	<row>Symbian^3</row>
+	<row>Wear OS</row>
+	<row>ViziOS</row>
 </result>

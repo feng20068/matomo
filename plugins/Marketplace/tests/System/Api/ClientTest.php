@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Matomo - free/libre analytics platform
  *
- * @link https://matomo.org
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
 namespace Piwik\Plugins\Marketplace\tests\System\Api;
@@ -49,10 +50,8 @@ class ClientTest extends SystemTestCase
         $this->getCache()->flushAll();
     }
 
-    public function test_getPluginInfo_existingPluginOnTheMarketplace()
+    public function testGetPluginInfoExistingPluginOnTheMarketplace()
     {
-        $this->skipTestUntilFirstRelease();
-
         $plugin = $this->client->getPluginInfo('SecurityInfo');
 
         $expectedPluginKeys = array(
@@ -73,6 +72,7 @@ class ClientTest extends SystemTestCase
             'latestVersion',
             'numDownloads',
             'screenshots',
+            'coverImage',
             'previews',
             'activity',
             'featured',
@@ -83,6 +83,7 @@ class ClientTest extends SystemTestCase
             'shop',
             'bundle',
             'specialOffer',
+            'category',
             'versions',
             'isDownloadable',
             'changelog',
@@ -99,6 +100,8 @@ class ClientTest extends SystemTestCase
         $this->assertFalse($plugin['isPaid']);
         $this->assertFalse($plugin['isCustomPlugin']);
         $this->assertNotEmpty($plugin['versions']);
+        $this->assertNotEmpty($plugin['coverImage']);
+        $this->assertNotEmpty($plugin['category']);
 
         $lastVersion = $plugin['versions'][count($plugin['versions']) - 1];
         $this->assertEquals(
@@ -108,7 +111,7 @@ class ClientTest extends SystemTestCase
         $this->assertNotEmpty($lastVersion['download']);
     }
 
-    public function test_getPluginInfo_shouldThrowException_IfPluginDoesNotExistOnMarketplace()
+    public function testGetPluginInfoShouldThrowExceptionIfPluginDoesNotExistOnMarketplace()
     {
         $this->expectException(\Piwik\Plugins\Marketplace\Api\Exception::class);
         $this->expectExceptionMessage('Requested plugin does not exist.');
@@ -116,20 +119,18 @@ class ClientTest extends SystemTestCase
         $this->client->getPluginInfo('NotExistingPlugIn');
     }
 
-    public function test_getConsumer_shouldReturnNullAndNotThrowException_IfNotAuthorized()
+    public function testGetConsumerShouldReturnNullAndNotThrowExceptionIfNotAuthorized()
     {
         $this->assertNull($this->client->getConsumer());
     }
 
-    public function test_isValidConsumer_shouldReturnFalseAndNotThrowException_IfNotAuthorized()
+    public function testIsValidConsumerShouldReturnFalseAndNotThrowExceptionIfNotAuthorized()
     {
         $this->assertFalse($this->client->isValidConsumer());
     }
 
-    public function test_searchForPlugins_requestAll()
+    public function testSearchForPluginsRequestAll()
     {
-        $this->skipTestUntilFirstRelease();
-
         $plugins = $this->client->searchForPlugins($keywords = '', $query = '', $sort = '', $purchaseType = PurchaseType::TYPE_ALL);
 
         $this->assertGreaterThan(15, count($plugins));
@@ -140,10 +141,8 @@ class ClientTest extends SystemTestCase
         }
     }
 
-    public function test_searchForPlugins_onlyFree()
+    public function testSearchForPluginsOnlyFree()
     {
-        $this->skipTestUntilFirstRelease();
-
         $plugins = $this->client->searchForPlugins($keywords = '', $query = '', $sort = '', $purchaseType = PurchaseType::TYPE_FREE);
 
         $this->assertGreaterThan(15, count($plugins));
@@ -155,10 +154,8 @@ class ClientTest extends SystemTestCase
         }
     }
 
-    public function test_searchForPlugins_onlyPaid()
+    public function testSearchForPluginsOnlyPaid()
     {
-        $this->skipTestUntilFirstRelease();
-
         $plugins = $this->client->searchForPlugins($keywords = '', $query = '', $sort = '', $purchaseType = PurchaseType::TYPE_PAID);
 
         $this->assertGreaterThanOrEqual(1, count($plugins));
@@ -171,10 +168,8 @@ class ClientTest extends SystemTestCase
         }
     }
 
-    public function test_searchForPlugins_withKeyword()
+    public function testSearchForPluginsWithKeyword()
     {
-        $this->skipTestUntilFirstRelease();
-
         $plugins = $this->client->searchForPlugins($keywords = 'login', $query = '', $sort = '', $purchaseType = PurchaseType::TYPE_ALL);
 
         $this->assertGreaterThanOrEqual(1, count($plugins));
@@ -185,10 +180,8 @@ class ClientTest extends SystemTestCase
         }
     }
 
-    public function test_searchForThemes_requestAll()
+    public function testSearchForThemesRequestAll()
     {
-        $this->skipTestUntilFirstRelease();
-
         $plugins = $this->client->searchForThemes($keywords = '', $query = '', $sort = '', $purchaseType = PurchaseType::TYPE_ALL);
 
         $this->assertGreaterThanOrEqual(1, count($plugins));
@@ -200,10 +193,8 @@ class ClientTest extends SystemTestCase
         }
     }
 
-    public function test_getDownloadUrl()
+    public function testGetDownloadUrl()
     {
-        $this->skipTestUntilFirstRelease();
-
         $url = $this->client->getDownloadUrl('SecurityInfo');
 
         $start = $this->domain . '/api/2.0/plugins/SecurityInfo/download/';
@@ -218,7 +209,15 @@ class ClientTest extends SystemTestCase
         $this->assertRegExp('/\d+\.\d+\.\d+/', $version);
     }
 
-    public function test_clientResponse_shouldBeCached()
+    public function testGetDownloadUrlMissingLicense()
+    {
+        $this->expectException(\Piwik\Plugins\Marketplace\Api\Exception::class);
+        $this->expectExceptionMessage('Plugin is not downloadable');
+
+        $this->client->getDownloadUrl('FormAnalytics');
+    }
+
+    public function testClientResponseShouldBeCached()
     {
         $params = array(
             'keywords' => 'login',
@@ -248,7 +247,7 @@ class ClientTest extends SystemTestCase
         $this->assertGreaterThan(30, $cachedPlugins);
     }
 
-    public function test_cachedClientResponse_shouldBeReturned()
+    public function testCachedClientResponseShouldBeReturned()
     {
         $params = array(
             'keywords' => 'login',
@@ -272,7 +271,7 @@ class ClientTest extends SystemTestCase
         $this->assertSame(array(array('name' => 'foobar')), $result);
     }
 
-    public function test_getInfoOfPluginsHavingUpdate()
+    public function testGetInfoOfPluginsHavingUpdate()
     {
         $service = new TestService($this->domain);
         $client = $this->buildClient($service);
@@ -317,12 +316,5 @@ class ClientTest extends SystemTestCase
     private function getCache()
     {
         return Cache::getLazyCache();
-    }
-
-    public function skipTestUntilFirstRelease()
-    {
-        if (version_compare(Version::VERSION, '5.0.0-rc1', '<')) {
-            $this->markTestSkipped('Skipping tests until we have first release candidate');
-        }
     }
 }
